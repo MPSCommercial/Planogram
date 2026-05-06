@@ -13,6 +13,25 @@
   $('btnRemoveImage').addEventListener('click', (e) => removeUploadedImage(e));
   $('imgInput').addEventListener('change', handleImageUpload);
 
+  // ─── Edit modal bindings ───
+  $('btnSaveEdit').addEventListener('click', saveEditProduct);
+  $('btnCancelEdit').addEventListener('click', closeEditModal);
+  $('btnCloseModal').addEventListener('click', closeEditModal);
+  $('editImgInput').addEventListener('change', handleEditImageUpload);
+  $('btnEditRemoveImage').addEventListener('click', (e) => removeEditImage(e));
+
+  // Close modal on overlay click
+  $('editModal').addEventListener('click', (e) => {
+    if (e.target === $('editModal')) closeEditModal();
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && $('editModal').classList.contains('open')) {
+      closeEditModal();
+    }
+  });
+
   // ─── Import JSON ───
   $('btnImportJSON').addEventListener('click', () => {
     $('jsonImportInput').click();
