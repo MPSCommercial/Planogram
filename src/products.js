@@ -5,6 +5,8 @@
 let products = [];
 let selectedProductId = null;
 let pendingImageBase64 = null;
+let editingProductId = null;
+let editImageBase64 = null;
 
 /**
  * Add a new product from the form inputs
@@ -120,7 +122,10 @@ function renderProductList() {
         <div class="product-name">${esc(product.name)}</div>
         <div class="product-meta">${esc(product.brand || product.category)} · F:${product.facing}${product.width ? ` · ${product.width}×${product.height}cm` : ''}</div>
       </div>
-      <button class="btn btn-danger" onclick="deleteProduct('${product.id}', event)">ลบ</button>
+      <div class="card-actions">
+        <button class="btn btn-edit" onclick="openEditModal('${product.id}', event)">แก้ไข</button>
+        <button class="btn btn-danger" onclick="deleteProduct('${product.id}', event)">ลบ</button>
+      </div>
     `;
 
     card.addEventListener('click', () => selectProduct(product.id));
@@ -179,4 +184,119 @@ function updateLegend() {
         `<div class="legend-item"><span class="dot" style="background:${color}"></span>${esc(name)}</div>`
     )
     .join('');
+}
+
+/**
+ * Open the edit modal for a product
+ */
+function openEditModal(id, event) {
+  if (event) event.stopPropagation();
+  const product = products.find((p) => p.id === id);
+  if (!product) return;
+
+  editingProductId = id;
+  editImageBase64 = product.image;
+
+  // Populate form
+  $('editName').value = product.name;
+  $('editCat').value = product.category;
+  $('editBrand').value = product.brand;
+  $('editColor').value = product.color;
+  $('editFacing').value = product.facing;
+  $('editWidth').value = product.width || '';
+  $('editHeight').value = product.height || '';
+
+  // Show image preview if exists
+  if (product.image) {
+    $('editPreviewImg').src = product.image;
+    $('editUploadHint').style.display = 'none';
+    $('editUploadPreview').style.display = 'block';
+    $('editUploadZone').classList.add('has-image');
+    $('editUploadZone').querySelector('input[type=file]').style.pointerEvents = 'none';
+  } else {
+    resetEditImage();
+  }
+
+  // Open modal
+  $('editModal').classList.add('open');
+}
+
+/**
+ * Close the edit modal
+ */
+function closeEditModal() {
+  $('editModal').classList.remove('open');
+  editingProductId = null;
+  editImageBase64 = null;
+  resetEditImage();
+}
+
+/**
+ * Save the edited product
+ */
+function saveEditProduct() {
+  const product = products.find((p) => p.id === editingProductId);
+  if (!product) return;
+
+  const name = $('editName').value.trim();
+  if (!name) {
+    showToast('กรุณาใส่ชื่อสินค้า');
+    return;
+  }
+
+  product.name = name;
+  product.category = $('editCat').value.trim() || 'ไม่ระบุ';
+  product.brand = $('editBrand').value.trim() || '';
+  product.color = $('editColor').value;
+  product.facing = clamp(parseInt($('editFacing').value) || 1, 1, 12);
+  product.width = $('editWidth').value || '';
+  product.height = $('editHeight').value || '';
+  product.image = editImageBase64;
+
+  closeEditModal();
+  renderProductList();
+  renderShelfFill();
+  updateLegend();
+  updateSummary();
+  saveState();
+  showToast('บันทึกการแก้ไขแล้ว');
+}
+
+/**
+ * Handle image upload in edit modal
+ */
+function handleEditImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    editImageBase64 = ev.target.result;
+    $('editPreviewImg').src = editImageBase64;
+    $('editUploadHint').style.display = 'none';
+    $('editUploadPreview').style.display = 'block';
+    $('editUploadZone').classList.add('has-image');
+    $('editUploadZone').querySelector('input[type=file]').style.pointerEvents = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+/**
+ * Remove image in edit modal
+ */
+function removeEditImage(e) {
+  if (e) e.stopPropagation();
+  editImageBase64 = null;
+  resetEditImage();
+}
+
+/**
+ * Reset the edit image upload zone
+ */
+function resetEditImage() {
+  $('editImgInput').value = '';
+  $('editPreviewImg').src = '';
+  $('editUploadHint').style.display = '';
+  $('editUploadPreview').style.display = 'none';
+  $('editUploadZone').classList.remove('has-image');
+  $('editUploadZone').querySelector('input[type=file]').style.pointerEvents = 'auto';
 }
