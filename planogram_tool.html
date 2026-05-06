@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Planogram Studio</title>
+<style>
+  :root {
+    --bg: #eceff1;
+    --panel: #fbfbfa;
+    --panel-2: #f4f3f0;
+    --ink: #151515;
+    --muted: #73706a;
+    --line: #d7d3cb;
+    --line-strong: #b8b1a6;
+    --accent: #0f6b5f;
+    --accent-2: #c9822b;
+    --danger: #b94132;
+    --shelf: #e5e1d8;
+    --shelf-edge: #a99f91;
+    --back: #171717;
+    --shadow: 0 18px 45px rgba(25, 22, 18, 0.16);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background:
+      linear-gradient(120deg, rgba(255,255,255,.66), transparent 34%),
+      radial-gradient(circle at 82% 2%, rgba(15,107,95,.16), transparent 28%),
+      var(--bg);
+    color: var(--ink);
+    font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    letter-spacing: 0;
+  }
+
+  button, input, select { font: inherit; }
+  button { cursor: pointer; }
+
+  .app-shell {
+    min-height: 100%;
+    display: grid;
+    grid-template-rows: auto 1fr;
+  }
+
+  .topbar {
+    height: 64px;
+    padding: 0 22px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    background: rgba(251, 251, 250, .86);
+    border-bottom: 1px solid rgba(184, 177, 166, .72);
+    backdrop-filter: blur(18px);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 250px;
+  }
+
+  .brand-mark {
+    width: 34px;
+    height: 34px;
+    border: 1px solid #28241f;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    background: #111;
+    color: white;
+    font-weight: 900;
+    font-size: .8rem;
+  }
+
+  .brand h1 {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.1;
+  }
+
+  .brand p {
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: .76rem;
+  }
+
+  .status-strip {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    min-width: 0;
+  }
+
+  .chip {
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 6px 10px;
+    color: #4f4a43;
+    background: rgba(255,255,255,.6);
+    font-size: .75rem;
+    white-space: nowrap;
+  }
+
+  .topbar-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .workspace {
+    display: grid;
+    grid-template-columns: 380px minmax(0, 1fr);
+    min-height: calc(100vh - 64px);
+  }
+
+  .sidebar {
+    border-right: 1px solid var(--line);
+    background: rgba(251, 251, 250, .78);
+    overflow: auto;
+  }
+
+  .side-section {
+    padding: 18px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+
+  .section-title h2 {
+    margin: 0;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: #4e4942;
+  }
+
+  .badge {
+    border-radius: 999px;
+    padding: 3px 8px;
+    background: #e8e1d6;
+    color: #625648;
+    font-size: .7rem;
+    font-weight: 700;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .span-2 { grid-column: span 2; }
+
+  label {
+    display: block;
+    margin-bottom: 5px;
+    color: #5f5a53;
+    font-size: .74rem;
+    font-weight: 700;
+  }
+
+  input, select {
+    width: 100%;
+    height: 36px;
+    border: 1px solid var(--line-strong);
+    border-radius: 7px;
+    background: rgba(255,255,255,.82);
+    color: var(--ink);
+    padding: 0 10px;
+    outline: none;
+  }
+
+  input:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(15, 107, 95, .14);
+  }
+
+  input[type="color"] {
+    padding: 3px;
+  }
+
+  .toggle-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .toggle-row label {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 0 10px;
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    background: rgba(255,255,255,.58);
+    font-size: .74rem;
+  }
+
+  .toggle-row input {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+  }
+
+  .btn {
+    min-height: 36px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: .78rem;
+    font-weight: 800;
+    transition: transform .16s ease, box-shadow .16s ease, background .16s ease;
+  }
+
+  .btn:hover { transform: translateY(-1px); }
+
+  .btn-primary {
+    width: 100%;
+    margin-top: 12px;
+    color: white;
+    background: #111;
+    box-shadow: 0 10px 20px rgba(0,0,0,.12);
+  }
+
+  .btn-accent {
+    color: white;
+    background: var(--accent);
+  }
+
+  .btn-outline {
+    color: #2d2924;
+    border-color: var(--line-strong);
+    background: rgba(255,255,255,.62);
+  }
+
+  .btn-danger {
+    color: white;
+    background: var(--danger);
+    min-height: 28px;
+    padding: 4px 8px;
+    font-size: .72rem;
+  }
+
+  .upload-zone {
+    min-height: 118px;
+    border: 1.5px dashed var(--line-strong);
+    border-radius: 10px;
+    background: repeating-linear-gradient(-45deg, #f8f6f1, #f8f6f1 10px, #f2eee6 10px, #f2eee6 20px);
+    display: grid;
+    place-items: center;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+
+  .upload-zone.has-image {
+    border-style: solid;
+    background: #fff;
+  }
+
+  .upload-zone input[type=file] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .upload-copy {
+    color: #81796e;
+    font-size: .78rem;
+    line-height: 1.5;
+  }
+
+  .upload-copy strong {
+    display: block;
+    color: #1f1d1a;
+    font-size: .86rem;
+  }
+
+  .preview-wrap {
+    position: relative;
+    width: 100%;
+    height: 118px;
+    padding: 8px;
+  }
+
+  .preview-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .remove-image {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 26px;
+    height: 26px;
+    border: 0;
+    border-radius: 50%;
+    color: white;
+    background: rgba(0,0,0,.72);
+  }
+
+  .product-list {
+    display: grid;
+    gap: 8px;
+  }
+
+  .product-card {
+    display: grid;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+    padding: 8px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: rgba(255,255,255,.62);
+    user-select: none;
+  }
+
+  .product-card:hover, .product-card.selected {
+    border-color: var(--accent);
+    background: #fff;
+  }
+
+  .thumb {
+    height: 48px;
+    border-radius: 8px;
+    border: 1px solid rgba(0,0,0,.08);
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: white;
+    font-size: .66rem;
+    font-weight: 900;
+  }
+
+  .thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: white;
+  }
+
+  .product-name {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: .86rem;
+    font-weight: 850;
+  }
+
+  .product-meta {
+    margin-top: 3px;
+    color: var(--muted);
+    font-size: .7rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .empty {
+    padding: 18px 10px;
+    color: #938b80;
+    text-align: center;
+    border: 1px dashed var(--line-strong);
+    border-radius: 10px;
+    font-size: .78rem;
+  }
+
+  .stage {
+    min-width: 0;
+    padding: 22px;
+    overflow: auto;
+  }
+
+  .stage-toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .stage-title h2 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+
+  .stage-title p {
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: .78rem;
+  }
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .summary-card {
+    border: 1px solid rgba(184,177,166,.72);
+    border-radius: 10px;
+    background: rgba(251,251,250,.78);
+    padding: 12px;
+  }
+
+  .summary-card strong {
+    display: block;
+    font-size: 1.34rem;
+    line-height: 1;
+  }
+
+  .summary-card span {
+    display: block;
+    margin-top: 5px;
+    color: var(--muted);
+    font-size: .72rem;
+  }
+
+  .planogram-board {
+    display: inline-block;
+    min-width: min(100%, 980px);
+    padding: 22px 22px 26px;
+    border: 1px solid rgba(110,101,90,.35);
+    border-radius: 12px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.8), rgba(248,246,240,.86)),
+      var(--panel);
+    box-shadow: var(--shadow);
+  }
+
+  .board-head {
+    display: flex;
+    align-items: end;
+    gap: 16px;
+    padding-bottom: 14px;
+  }
+
+  .board-head h3 {
+    margin: 0;
+    font-size: 1rem;
+  }
+
+  .board-head p {
+    margin: 3px 0 0;
+    color: var(--muted);
+    font-size: .74rem;
+  }
+
+  .mini-shelf {
+    width: 140px;
+    height: 104px;
+    margin-left: auto;
+    perspective: 600px;
+  }
+
+  .mini-unit {
+    position: relative;
+    width: 110px;
+    height: 88px;
+    margin: 8px auto 0;
+    transform: rotateX(10deg) rotateY(-15deg);
+    transform-style: preserve-3d;
+  }
+
+  .mini-unit::before,
+  .mini-unit::after {
+    content: "";
+    position: absolute;
+    background: var(--shelf-edge);
+  }
+
+  .mini-unit::before {
+    width: 10px;
+    height: 88px;
+    left: -10px;
+    top: 0;
+    transform: skewY(26deg);
+  }
+
+  .mini-unit::after {
+    width: 110px;
+    height: 9px;
+    left: -5px;
+    bottom: -9px;
+    transform: skewX(-38deg);
+  }
+
+  .mini-line {
+    height: 14px;
+    margin-bottom: 11px;
+    border: 1px solid var(--shelf-edge);
+    background: linear-gradient(180deg, var(--shelf), #c9c0b4);
+    box-shadow: 0 10px 0 -6px rgba(0,0,0,.2);
+  }
+
+  .shelf-wrap {
+    position: relative;
+    padding: 18px 16px 20px 42px;
+    background: var(--back);
+    border: 10px solid var(--shelf-edge);
+    border-radius: 8px;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.08), 0 22px 38px rgba(0,0,0,.22);
+  }
+
+  .shelf-wrap.with-side::before,
+  .shelf-wrap.with-side::after {
+    content: "";
+    position: absolute;
+    top: -10px;
+    bottom: -10px;
+    width: 12px;
+    background: linear-gradient(90deg, #797166, #beb4a5);
+  }
+
+  .shelf-wrap.with-side::before { left: -18px; border-radius: 8px 0 0 8px; }
+  .shelf-wrap.with-side::after { right: -18px; border-radius: 0 8px 8px 0; }
+
+  .shelf-wrap.no-back {
+    background: linear-gradient(135deg, #f7f4ed, #e7e1d6);
+  }
+
+  .shelf-row {
+    position: relative;
+    display: grid;
+    gap: 4px;
+    min-width: 720px;
+    margin-bottom: var(--gap, 18px);
+  }
+
+  .shelf-row:last-child { margin-bottom: 0; }
+
+  .shelf-row::before {
+    content: attr(data-label);
+    position: absolute;
+    left: -36px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,.58);
+    font-size: .68rem;
+    font-weight: 800;
+  }
+
+  .shelf-row::after {
+    content: "";
+    position: absolute;
+    left: -8px;
+    right: -8px;
+    bottom: -8px;
+    height: var(--shelf-thick, 8px);
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--shelf), #aaa093 55%, #746c62);
+    box-shadow: 0 9px 18px rgba(0,0,0,.34);
+    z-index: 0;
+  }
+
+  .slot {
+    height: var(--cell-h, 108px);
+    min-width: 52px;
+    border: 1px dashed rgba(255,255,255,.2);
+    border-radius: 4px 4px 2px 2px;
+    background: rgba(255,255,255,.045);
+    display: grid;
+    place-items: end center;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+  }
+
+  .slot:hover {
+    border-color: rgba(255,255,255,.52);
+    background: rgba(255,255,255,.08);
+  }
+
+  .slot.drag-over {
+    outline: 2px solid var(--accent-2);
+    outline-offset: -2px;
+  }
+
+  .slot.filled {
+    border-style: solid;
+    background: rgba(255,255,255,.12);
+  }
+
+  .item-pack {
+    width: 92%;
+    height: 88%;
+    display: grid;
+    align-items: end;
+    justify-items: center;
+    position: relative;
+  }
+
+  .item-pack img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,.45));
+  }
+
+  .pack-fallback {
+    width: 76%;
+    height: 86%;
+    border-radius: 4px;
+    display: grid;
+    place-items: center;
+    padding: 5px;
+    text-align: center;
+    color: white;
+    font-size: .62rem;
+    font-weight: 900;
+    line-height: 1.15;
+    box-shadow: inset 0 -18px 22px rgba(0,0,0,.2), 0 14px 18px rgba(0,0,0,.34);
+  }
+
+  .slot-name {
+    position: absolute;
+    left: 3px;
+    right: 3px;
+    bottom: 3px;
+    padding: 3px 4px;
+    border-radius: 4px;
+    color: white;
+    background: rgba(0,0,0,.54);
+    text-align: center;
+    font-size: .58rem;
+    font-weight: 800;
+    line-height: 1.12;
+  }
+
+  .slot-remove {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    width: 19px;
+    height: 19px;
+    border: 0;
+    border-radius: 50%;
+    color: white;
+    background: rgba(0,0,0,.58);
+    display: none;
+    z-index: 5;
+  }
+
+  .slot.filled:hover .slot-remove { display: block; }
+
+  .legend {
+    margin-top: 14px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: rgba(255,255,255,.66);
+    padding: 5px 10px;
+    color: #4f4a43;
+    font-size: .74rem;
+    font-weight: 700;
+  }
+
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+
+  .toast {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    padding: 10px 14px;
+    border-radius: 9px;
+    color: white;
+    background: #111;
+    box-shadow: 0 16px 28px rgba(0,0,0,.24);
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: .22s ease;
+    z-index: 40;
+    font-size: .82rem;
+  }
+
+  .toast.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  @media (max-width: 980px) {
+    .workspace { grid-template-columns: 1fr; }
+    .sidebar {
+      border-right: 0;
+      border-bottom: 1px solid var(--line);
+      max-height: none;
+    }
+    .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .topbar { height: auto; min-height: 64px; flex-wrap: wrap; padding: 12px 16px; }
+    .topbar-actions { width: 100%; margin-left: 0; }
+    .topbar-actions .btn { flex: 1; }
+  }
+</style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">PG</div>
+      <div>
+        <h1>Planogram Studio</h1>
+        <p>กำหนดสเปคเชลฟ์ วางสินค้า และ export ภาพแผนผัง</p>
+      </div>
+    </div>
+    <div class="status-strip" id="statusStrip"></div>
+    <div class="topbar-actions">
+      <button class="btn btn-outline" onclick="loadDemo()">โหลดตัวอย่าง</button>
+      <button class="btn btn-outline" onclick="clearAll()">ล้างชั้นวาง</button>
+      <button class="btn btn-accent" onclick="exportPNG()">Export PNG</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <aside class="sidebar">
+      <section class="side-section">
+        <div class="section-title">
+          <h2>Shelf Specification</h2>
+          <span class="badge">cm</span>
+        </div>
+        <div class="form-grid">
+          <div class="span-2">
+            <label for="gondolaName">ชื่อ Gondola</label>
+            <input id="gondolaName" type="text" value="Gondola A">
+          </div>
+          <div>
+            <label for="overallWidth">Overall width</label>
+            <input id="overallWidth" type="number" value="120" min="40" max="600">
+          </div>
+          <div>
+            <label for="overallHeight">Overall height</label>
+            <input id="overallHeight" type="number" value="200" min="80" max="400">
+          </div>
+          <div>
+            <label for="numRows">Number of shelves</label>
+            <input id="numRows" type="number" value="5" min="1" max="12">
+          </div>
+          <div>
+            <label for="numCols">Slots per shelf</label>
+            <input id="numCols" type="number" value="12" min="2" max="36">
+          </div>
+          <div>
+            <label for="gapSize">Gap between shelves</label>
+            <input id="gapSize" type="number" value="28" min="8" max="80">
+          </div>
+          <div>
+            <label for="shelfDepth">Shelf depth</label>
+            <input id="shelfDepth" type="number" value="48" min="10" max="120">
+          </div>
+          <div>
+            <label for="shelfHeight">Shelf thickness</label>
+            <input id="shelfHeight" type="number" value="3" min="1" max="12">
+          </div>
+          <div>
+            <label for="baseHeight">Base height</label>
+            <input id="baseHeight" type="number" value="12" min="0" max="60">
+          </div>
+          <div>
+            <label for="shelfColor">Shelf color</label>
+            <input id="shelfColor" type="color" value="#d8d2c8">
+          </div>
+          <div>
+            <label for="backColor">Back panel color</label>
+            <input id="backColor" type="color" value="#111111">
+          </div>
+        </div>
+        <div class="toggle-row">
+          <label><input id="hasBackPanel" type="checkbox" checked> Back panel</label>
+          <label><input id="hasSidePanel" type="checkbox" checked> Side panels</label>
+        </div>
+        <button class="btn btn-primary" onclick="buildShelf()">สร้าง / อัปเดต Shelf</button>
+      </section>
+
+      <section class="side-section">
+        <div class="section-title">
+          <h2>Add Product</h2>
+          <span class="badge">image</span>
+        </div>
+        <div class="upload-zone" id="uploadZone">
+          <input id="imgInput" type="file" accept="image/*" onchange="handleImageUpload(event)">
+          <div class="upload-copy" id="uploadHint">
+            <strong>อัปโหลดรูปสินค้า</strong>
+            PNG, JPG, WEBP ใช้เป็น pack shot ใน shelf ได้
+          </div>
+          <div class="preview-wrap" id="uploadPreview" style="display:none">
+            <img id="previewImg" src="" alt="Product preview">
+            <button class="remove-image" onclick="removeUploadedImage(event)">×</button>
+          </div>
+        </div>
+        <div class="form-grid">
+          <div class="span-2">
+            <label for="pName">ชื่อสินค้า / SKU</label>
+            <input id="pName" type="text" placeholder="เช่น BOSS Bottled 100ml">
+          </div>
+          <div>
+            <label for="pCat">Category</label>
+            <input id="pCat" type="text" placeholder="เช่น Fragrance">
+          </div>
+          <div>
+            <label for="pBrand">Brand</label>
+            <input id="pBrand" type="text" placeholder="เช่น BOSS">
+          </div>
+          <div>
+            <label for="pColor">Package color</label>
+            <input id="pColor" type="color" value="#27323a">
+          </div>
+          <div>
+            <label for="pFacing">Facing</label>
+            <input id="pFacing" type="number" value="1" min="1" max="12">
+          </div>
+          <div>
+            <label for="pWidth">Width</label>
+            <input id="pWidth" type="number" placeholder="7" min="1">
+          </div>
+          <div>
+            <label for="pHeight">Height</label>
+            <input id="pHeight" type="number" placeholder="22" min="1">
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addProduct()">เพิ่มสินค้า</button>
+      </section>
+
+      <section class="side-section">
+        <div class="section-title">
+          <h2>Product Library</h2>
+          <span class="badge" id="productCountBadge">0</span>
+        </div>
+        <div class="product-list" id="productList"></div>
+      </section>
+    </aside>
+
+    <section class="stage">
+      <div class="stage-toolbar">
+        <div class="stage-title">
+          <h2>Planogram Preview</h2>
+          <p id="modeText">เลือกสินค้า แล้วคลิกช่องหรือ drag ไปวางบน shelf</p>
+        </div>
+      </div>
+
+      <div class="summary" id="summaryGrid"></div>
+
+      <div class="planogram-board" id="exportArea">
+        <div class="board-head">
+          <div>
+            <h3 id="boardTitle">Gondola A</h3>
+            <p id="boardMeta">120w × 200h cm · 5 shelves · 12 slots</p>
+          </div>
+          <div class="mini-shelf" aria-hidden="true">
+            <div class="mini-unit">
+              <div class="mini-line"></div>
+              <div class="mini-line"></div>
+              <div class="mini-line"></div>
+              <div class="mini-line"></div>
+            </div>
+          </div>
+        </div>
+        <div class="shelf-wrap with-side" id="shelfCanvas">
+          <div class="empty">กด “สร้าง / อัปเดต Shelf” เพื่อเริ่มวางสินค้า</div>
+        </div>
+        <div class="legend" id="legendBox"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let products = [];
+let selectedProductId = null;
+let shelfData = {};
+let numRows = 0;
+let numCols = 0;
+let shelfSpec = {};
+let pendingImageBase64 = null;
+
+const $ = id => document.getElementById(id);
+
+function readSpec() {
+  return {
+    name: $('gondolaName').value.trim() || 'Gondola A',
+    width: clamp(parseInt($('overallWidth').value) || 120, 40, 600),
+    height: clamp(parseInt($('overallHeight').value) || 200, 80, 400),
+    rows: clamp(parseInt($('numRows').value) || 5, 1, 12),
+    cols: clamp(parseInt($('numCols').value) || 12, 2, 36),
+    gap: clamp(parseInt($('gapSize').value) || 28, 8, 80),
+    depth: clamp(parseInt($('shelfDepth').value) || 48, 10, 120),
+    shelfHeight: clamp(parseInt($('shelfHeight').value) || 3, 1, 12),
+    baseHeight: clamp(parseInt($('baseHeight').value) || 0, 0, 60),
+    shelfColor: $('shelfColor').value,
+    backColor: $('backColor').value,
+    hasBackPanel: $('hasBackPanel').checked,
+    hasSidePanel: $('hasSidePanel').checked
+  };
+}
+
+function buildShelf() {
+  shelfSpec = readSpec();
+  numRows = shelfSpec.rows;
+  numCols = shelfSpec.cols;
+  shelfData = {};
+
+  const canvas = $('shelfCanvas');
+  canvas.innerHTML = '';
+  canvas.className = 'shelf-wrap' + (shelfSpec.hasSidePanel ? ' with-side' : '') + (shelfSpec.hasBackPanel ? '' : ' no-back');
+  canvas.style.setProperty('--shelf', shelfSpec.shelfColor);
+  canvas.style.setProperty('--shelf-thick', `${Math.max(6, shelfSpec.shelfHeight * 2)}px`);
+  canvas.style.setProperty('--gap', `${Math.round(shelfSpec.gap * 0.48)}px`);
+  canvas.style.setProperty('--back', shelfSpec.hasBackPanel ? shelfSpec.backColor : '#efe8dc');
+
+  const cellHeight = clamp(Math.round(shelfSpec.height / shelfSpec.rows * 2.55), 72, 132);
+  canvas.style.setProperty('--cell-h', `${cellHeight}px`);
+
+  for (let r = 0; r < numRows; r++) {
+    const row = document.createElement('div');
+    row.className = 'shelf-row';
+    row.dataset.label = `S${numRows - r}`;
+    row.style.gridTemplateColumns = `repeat(${numCols}, minmax(52px, 1fr))`;
+    for (let c = 0; c < numCols; c++) row.appendChild(makeSlot(r, c));
+    canvas.appendChild(row);
+  }
+
+  updateBoardMeta();
+  updateSummary();
+  showToast('สร้าง shelf แล้ว');
+}
+
+function makeSlot(r, c) {
+  const slot = document.createElement('div');
+  slot.className = 'slot';
+  slot.id = `slot-${r}-${c}`;
+  slot.addEventListener('click', () => onSlotClick(r, c));
+  slot.addEventListener('dragover', e => {
+    e.preventDefault();
+    slot.classList.add('drag-over');
+  });
+  slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+  slot.addEventListener('drop', e => {
+    e.preventDefault();
+    slot.classList.remove('drag-over');
+    const productId = e.dataTransfer.getData('text/plain');
+    if (productId) placeProduct(productId, r, c);
+  });
+  return slot;
+}
+
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = event => {
+    pendingImageBase64 = event.target.result;
+    $('previewImg').src = pendingImageBase64;
+    $('uploadHint').style.display = 'none';
+    $('uploadPreview').style.display = 'block';
+    $('uploadZone').classList.add('has-image');
+    $('uploadZone').querySelector('input[type=file]').style.pointerEvents = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeUploadedImage(e) {
+  if (e) e.stopPropagation();
+  pendingImageBase64 = null;
+  $('imgInput').value = '';
+  $('previewImg').src = '';
+  $('uploadHint').style.display = 'block';
+  $('uploadPreview').style.display = 'none';
+  $('uploadZone').classList.remove('has-image');
+  $('uploadZone').querySelector('input[type=file]').style.pointerEvents = 'auto';
+}
+
+function addProduct() {
+  const name = $('pName').value.trim();
+  if (!name) {
+    showToast('กรุณาใส่ชื่อสินค้า');
+    return;
+  }
+
+  const product = {
+    id: 'p_' + Date.now(),
+    name,
+    category: $('pCat').value.trim() || 'ไม่ระบุ',
+    brand: $('pBrand').value.trim() || '',
+    color: $('pColor').value,
+    facing: clamp(parseInt($('pFacing').value) || 1, 1, 12),
+    width: $('pWidth').value || '',
+    height: $('pHeight').value || '',
+    image: pendingImageBase64
+  };
+
+  products.push(product);
+  $('pName').value = '';
+  removeUploadedImage();
+  renderProductList();
+  updateLegend();
+  updateSummary();
+  selectProduct(product.id);
+  showToast('เพิ่มสินค้าแล้ว');
+}
+
+function renderProductList() {
+  const list = $('productList');
+  $('productCountBadge').textContent = products.length;
+
+  if (!products.length) {
+    list.innerHTML = '<div class="empty">ยังไม่มีสินค้า เพิ่ม SKU หรือกดโหลดตัวอย่าง</div>';
+    return;
+  }
+
+  list.innerHTML = '';
+  products.forEach(product => {
+    const card = document.createElement('div');
+    card.className = 'product-card' + (product.id === selectedProductId ? ' selected' : '');
+    card.draggable = true;
+
+    const thumb = product.image
+      ? `<div class="thumb"><img src="${product.image}" alt=""></div>`
+      : `<div class="thumb" style="background:${product.color};color:${contrast(product.color)}">${esc(initials(product.name))}</div>`;
+
+    card.innerHTML = `
+      ${thumb}
+      <div>
+        <div class="product-name">${esc(product.name)}</div>
+        <div class="product-meta">${esc(product.brand || product.category)} · F:${product.facing}${product.width ? ` · ${product.width}×${product.height}cm` : ''}</div>
+      </div>
+      <button class="btn btn-danger" onclick="deleteProduct('${product.id}', event)">ลบ</button>
+    `;
+
+    card.addEventListener('click', () => selectProduct(product.id));
+    card.addEventListener('dragstart', event => {
+      event.dataTransfer.setData('text/plain', product.id);
+      selectProduct(product.id);
+    });
+    list.appendChild(card);
+  });
+}
+
+function selectProduct(id) {
+  selectedProductId = id;
+  const product = products.find(item => item.id === id);
+  $('modeText').textContent = product ? `กำลังเลือก: ${product.name}` : 'เลือกสินค้า แล้วคลิกช่องหรือ drag ไปวางบน shelf';
+  renderProductList();
+}
+
+function deleteProduct(id, event) {
+  event.stopPropagation();
+  products = products.filter(product => product.id !== id);
+  Object.keys(shelfData).forEach(key => {
+    if (shelfData[key] === id) delete shelfData[key];
+  });
+  if (selectedProductId === id) {
+    selectedProductId = null;
+    $('modeText').textContent = 'เลือกสินค้า แล้วคลิกช่องหรือ drag ไปวางบน shelf';
+  }
+  renderProductList();
+  renderShelfFill();
+  updateLegend();
+  updateSummary();
+}
+
+function onSlotClick(r, c) {
+  const key = `${r}-${c}`;
+  if (shelfData[key]) {
+    removeFromSlot(r, c);
+    return;
+  }
+  if (!selectedProductId) {
+    showToast('เลือกสินค้าก่อน');
+    return;
+  }
+  placeProduct(selectedProductId, r, c);
+}
+
+function placeProduct(productId, r, c) {
+  if (!numRows || !numCols) {
+    showToast('สร้าง shelf ก่อน');
+    return;
+  }
+  const product = products.find(item => item.id === productId);
+  if (!product) return;
+
+  for (let f = 0; f < product.facing; f++) {
+    const col = c + f;
+    if (col >= numCols) break;
+    shelfData[`${r}-${col}`] = productId;
+  }
+  renderShelfFill();
+  updateSummary();
+}
+
+function renderShelfFill() {
+  for (let r = 0; r < numRows; r++) {
+    for (let c = 0; c < numCols; c++) {
+      const slot = $(`slot-${r}-${c}`);
+      if (!slot) continue;
+      const product = products.find(item => item.id === shelfData[`${r}-${c}`]);
+      if (product) fillSlot(slot, product, r, c);
+      else resetSlot(slot);
+    }
+  }
+}
+
+function fillSlot(slot, product, r, c) {
+  slot.className = 'slot filled';
+  const visual = product.image
+    ? `<img src="${product.image}" alt="${esc(product.name)}" draggable="false">`
+    : `<div class="pack-fallback" style="background:${product.color};color:${contrast(product.color)}">${esc(product.name)}</div>`;
+
+  slot.innerHTML = `
+    <div class="item-pack">${visual}<div class="slot-name">${esc(shortName(product.name))}</div></div>
+    <button class="slot-remove" onclick="removeFromSlot(${r}, ${c}, event)">×</button>
+  `;
+}
+
+function resetSlot(slot) {
+  slot.className = 'slot';
+  slot.innerHTML = '';
+}
+
+function removeFromSlot(r, c, event) {
+  if (event) event.stopPropagation();
+  delete shelfData[`${r}-${c}`];
+  renderShelfFill();
+  updateSummary();
+}
+
+function clearAll() {
+  if (!Object.keys(shelfData).length) return;
+  if (!confirm('ล้างสินค้าที่วางบน shelf ทั้งหมด?')) return;
+  shelfData = {};
+  renderShelfFill();
+  updateSummary();
+}
+
+function updateBoardMeta() {
+  const spec = shelfSpec.name ? shelfSpec : readSpec();
+  $('boardTitle').textContent = spec.name;
+  $('boardMeta').textContent = `${spec.width}w × ${spec.height}h cm · ${spec.rows} shelves · ${spec.cols} slots · depth ${spec.depth}cm`;
+  $('statusStrip').innerHTML = `
+    <span class="chip">${spec.width} × ${spec.height} cm</span>
+    <span class="chip">${spec.rows} shelves</span>
+    <span class="chip">${products.length} SKU</span>
+    <span class="chip">${Object.keys(shelfData).length}/${spec.rows * spec.cols} used</span>
+  `;
+}
+
+function updateSummary() {
+  const total = numRows * numCols;
+  const used = Object.keys(shelfData).length;
+  const pct = total ? Math.round((used / total) * 100) : 0;
+  const categories = new Set(products.map(product => product.category)).size;
+  $('summaryGrid').innerHTML = `
+    <div class="summary-card"><strong>${total}</strong><span>ช่องทั้งหมด</span></div>
+    <div class="summary-card"><strong>${used}</strong><span>ช่องที่ใช้แล้ว</span></div>
+    <div class="summary-card"><strong>${pct}%</strong><span>Utilization</span></div>
+    <div class="summary-card"><strong>${products.length}</strong><span>SKU / ${categories} category</span></div>
+  `;
+  updateBoardMeta();
+}
+
+function updateLegend() {
+  const legend = $('legendBox');
+  const categories = {};
+  products.forEach(product => {
+    if (!categories[product.category]) categories[product.category] = product.color;
+  });
+  legend.innerHTML = Object.entries(categories).map(([name, color]) => `
+    <div class="legend-item"><span class="dot" style="background:${color}"></span>${esc(name)}</div>
+  `).join('');
+}
+
+function exportPNG() {
+  showToast('กำลัง export...');
+  if (window.html2canvas) {
+    doExport();
+    return;
+  }
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+  script.onload = doExport;
+  script.onerror = () => showToast('โหลดตัว export ไม่สำเร็จ');
+  document.head.appendChild(script);
+}
+
+function doExport() {
+  html2canvas($('exportArea'), { scale: 2, backgroundColor: '#f7f4ed', useCORS: true, allowTaint: true }).then(canvas => {
+    const link = document.createElement('a');
+    link.download = `${readSpec().name.replace(/\s+/g, '_')}_planogram.png`;
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+    showToast('export สำเร็จ');
+  });
+}
+
+function loadDemo() {
+  products = [
+    { id: 'p_a', name: 'BOSS Bottled', category: 'Fragrance', brand: 'BOSS', color: '#1f252b', facing: 2, width: 7, height: 18, image: null },
+    { id: 'p_b', name: 'HUGO Red Box', category: 'Fragrance', brand: 'HUGO', color: '#b52a25', facing: 2, width: 8, height: 20, image: null },
+    { id: 'p_c', name: 'Travel Spray Silver', category: 'Travel', brand: 'BOSS', color: '#c8c8c8', facing: 3, width: 5, height: 16, image: null },
+    { id: 'p_d', name: 'Gift Set White', category: 'Gift Set', brand: 'BOSS', color: '#f2f0eb', facing: 3, width: 12, height: 14, image: null },
+    { id: 'p_e', name: 'Orange Care Box', category: 'Skincare', brand: 'HUGO', color: '#d86e31', facing: 2, width: 9, height: 18, image: null },
+    { id: 'p_f', name: 'Pink Edition', category: 'Seasonal', brand: 'BOSS', color: '#e5a5bd', facing: 2, width: 8, height: 18, image: null },
+    { id: 'p_g', name: 'Black Premium', category: 'Premium', brand: 'BOSS', color: '#111111', facing: 2, width: 9, height: 20, image: null }
+  ];
+  renderProductList();
+  updateLegend();
+  buildShelf();
+  placeProduct('p_b', 0, 0);
+  placeProduct('p_d', 0, 5);
+  placeProduct('p_a', 1, 2);
+  placeProduct('p_c', 1, 7);
+  placeProduct('p_g', 2, 3);
+  placeProduct('p_e', 3, 6);
+  placeProduct('p_f', 4, 2);
+  selectProduct('p_a');
+}
+
+function showToast(message) {
+  const toast = $('toast');
+  toast.textContent = message;
+  toast.classList.add('show');
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+}
+
+function esc(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function contrast(hex) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > .58 ? '#1b1a18' : '#fff';
+}
+
+function initials(name) {
+  return name.split(/\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase();
+}
+
+function shortName(name) {
+  return name.length > 18 ? name.slice(0, 16) + '..' : name;
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+renderProductList();
+buildShelf();
+</script>
+</body>
+</html>
