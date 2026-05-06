@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Planogram Studio — Multiple Segment Planogram Builder</title>
+  <meta name="description" content="เครื่องมือสร้าง Multiple Segment Planogram สำหรับ Modern Trade วางแผนชั้นวางสินค้า upload รูป pack shot และ export เป็นภาพ">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="src/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <!-- ═══════════════════ TOP NAVIGATION ═══════════════════ -->
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+          </svg>
+        </div>
+        <div>
+          <h1>Planogram Studio</h1>
+        </div>
+      </div>
+
+      <nav class="topbar-nav" id="topbarNav">
+        <button class="nav-tab" data-tab="planogram" aria-selected="true">Planogram</button>
+        <button class="nav-tab" data-tab="library">Product Library</button>
+      </nav>
+
+      <div class="topbar-actions">
+        <div class="status-chips" id="statusStrip"></div>
+        <button class="btn btn-ghost" id="btnImportJSON" title="Import JSON">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <button class="btn btn-ghost" id="btnExportJSON" title="Export JSON">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </button>
+        <button class="btn btn-primary" id="btnExportPNG">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+          Export PNG
+        </button>
+      </div>
+    </header>
+
+    <!-- ═══════════════════ MAIN WORKSPACE ═══════════════════ -->
+    <main class="workspace">
+
+      <!-- ── LEFT SIDEBAR: Settings & Products ── -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-inner">
+
+          <!-- Planogram Settings -->
+          <section class="side-section" id="sectionSettings">
+            <div class="section-header" data-collapse="settings">
+              <h2>Shelf Specification</h2>
+              <span class="badge">cm</span>
+              <button class="collapse-btn" aria-label="Toggle section">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+            <div class="section-body" id="bodySettings">
+              <div class="form-grid">
+                <div class="span-2">
+                  <label for="planogramName">Planogram Name</label>
+                  <input id="planogramName" type="text" value="Multiple Segment Planogram">
+                </div>
+                <div>
+                  <label for="numSegments">Segments</label>
+                  <input id="numSegments" type="number" value="3" min="1" max="8">
+                </div>
+                <div>
+                  <label for="shelvesPerSegment">Shelves / Segment</label>
+                  <input id="shelvesPerSegment" type="number" value="6" min="1" max="12">
+                </div>
+                <div>
+                  <label for="slotsPerShelf">Slots / Shelf</label>
+                  <input id="slotsPerShelf" type="number" value="8" min="2" max="24">
+                </div>
+                <div>
+                  <label for="overallWidth">Overall Width</label>
+                  <input id="overallWidth" type="number" value="360" min="60" max="1200">
+                </div>
+                <div>
+                  <label for="overallHeight">Overall Height</label>
+                  <input id="overallHeight" type="number" value="220" min="80" max="400">
+                </div>
+                <div>
+                  <label for="shelfDepth">Shelf Depth</label>
+                  <input id="shelfDepth" type="number" value="48" min="10" max="120">
+                </div>
+                <div>
+                  <label for="gapSize">Gap Between Shelves</label>
+                  <input id="gapSize" type="number" value="28" min="8" max="80">
+                </div>
+                <div>
+                  <label for="shelfThickness">Shelf Thickness</label>
+                  <input id="shelfThickness" type="number" value="3" min="1" max="12">
+                </div>
+                <div>
+                  <label for="backColor">Back Panel</label>
+                  <input id="backColor" type="color" value="#3a3a3a">
+                </div>
+                <div>
+                  <label for="shelfColor">Shelf Color</label>
+                  <input id="shelfColor" type="color" value="#f4f4f0">
+                </div>
+              </div>
+              <div class="toggle-row">
+                <label><input id="hasBackPanel" type="checkbox" checked> Back panel</label>
+                <label><input id="hasSidePanel" type="checkbox" checked> Side panels</label>
+                <label><input id="hasSegmentDivider" type="checkbox" checked> Segment dividers</label>
+              </div>
+              <button class="btn btn-build" id="btnBuildShelf">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                สร้าง / อัปเดต Shelf
+              </button>
+            </div>
+          </section>
+
+          <!-- Add Product -->
+          <section class="side-section" id="sectionAddProduct">
+            <div class="section-header" data-collapse="addProduct">
+              <h2>Add Product</h2>
+              <span class="badge">SKU</span>
+              <button class="collapse-btn" aria-label="Toggle section">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+            <div class="section-body" id="bodyAddProduct">
+              <div class="upload-zone" id="uploadZone">
+                <input id="imgInput" type="file" accept="image/png,image/jpeg,image/webp">
+                <div class="upload-content" id="uploadHint">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                  <span>อัปโหลดรูปสินค้า<br><small>PNG, JPG, WEBP</small></span>
+                </div>
+                <div class="preview-wrap" id="uploadPreview" style="display:none">
+                  <img id="previewImg" src="" alt="Product preview">
+                  <button class="remove-image" id="btnRemoveImage">×</button>
+                </div>
+              </div>
+              <div class="form-grid">
+                <div class="span-2">
+                  <label for="pName">ชื่อสินค้า / SKU</label>
+                  <input id="pName" type="text" placeholder="เช่น BOSS Bottled 100ml">
+                </div>
+                <div>
+                  <label for="pCat">Category</label>
+                  <input id="pCat" type="text" placeholder="Fragrance">
+                </div>
+                <div>
+                  <label for="pBrand">Brand</label>
+                  <input id="pBrand" type="text" placeholder="BOSS">
+                </div>
+                <div>
+                  <label for="pColor">Package Color</label>
+                  <input id="pColor" type="color" value="#27323a">
+                </div>
+                <div>
+                  <label for="pFacing">Facing</label>
+                  <input id="pFacing" type="number" value="1" min="1" max="12">
+                </div>
+                <div>
+                  <label for="pWidth">Width (cm)</label>
+                  <input id="pWidth" type="number" placeholder="7" min="1">
+                </div>
+                <div>
+                  <label for="pHeight">Height (cm)</label>
+                  <input id="pHeight" type="number" placeholder="22" min="1">
+                </div>
+              </div>
+              <button class="btn btn-build" id="btnAddProduct">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                เพิ่มสินค้า
+              </button>
+            </div>
+          </section>
+
+          <!-- Product Library -->
+          <section class="side-section side-section-grow" id="sectionLibrary">
+            <div class="section-header">
+              <h2>Product Library</h2>
+              <span class="badge" id="productCountBadge">0</span>
+            </div>
+            <div class="section-body">
+              <div class="library-search">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input id="productSearch" type="text" placeholder="ค้นหาสินค้า...">
+              </div>
+              <div class="product-list" id="productList"></div>
+            </div>
+          </section>
+
+        </div>
+      </aside>
+
+      <!-- ── MAIN CANVAS AREA ── -->
+      <section class="stage" id="stage">
+        <div class="stage-toolbar">
+          <div class="stage-title">
+            <h2 id="canvasTitle">Multiple Segment Planogram</h2>
+            <p id="modeText">เลือกสินค้า แล้วคลิกช่องหรือ drag ไปวางบน shelf</p>
+          </div>
+          <div class="stage-actions">
+            <button class="btn btn-ghost btn-sm" id="btnLoadDemo">โหลดตัวอย่าง</button>
+            <button class="btn btn-ghost btn-sm" id="btnClearAll">ล้างชั้นวาง</button>
+          </div>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="summary" id="summaryGrid"></div>
+
+        <!-- The planogram canvas -->
+        <div class="canvas-scroll">
+          <div class="planogram-board" id="exportArea">
+            <div class="board-head">
+              <div>
+                <h3 id="boardTitle">Multiple Segment Planogram</h3>
+                <p id="boardMeta">360w × 220h cm · 3 segments · 6 shelves · 8 slots</p>
+              </div>
+            </div>
+            <div class="gondola-wrap" id="gondolaWrap">
+              <div class="empty-state">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                <p>กด <strong>"สร้าง / อัปเดต Shelf"</strong> เพื่อเริ่มวาง Planogram</p>
+              </div>
+            </div>
+            <div class="legend" id="legendBox"></div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- Hidden file input for JSON import -->
+  <input type="file" id="jsonImportInput" accept=".json" style="display:none">
+
+  <!-- Application Scripts (modular) -->
+  <script src="src/utils.js"></script>
+  <script src="src/products.js"></script>
+  <script src="src/planogram.js"></script>
+  <script src="src/export.js"></script>
+  <script src="src/app.js"></script>
+</body>
+</html>
