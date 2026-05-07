@@ -25,8 +25,8 @@ function addProduct() {
     brand: $('pBrand').value.trim() || '',
     color: $('pColor').value,
     facing: clamp(parseInt($('pFacing').value) || 1, 1, 12),
-    width: $('pWidth').value || '',
-    height: $('pHeight').value || '',
+    width: $('pWidth').value.trim() || '',
+    height: $('pHeight').value.trim() || '',
     image: pendingImageBase64,
   };
 
@@ -91,8 +91,10 @@ function renderProductList() {
     ? products.filter(
         (p) =>
           p.name.toLowerCase().includes(search) ||
-          p.brand.toLowerCase().includes(search) ||
-          p.category.toLowerCase().includes(search)
+          (p.brand || '').toLowerCase().includes(search) ||
+          (p.category || '').toLowerCase().includes(search) ||
+          (p.odoo || '').toLowerCase().includes(search) ||
+          (p.subCategory || '').toLowerCase().includes(search)
       )
     : products;
 
@@ -116,11 +118,18 @@ function renderProductList() {
       ? `<div class="thumb"><img src="${product.image}" alt=""></div>`
       : `<div class="thumb" style="background:${product.color};color:${contrast(product.color)}">${esc(initials(product.name))}</div>`;
 
+    const meta = [
+      product.odoo,
+      product.brand || product.category,
+      `F:${product.facing}`,
+      product.width ? `${product.width}×${product.height || '-'}cm` : '',
+    ].filter(Boolean).join(' · ');
+
     card.innerHTML = `
       ${thumb}
       <div>
         <div class="product-name">${esc(product.name)}</div>
-        <div class="product-meta">${esc(product.brand || product.category)} · F:${product.facing}${product.width ? ` · ${product.width}×${product.height}cm` : ''}</div>
+        <div class="product-meta">${esc(meta)}</div>
       </div>
       <div class="card-actions">
         <button class="btn btn-edit" onclick="openEditModal('${product.id}', event)">แก้ไข</button>
@@ -249,8 +258,8 @@ function saveEditProduct() {
   product.brand = $('editBrand').value.trim() || '';
   product.color = $('editColor').value;
   product.facing = clamp(parseInt($('editFacing').value) || 1, 1, 12);
-  product.width = $('editWidth').value || '';
-  product.height = $('editHeight').value || '';
+  product.width = $('editWidth').value.trim() || '';
+  product.height = $('editHeight').value.trim() || '';
   product.image = editImageBase64;
 
   closeEditModal();
