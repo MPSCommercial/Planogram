@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="src/styles.css">
+  <link rel="stylesheet" href="src/styles.css?v=pack-dicut">
 </head>
 <body>
   <div class="app-shell">
@@ -48,8 +48,12 @@
     <!-- ═══════════════════ MAIN WORKSPACE ═══════════════════ -->
     <main class="workspace">
 
-      <!-- ── LEFT SIDEBAR: Settings & Products ── -->
-      <aside class="sidebar" id="sidebar">
+      <!-- ── LEFT PANEL: Shelf Specification ── -->
+      <aside class="sidebar side-panel left-panel" id="leftPanel">
+        <button class="panel-toggle panel-toggle-left" id="btnToggleLeftPanel" type="button" aria-label="Toggle shelf panel" aria-expanded="true" onclick="togglePanel('left')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="panel-rail-label">Shelf</div>
         <div class="sidebar-inner">
 
           <!-- Planogram Settings -->
@@ -119,6 +123,52 @@
               </button>
             </div>
           </section>
+        </div>
+      </aside>
+
+      <!-- ── MAIN CANVAS AREA ── -->
+      <section class="stage" id="stage">
+        <div class="stage-toolbar">
+          <div class="stage-title">
+            <h2 id="canvasTitle">Multiple Segment Planogram</h2>
+            <p id="modeText">เลือกสินค้า แล้วคลิกช่องหรือ drag ไปวางบน shelf</p>
+          </div>
+          <div class="stage-actions">
+            <button class="btn btn-ghost btn-sm" id="btnLoadDemo">โหลดตัวอย่าง</button>
+            <button class="btn btn-ghost btn-sm" id="btnClearAll">ล้างชั้นวาง</button>
+          </div>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="summary" id="summaryGrid"></div>
+
+        <!-- The planogram canvas -->
+        <div class="canvas-scroll">
+          <div class="planogram-board" id="exportArea">
+            <div class="board-head">
+              <div>
+                <h3 id="boardTitle">Multiple Segment Planogram</h3>
+                <p id="boardMeta">360w × 220h cm · 3 segments · 6 shelves · 8 slots</p>
+              </div>
+            </div>
+            <div class="gondola-wrap" id="gondolaWrap">
+              <div class="empty-state">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                <p>กด <strong>"สร้าง / อัปเดต Shelf"</strong> เพื่อเริ่มวาง Planogram</p>
+              </div>
+            </div>
+            <div class="legend" id="legendBox"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── RIGHT PANEL: Product Library ── -->
+      <aside class="sidebar side-panel right-panel" id="rightPanel">
+        <button class="panel-toggle panel-toggle-right" id="btnToggleRightPanel" type="button" aria-label="Toggle product panel" aria-expanded="true" onclick="togglePanel('right')">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="panel-rail-label">Products</div>
+        <div class="sidebar-inner">
 
           <!-- Add Product -->
           <section class="side-section" id="sectionAddProduct">
@@ -164,11 +214,11 @@
                 </div>
                 <div>
                   <label for="pWidth">Width (cm)</label>
-                  <input id="pWidth" type="number" placeholder="7" min="1">
+                  <input id="pWidth" type="text" inputmode="decimal" placeholder="7">
                 </div>
                 <div>
                   <label for="pHeight">Height (cm)</label>
-                  <input id="pHeight" type="number" placeholder="22" min="1">
+                  <input id="pHeight" type="text" inputmode="decimal" placeholder="22">
                 </div>
               </div>
               <button class="btn btn-build" id="btnAddProduct">
@@ -185,6 +235,13 @@
               <span class="badge" id="productCountBadge">0</span>
             </div>
             <div class="section-body">
+              <div class="sheet-sync-panel" id="sheetSyncPanel">
+                <div>
+                  <strong>Product database</strong>
+                  <span id="sheetSyncStatus">Google Sheet พร้อม sync</span>
+                </div>
+                <button class="btn btn-ghost btn-sm" id="btnSyncSheet">Sync Sheet</button>
+              </div>
               <div class="library-search">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input id="productSearch" type="text" placeholder="ค้นหาสินค้า...">
@@ -195,42 +252,6 @@
 
         </div>
       </aside>
-
-      <!-- ── MAIN CANVAS AREA ── -->
-      <section class="stage" id="stage">
-        <div class="stage-toolbar">
-          <div class="stage-title">
-            <h2 id="canvasTitle">Multiple Segment Planogram</h2>
-            <p id="modeText">เลือกสินค้า แล้วคลิกช่องหรือ drag ไปวางบน shelf</p>
-          </div>
-          <div class="stage-actions">
-            <button class="btn btn-ghost btn-sm" id="btnLoadDemo">โหลดตัวอย่าง</button>
-            <button class="btn btn-ghost btn-sm" id="btnClearAll">ล้างชั้นวาง</button>
-          </div>
-        </div>
-
-        <!-- Summary cards -->
-        <div class="summary" id="summaryGrid"></div>
-
-        <!-- The planogram canvas -->
-        <div class="canvas-scroll">
-          <div class="planogram-board" id="exportArea">
-            <div class="board-head">
-              <div>
-                <h3 id="boardTitle">Multiple Segment Planogram</h3>
-                <p id="boardMeta">360w × 220h cm · 3 segments · 6 shelves · 8 slots</p>
-              </div>
-            </div>
-            <div class="gondola-wrap" id="gondolaWrap">
-              <div class="empty-state">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                <p>กด <strong>"สร้าง / อัปเดต Shelf"</strong> เพื่อเริ่มวาง Planogram</p>
-              </div>
-            </div>
-            <div class="legend" id="legendBox"></div>
-          </div>
-        </div>
-      </section>
 
     </main>
   </div>
@@ -277,11 +298,11 @@
           </div>
           <div>
             <label for="editWidth">Width (cm)</label>
-            <input id="editWidth" type="number" min="1">
+            <input id="editWidth" type="text" inputmode="decimal">
           </div>
           <div>
             <label for="editHeight">Height (cm)</label>
-            <input id="editHeight" type="number" min="1">
+            <input id="editHeight" type="text" inputmode="decimal">
           </div>
         </div>
       </div>
@@ -301,10 +322,11 @@
   <input type="file" id="jsonImportInput" accept=".json" style="display:none">
 
   <!-- Application Scripts (modular) -->
-  <script src="src/utils.js"></script>
-  <script src="src/products.js"></script>
-  <script src="src/planogram.js"></script>
-  <script src="src/export.js"></script>
-  <script src="src/app.js"></script>
+  <script src="src/utils.js?v=side-panels"></script>
+  <script src="src/sheets.js?v=side-panels"></script>
+  <script src="src/products.js?v=side-panels"></script>
+  <script src="src/planogram.js?v=side-panels"></script>
+  <script src="src/export.js?v=side-panels"></script>
+  <script src="src/app.js?v=side-panels"></script>
 </body>
 </html>

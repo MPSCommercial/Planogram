@@ -88,6 +88,7 @@ function importJSON(file) {
 
       if (data.products) {
         products = data.products;
+        applyProductLibraryFilter();
       }
 
       // Build shelf first
@@ -153,7 +154,10 @@ function loadState() {
       $('hasSidePanel').checked = s.hasSidePanel !== false;
       $('hasSegmentDivider').checked = s.hasDivider !== false;
 
-      if (data.products) products = data.products;
+      if (data.products) {
+        products = data.products;
+        applyProductLibraryFilter();
+      }
 
       buildShelf();
 
