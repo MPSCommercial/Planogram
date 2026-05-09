@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="src/styles.css?v=pack-dicut">
+  <link rel="stylesheet" href="src/styles.css?v=free-shelf">
 </head>
 <body>
   <div class="app-shell">
@@ -80,10 +80,6 @@
                   <input id="shelvesPerSegment" type="number" value="6" min="1" max="12">
                 </div>
                 <div>
-                  <label for="slotsPerShelf">Slots / Shelf</label>
-                  <input id="slotsPerShelf" type="number" value="8" min="2" max="24">
-                </div>
-                <div>
                   <label for="overallWidth">Overall Width</label>
                   <input id="overallWidth" type="number" value="360" min="60" max="1200">
                 </div>
@@ -131,7 +127,7 @@
         <div class="stage-toolbar">
           <div class="stage-title">
             <h2 id="canvasTitle">Multiple Segment Planogram</h2>
-            <p id="modeText">เลือกสินค้า แล้วคลิกช่องหรือ drag ไปวางบน shelf</p>
+            <p id="modeText">เลือกสินค้า แล้วคลิก shelf หรือ drag ไปวางได้เลย</p>
           </div>
           <div class="stage-actions">
             <button class="btn btn-ghost btn-sm" id="btnLoadDemo">โหลดตัวอย่าง</button>
@@ -148,7 +144,7 @@
             <div class="board-head">
               <div>
                 <h3 id="boardTitle">Multiple Segment Planogram</h3>
-                <p id="boardMeta">360w × 220h cm · 3 segments · 6 shelves · 8 slots</p>
+                <p id="boardMeta">360w × 220h cm · 3 segments · 6 shelves</p>
               </div>
             </div>
             <div class="gondola-wrap" id="gondolaWrap">
@@ -322,11 +318,11 @@
   <input type="file" id="jsonImportInput" accept=".json" style="display:none">
 
   <!-- Application Scripts (modular) -->
-  <script src="src/utils.js?v=side-panels"></script>
-  <script src="src/sheets.js?v=side-panels"></script>
-  <script src="src/products.js?v=side-panels"></script>
-  <script src="src/planogram.js?v=side-panels"></script>
-  <script src="src/export.js?v=side-panels"></script>
-  <script src="src/app.js?v=side-panels"></script>
+  <script src="src/utils.js?v=free-shelf"></script>
+  <script src="src/sheets.js?v=free-shelf"></script>
+  <script src="src/products.js?v=free-shelf"></script>
+  <script src="src/planogram.js?v=free-shelf"></script>
+  <script src="src/export.js?v=free-shelf"></script>
+  <script src="src/app.js?v=free-shelf"></script>
 </body>
 </html>

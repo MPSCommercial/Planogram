@@ -68,12 +68,10 @@ function importJSON(file) {
       const data = JSON.parse(e.target.result);
 
       if (data.planogram) {
-        // Restore spec to form
         const s = data.planogram;
         $('planogramName').value = s.name || '';
         $('numSegments').value = s.segments || 3;
         $('shelvesPerSegment').value = s.shelves || 6;
-        $('slotsPerShelf').value = s.slots || 8;
         $('overallWidth').value = s.width || 360;
         $('overallHeight').value = s.height || 220;
         $('shelfDepth').value = s.depth || 48;
@@ -96,7 +94,7 @@ function importJSON(file) {
 
       // Restore placements
       if (data.placements) {
-        shelfData = data.placements;
+        shelfData = normalizePlacements(data.placements);
         renderShelfFill();
         updateSummary();
       }
@@ -142,7 +140,6 @@ function loadState() {
       $('planogramName').value = s.name || '';
       $('numSegments').value = s.segments || 3;
       $('shelvesPerSegment').value = s.shelves || 6;
-      $('slotsPerShelf').value = s.slots || 8;
       $('overallWidth').value = s.width || 360;
       $('overallHeight').value = s.height || 220;
       $('shelfDepth').value = s.depth || 48;
@@ -162,7 +159,7 @@ function loadState() {
       buildShelf();
 
       if (data.placements) {
-        shelfData = data.placements;
+        shelfData = normalizePlacements(data.placements);
         renderShelfFill();
       }
 
@@ -175,4 +172,19 @@ function loadState() {
     // Corrupted state — ignore
   }
   return false;
+}
+
+/**
+ * Convert legacy slot-based placements into the current shelf-array format.
+ */
+function normalizePlacements(placements) {
+  const normalized = {};
+  Object.entries(placements || {}).forEach(([key, value]) => {
+    const parts = key.split('-');
+    const shelfKey = parts.length >= 3 ? `${parts[0]}-${parts[1]}` : key;
+    const values = Array.isArray(value) ? value : [value];
+    if (!normalized[shelfKey]) normalized[shelfKey] = [];
+    normalized[shelfKey].push(...values.filter(Boolean));
+  });
+  return normalized;
 }
