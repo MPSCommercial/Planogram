@@ -19,6 +19,9 @@ Planogram web app สำหรับออกแบบ shelf layout ของ Mo
 - เริ่มจาก solution ก่อน
 - ถ้า request ชัดเจน ให้ลงมือแก้ไฟล์จริง ไม่ต้องถามซ้ำ
 - ตรวจ state จริงของไฟล์ก่อนสรุป
+- ก่อนเริ่มงานทุกครั้งให้อ่าน `state.md` เฉพาะส่วน `## ⚡ NOW`
+- อ่าน `state.md` ส่วน `## 📜 LOG` เฉพาะเมื่อผู้ใช้ถาม history หรือจำเป็นต้อง archive NOW เก่า
+- หลังจบงานให้อัปเดต `state.md` ส่วน NOW ให้ตรงกับสถานะล่าสุด และย้าย NOW เก่าลง LOG ก่อนแทนที่
 - อย่าเดาโครงสร้างโปรเจกต์ถ้ายังไม่ได้ดูไฟล์
 - ถ้ามี assumption ให้บอกสั้น ๆ
 
@@ -59,6 +62,12 @@ Planogram web app สำหรับออกแบบ shelf layout ของ Mo
 
 ## Current Files
 
+- `state.md`
+  Working status/log หลักของ repo; อ่าน NOW ก่อนเริ่มงานและอัปเดตหลังจบงาน
+
+- `AGENTS.md`
+  คำแนะนำการทำงานของ coding assistant ใน repo นี้
+
 - `planogram_tool.html`  
   Static single-file Planogram Builder prototype
 
@@ -78,4 +87,3 @@ Priority:
 5. Facing support
 6. Export PNG
 7. Clean, readable UI
-

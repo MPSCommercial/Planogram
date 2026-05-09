@@ -218,6 +218,11 @@ function colorFromText(text) {
 function pruneMissingPlacements() {
   const validIds = new Set(products.map((product) => product.id));
   Object.keys(shelfData).forEach((key) => {
+    if (Array.isArray(shelfData[key])) {
+      shelfData[key] = shelfData[key].filter((productId) => validIds.has(productId));
+      if (!shelfData[key].length) delete shelfData[key];
+      return;
+    }
     if (!validIds.has(shelfData[key])) delete shelfData[key];
   });
 }

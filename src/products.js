@@ -52,7 +52,10 @@ function deleteProduct(id, event) {
 
   // Remove from shelf
   Object.keys(shelfData).forEach((key) => {
-    if (shelfData[key] === id) delete shelfData[key];
+    if (Array.isArray(shelfData[key])) {
+      shelfData[key] = shelfData[key].filter((pid) => pid !== id);
+      if (!shelfData[key].length) delete shelfData[key];
+    }
   });
 
   if (selectedProductId === id) {
@@ -75,7 +78,7 @@ function selectProduct(id) {
   const product = products.find((p) => p.id === id);
   $('modeText').textContent = product
     ? `กำลังเลือก: ${product.name} (F:${product.facing})`
-    : 'เลือกสินค้า แล้วคลิกช่องหรือ drag ไปวางบน shelf';
+    : 'เลือกสินค้า แล้วคลิก shelf หรือ drag ไปวางได้เลย';
   renderProductList();
 }
 
