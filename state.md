@@ -7,17 +7,31 @@
 
 ## ⚡ NOW
 
-- **Status**: Shipped free-placement shelf layout, shelf image CSS, placement migration, and `state.md` workflow
-- **Branch**: main | **Commit**: `HEAD` — feat: add free-placement planogram shelves
+- **Status**: Added `DESIGN.md` Figma design reference via `npx getdesign@latest add figma`
+- **Branch**: main | **Commit**: `HEAD` — docs: add figma design reference
 - **Deploy**: ✅ Ready — origin/main
 - **Blocker**: None
-- **Next**: เปิด preview ตรวจ pack/shelf layout และ sync sheet flow หลัง deploy หากต้องการ visual QA เพิ่ม
+- **Next**: ใช้ `DESIGN.md` เป็น reference ก่อนปรับ UI รอบถัดไป
 
 ---
 
 ## 📜 LOG
 
 > ย้าย NOW เก่ามาใส่ที่นี่ทุกครั้งที่อัปเดต — ไม่ต้องลบ
+
+### 🗓️ 2026-05-11
+- ✅ เพิ่ม `DESIGN.md` จาก preset `figma` ด้วย `npx getdesign@latest add figma`
+- ✅ ใช้ไฟล์นี้เป็น design reference สำหรับ UI work ถัดไป เช่น color, typography, radius, spacing, และ interaction style
+- Files: `DESIGN.md`, `state.md`
+
+### 🗓️ 2026-05-10
+- ✅ Ship: ignore `.omg` tool state directory
+- Files: `.gitignore`
+
+### 🗓️ 2026-05-09
+- ✅ Ship: free-placement shelf layout, shelf image CSS, placement migration, and `state.md` workflow
+- ✅ Deploy ready on `origin/main`
+- Files: `AGENTS.md`, `index.html`, `src/export.js`, `src/planogram.js`, `src/products.js`, `src/sheets.js`, `src/styles.css`, `state.md`
 
 ### 🗓️ 2026-05-09
 - ✅ Ship: เตรียม commit/push งาน free-placement shelf layout, shelf image CSS, placement migration, และ `state.md` workflow
