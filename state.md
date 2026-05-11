@@ -7,11 +7,11 @@
 
 ## ⚡ NOW
 
-- **Status**: Refreshed Planogram UI layout using `DESIGN.md` Figma direction, with faster motion and improved workbench readability
-- **Branch**: main | **Commit**: uncommitted — design layout refresh
-- **Deploy**: Local preview open at `http://localhost:4174/?v=design-layout`
+- **Status**: Shipped refreshed Planogram UI layout and Figma design reference to `origin/main`
+- **Branch**: main | **Commit**: `b8167bb` — feat: refresh planogram studio layout
+- **Deploy**: ✅ Pushed — `origin/main`
 - **Blocker**: None
-- **Next**: visual QA ใน browser แล้วค่อย commit/push ถ้าหน้าตาถูกใจ
+- **Next**: เปิด visual QA ที่ `http://localhost:4174/?v=design-layout` หากต้องการตรวจ UI ต่อ
 
 ---
 
