@@ -3,6 +3,7 @@
    ═══════════════════════════════════════════════════════ */
 
 (function init() {
+  requestAnimationFrame(() => document.body.classList.add('app-ready'));
   restorePanelState();
 
   // ─── Button bindings ───

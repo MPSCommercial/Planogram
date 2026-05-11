@@ -7,17 +7,23 @@
 
 ## ⚡ NOW
 
-- **Status**: Added `DESIGN.md` Figma design reference via `npx getdesign@latest add figma`
-- **Branch**: main | **Commit**: `HEAD` — docs: add figma design reference
-- **Deploy**: ✅ Ready — origin/main
+- **Status**: Refreshed Planogram UI layout using `DESIGN.md` Figma direction, with faster motion and improved workbench readability
+- **Branch**: main | **Commit**: uncommitted — design layout refresh
+- **Deploy**: Local preview open at `http://localhost:4174/?v=design-layout`
 - **Blocker**: None
-- **Next**: ใช้ `DESIGN.md` เป็น reference ก่อนปรับ UI รอบถัดไป
+- **Next**: visual QA ใน browser แล้วค่อย commit/push ถ้าหน้าตาถูกใจ
 
 ---
 
 ## 📜 LOG
 
 > ย้าย NOW เก่ามาใส่ที่นี่ทุกครั้งที่อัปเดต — ไม่ต้องลบ
+
+### 🗓️ 2026-05-11
+- ✅ ปรับ design layout ตาม `frontend-design` + `DESIGN.md`: เปลี่ยน typography เป็น IBM Plex Sans Thai/Mono, ปรับ topbar/nav, panels, product cards, summary cards, canvas board, และ shelf visual ให้ scan ง่ายขึ้น
+- ✅ เพิ่ม motion เร็ว: app entry, card reveal, hover lift, panel/collapse transitions, drag-over shelf feedback, product placement pop, modal/toast transitions และรองรับ `prefers-reduced-motion`
+- ✅ Verification ผ่าน: `node --check` สำหรับไฟล์ JS หลัก, `git diff --check`, และ local preview ตอบ `HTTP 200` ที่ `http://localhost:4174/?v=design-layout`
+- Files: `index.html`, `src/app.js`, `src/styles.css`, `state.md`
 
 ### 🗓️ 2026-05-11
 - ✅ เพิ่ม `DESIGN.md` จาก preset `figma` ด้วย `npx getdesign@latest add figma`
