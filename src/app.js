@@ -14,6 +14,8 @@
   $('btnLoadDemo').addEventListener('click', loadDemo);
   $('btnClearAll').addEventListener('click', clearAll);
   $('btnSyncSheet').addEventListener('click', syncProductsFromSheet);
+  $('btnUndo').addEventListener('click', undo);
+  $('btnRedo').addEventListener('click', redo);
   $('btnRemoveImage').addEventListener('click', (e) => removeUploadedImage(e));
   $('imgInput').addEventListener('change', handleImageUpload);
 
@@ -29,11 +31,19 @@
     if (e.target === $('editModal')) closeEditModal();
   });
 
-  // Close modal on Escape key
+  // Close modal on Escape; undo/redo; panel toggle shortcuts
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && $('editModal').classList.contains('open')) {
       closeEditModal();
+      return;
     }
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
+    if (mod && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+    if (e.key === '[' && !mod) { e.preventDefault(); togglePanel('left'); }
+    if (e.key === ']' && !mod) { e.preventDefault(); togglePanel('right'); }
+    if (e.key === '\\' && !mod) { e.preventDefault(); togglePanel('left'); togglePanel('right'); }
   });
 
   // ─── Import JSON ───
@@ -47,8 +57,13 @@
     e.target.value = '';
   });
 
-  // ─── Product search ───
+  // ─── Product search & category filter ───
   $('productSearch').addEventListener('input', () => {
+    renderProductList();
+  });
+
+  $('categoryFilter').addEventListener('change', (e) => {
+    activeCategoryFilter = e.target.value;
     renderProductList();
   });
 
