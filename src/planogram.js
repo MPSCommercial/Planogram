@@ -5,9 +5,46 @@
 
 let shelfData = {}; // { "seg-shelf": [productId, ...] }
 let spec = {};
+let undoStack = [];
+let redoStack = [];
 
 const PX_PER_CM = 3.4;   // horizontal scale: pixels per centimeter
 const MIN_ITEM_W = 34;    // minimum px width for very narrow products
+
+function pushHistory() {
+  undoStack.push(JSON.stringify(shelfData));
+  if (undoStack.length > 50) undoStack.shift();
+  redoStack = [];
+  updateUndoButtons();
+}
+
+function updateUndoButtons() {
+  const u = $('btnUndo'), r = $('btnRedo');
+  if (u) u.disabled = !undoStack.length;
+  if (r) r.disabled = !redoStack.length;
+}
+
+function undo() {
+  if (!undoStack.length) return;
+  redoStack.push(JSON.stringify(shelfData));
+  shelfData = JSON.parse(undoStack.pop());
+  renderShelfFill();
+  updateSummary();
+  saveState();
+  updateUndoButtons();
+  showToast('Undo');
+}
+
+function redo() {
+  if (!redoStack.length) return;
+  undoStack.push(JSON.stringify(shelfData));
+  shelfData = JSON.parse(redoStack.pop());
+  renderShelfFill();
+  updateSummary();
+  saveState();
+  updateUndoButtons();
+  showToast('Redo');
+}
 
 /**
  * Parse the first numeric value from a cm field (handles ranges like "7-12")
@@ -45,6 +82,9 @@ function readSpec() {
 function buildShelf() {
   spec = readSpec();
   shelfData = {};
+  undoStack = [];
+  redoStack = [];
+  updateUndoButtons();
 
   const wrap = $('gondolaWrap');
   wrap.innerHTML = '';
@@ -157,6 +197,7 @@ function dropInsertIndex(el, seg, shelf, clientX) {
  */
 function placeProduct(productId, seg, shelf) {
   if (!spec.segments) { showToast('สร้าง shelf ก่อน'); return; }
+  pushHistory();
   const key = `${seg}-${shelf}`;
   if (!shelfData[key]) shelfData[key] = [];
   shelfData[key].push(productId);
@@ -170,6 +211,7 @@ function placeProduct(productId, seg, shelf) {
  */
 function insertProduct(productId, seg, shelf, idx) {
   if (!spec.segments) { showToast('สร้าง shelf ก่อน'); return; }
+  pushHistory();
   const key = `${seg}-${shelf}`;
   if (!shelfData[key]) shelfData[key] = [];
   shelfData[key].splice(idx, 0, productId);
@@ -235,6 +277,7 @@ function renderShelfRow(el, seg, shelf) {
  */
 function removeFromShelf(seg, shelf, idx, event) {
   if (event) event.stopPropagation();
+  pushHistory();
   const key = `${seg}-${shelf}`;
   if (shelfData[key]) {
     shelfData[key].splice(idx, 1);
@@ -251,6 +294,7 @@ function removeFromShelf(seg, shelf, idx, event) {
 function clearAll() {
   if (!Object.keys(shelfData).length) return;
   if (!confirm('ล้างสินค้าที่วางบน shelf ทั้งหมด?')) return;
+  pushHistory();
   shelfData = {};
   renderShelfFill();
   updateSummary();

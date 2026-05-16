@@ -7,6 +7,7 @@ let selectedProductId = null;
 let pendingImageBase64 = null;
 let editingProductId = null;
 let editImageBase64 = null;
+let activeCategoryFilter = '';
 
 /**
  * Add a new product from the form inputs
@@ -85,21 +86,35 @@ function selectProduct(id) {
 /**
  * Render the product library list
  */
+function renderCategoryFilter() {
+  const sel = $('categoryFilter');
+  if (!sel) return;
+  const groups = [...new Set(products.map((p) => p.subCategory || p.category).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">ทั้งหมด</option>' +
+    groups.map((g) => `<option value="${esc(g)}"${g === activeCategoryFilter ? ' selected' : ''}>${esc(g)}</option>`).join('');
+}
+
 function renderProductList() {
   const list = $('productList');
   const search = ($('productSearch').value || '').toLowerCase();
   $('productCountBadge').textContent = products.length;
 
-  const filtered = search
-    ? products.filter(
-        (p) =>
-          p.name.toLowerCase().includes(search) ||
-          (p.brand || '').toLowerCase().includes(search) ||
-          (p.category || '').toLowerCase().includes(search) ||
-          (p.odoo || '').toLowerCase().includes(search) ||
-          (p.subCategory || '').toLowerCase().includes(search)
-      )
-    : products;
+  renderCategoryFilter();
+
+  let filtered = products;
+  if (activeCategoryFilter) {
+    filtered = filtered.filter((p) => (p.subCategory || p.category) === activeCategoryFilter);
+  }
+  if (search) {
+    filtered = filtered.filter(
+      (p) =>
+        p.name.toLowerCase().includes(search) ||
+        (p.brand || '').toLowerCase().includes(search) ||
+        (p.category || '').toLowerCase().includes(search) ||
+        (p.odoo || '').toLowerCase().includes(search) ||
+        (p.subCategory || '').toLowerCase().includes(search)
+    );
+  }
 
   if (!filtered.length) {
     list.innerHTML = `<div class="empty-list">${
