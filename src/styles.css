@@ -747,8 +747,11 @@ input[type="checkbox"] {
   padding: 22px 26px 30px;
   overflow: auto;
   background:
-    radial-gradient(circle at 18% 4%, rgba(220,238,177,.64), transparent 25%),
-    radial-gradient(circle at 86% 12%, rgba(197,176,244,.34), transparent 28%),
+    linear-gradient(135deg,
+      rgba(220,238,177,.22) 0%,
+      rgba(247,247,245,0) 50%,
+      rgba(197,176,244,.14) 100%
+    ),
     var(--bg);
 }
 
@@ -762,7 +765,11 @@ input[type="checkbox"] {
   top: 0;
   z-index: 10;
   padding: 0 0 12px;
-  background: linear-gradient(180deg, var(--bg) 72%, rgba(247,247,245,0));
+  background: linear-gradient(180deg,
+    rgba(220,238,177,.22) 0%,
+    var(--bg) 42%,
+    rgba(247,247,245,0) 100%
+  );
 }
 
 .stage-title h2 {
