@@ -7,17 +7,28 @@
 
 ## ⚡ NOW
 
-- **Status**: Shipped refreshed Planogram UI layout and Figma design reference to `origin/main`
-- **Branch**: main | **Commit**: `b8167bb` — feat: refresh planogram studio layout
-- **Deploy**: ✅ Pushed — `origin/main`
+- **Status**: Checked repo hooks; no active Git/npm hook is configured
+- **Branch**: main | **Commit**: `21f4d96` — style: smooth stage background gradient and toolbar blend
+- **Deploy**: ✅ `main` matches `origin/main`
 - **Blocker**: None
-- **Next**: เปิด visual QA ที่ `http://localhost:4174/?v=design-layout` หากต้องการตรวจ UI ต่อ
+- **Next**: หากต้องการ enforce checks ก่อน commit/push ให้เพิ่ม hook manager เช่น Husky/Lefthook หรือสร้าง `.git/hooks/pre-commit` เอง
 
 ---
 
 ## 📜 LOG
 
 > ย้าย NOW เก่ามาใส่ที่นี่ทุกครั้งที่อัปเดต — ไม่ต้องลบ
+
+### 🗓️ 2026-05-17
+- ✅ ตรวจ hook ของ repo: ไม่มี executable hook ใน `.git/hooks`, ไม่มี `core.hooksPath`, ไม่มี `package.json`/Husky/Lefthook/lint-staged config
+- ✅ Hidden files ที่พบ (`.omg/state/learn-watch.json`, `.sc/last-chat-settings.json`) เป็น tool state/config ไม่ใช่ hook runtime ของ repo
+- Files: `state.md`
+
+### 🗓️ 2026-05-17
+- ✅ Previous NOW: Shipped refreshed Planogram UI layout and Figma design reference to `origin/main`
+- ✅ Branch: `main` | Commit: `b8167bb` — feat: refresh planogram studio layout | Deploy: pushed to `origin/main`
+- ✅ Next เดิม: เปิด visual QA ที่ `http://localhost:4174/?v=design-layout` หากต้องการตรวจ UI ต่อ
+- Files: `state.md`
 
 ### 🗓️ 2026-05-11
 - ✅ ปรับ design layout ตาม `frontend-design` + `DESIGN.md`: เปลี่ยน typography เป็น IBM Plex Sans Thai/Mono, ปรับ topbar/nav, panels, product cards, summary cards, canvas board, และ shelf visual ให้ scan ง่ายขึ้น
