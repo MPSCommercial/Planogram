@@ -17,11 +17,11 @@
   --muted: #75756d;
   --line: #e3e1db;
   --line-strong: #bdb8ac;
-  --accent: #000000;
-  --accent-hover: #242424;
-  --accent-soft: rgba(0, 0, 0, .055);
+  --accent: #FF6C0C;
+  --accent-hover: #E05B00;
+  --accent-soft: rgba(255, 108, 12, 0.08);
   --accent-2: #ff3d8b;
-  --accent-lime: #dceeb1;
+  --accent-lime: #FFD2B2;
   --accent-lilac: #c5b0f4;
   --accent-mint: #c8e6cd;
   --accent-coral: #f3c9b6;
@@ -51,8 +51,8 @@ body {
   font-size: 14px;
   color: var(--ink);
   background:
-    linear-gradient(112deg, transparent 0 62%, rgba(220,238,177,.52) 62% 74%, transparent 74%),
-    linear-gradient(168deg, transparent 0 74%, rgba(197,176,244,.34) 74% 88%, transparent 88%),
+    linear-gradient(112deg, transparent 0 62%, rgba(255, 108, 12, 0.12) 62% 74%, transparent 74%),
+    linear-gradient(168deg, transparent 0 74%, rgba(197, 176, 244, 0.24) 74% 88%, transparent 88%),
     var(--bg);
   line-height: 1.5;
   letter-spacing: 0;
@@ -214,13 +214,17 @@ body.app-ready .app-shell {
   width: 100%;
   margin-top: 14px;
   height: 42px;
-  color: var(--ink);
-  background: var(--accent-lime);
+  color: white;
+  background: var(--accent);
   border-radius: 999px;
-  border-color: rgba(0,0,0,.12);
-  box-shadow: 0 12px 22px rgba(0,0,0,.1);
+  border-color: rgba(255, 108, 12, 0.15);
+  box-shadow: 0 12px 22px rgba(255, 108, 12, 0.18);
+  font-weight: 700;
 }
-.btn-build:hover { background: #e8f6bf; }
+.btn-build:hover {
+  background: var(--accent-hover);
+  box-shadow: 0 12px 28px rgba(255, 108, 12, 0.28);
+}
 
 .btn-danger {
   color: white;
@@ -1589,9 +1593,9 @@ input[type="checkbox"] {
 
 /* Button Active State for btnToggle3D */
 #btnToggle3D.active {
-  background: rgba(163, 230, 53, 0.15) !important;
-  color: #a3e635 !important;
-  border-color: rgba(163, 230, 53, 0.3) !important;
-  box-shadow: 0 0 12px rgba(163, 230, 53, 0.2);
+  background: rgba(255, 108, 12, 0.14) !important;
+  color: var(--accent) !important;
+  border-color: rgba(255, 108, 12, 0.3) !important;
+  box-shadow: 0 0 12px rgba(255, 108, 12, 0.2);
 }
 
