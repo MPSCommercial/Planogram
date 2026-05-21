@@ -286,7 +286,7 @@ function renderShelfFill() {
  */
 function renderShelfRow(el, seg, shelf) {
   if (!el) return;
-  el.querySelectorAll('.shelf-product').forEach((n) => n.remove());
+  el.querySelectorAll('.shelf-product, .shelf-capacity-badge').forEach((n) => n.remove());
 
   const key = `${seg}-${shelf}`;
   const placements = shelfData[key] || [];
@@ -339,6 +339,32 @@ function renderShelfRow(el, seg, shelf) {
 
     el.appendChild(item);
   });
+
+  // ─── Render capacity & utilization warning badge ───
+  if (spec.width && spec.segments) {
+    const segWidthCm = spec.width / spec.segments;
+    let usedCm = 0;
+    placements.forEach((productId) => {
+      const product = products.find((p) => p.id === productId);
+      if (product) {
+        usedCm += parseCm(product.width, 10) * (product.facing || 1);
+      }
+    });
+
+    if (usedCm > 0) {
+      const badge = document.createElement('div');
+      const isOver = usedCm > segWidthCm;
+      badge.className = `shelf-capacity-badge ${isOver ? 'over' : 'ok'}`;
+      if (isOver) {
+        const diff = (usedCm - segWidthCm).toFixed(1);
+        badge.innerHTML = `<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; vertical-align:middle; margin-right:3px;"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>ล้น +${diff} cm`;
+      } else {
+        const diff = (segWidthCm - usedCm).toFixed(1);
+        badge.innerHTML = `เหลือ ${diff} cm`;
+      }
+      el.appendChild(badge);
+    }
+  }
 }
 
 /**
