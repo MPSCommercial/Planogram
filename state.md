@@ -7,17 +7,23 @@
 
 ## ⚡ NOW
 
-- **Status**: Checked repo hooks; no active Git/npm hook is configured
-- **Branch**: main | **Commit**: `21f4d96` — style: smooth stage background gradient and toolbar blend
-- **Deploy**: ✅ `main` matches `origin/main`
+- **Status**: Shipped interactive UI/UX enhancements (on-board rearranging, direct facing manipulation, and dynamic sync configuration)
+- **Branch**: main | **Commit**: `4807b43` — feat: on-board rearranging, direct facing manipulation via mini-inspector, and dynamic sheet sync settings
+- **Deploy**: Ready to push to `origin/main`
 - **Blocker**: None
-- **Next**: หากต้องการ enforce checks ก่อน commit/push ให้เพิ่ม hook manager เช่น Husky/Lefthook หรือสร้าง `.git/hooks/pre-commit` เอง
+- **Next**: ตรวจสอบการทำงานของ feature ทั้ง 3 และรับ requirement/feedback อื่น ๆ เพิ่มเติม
 
 ---
 
 ## 📜 LOG
 
 > ย้าย NOW เก่ามาใส่ที่นี่ทุกครั้งที่อัปเดต — ไม่ต้องลบ
+
+### 🗓️ 2026-05-21
+- ✅ Previous NOW: Checked repo hooks; no active Git/npm hook is configured
+- ✅ Branch: `main` | Commit: `21f4d96` — style: smooth stage background gradient and toolbar blend
+- ✅ Next เดิม: หากต้องการ enforce checks ก่อน commit/push ให้เพิ่ม hook manager เช่น Husky/Lefthook หรือสร้าง `.git/hooks/pre-commit` เอง
+- Files: `index.html`, `src/app.js`, `src/planogram.js`, `src/sheets.js`, `src/styles.css`, `state.md`
 
 ### 🗓️ 2026-05-17
 - ✅ ตรวจ hook ของ repo: ไม่มี executable hook ใน `.git/hooks`, ไม่มี `core.hooksPath`, ไม่มี `package.json`/Husky/Lefthook/lint-staged config
