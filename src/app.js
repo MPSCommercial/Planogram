@@ -19,6 +19,18 @@
   $('btnRemoveImage').addEventListener('click', (e) => removeUploadedImage(e));
   $('imgInput').addEventListener('change', handleImageUpload);
 
+  // ─── Mini Inspector bindings ───
+  $('btnInspectDec').addEventListener('click', () => adjustInspectFacing(-1));
+  $('btnInspectInc').addEventListener('click', () => adjustInspectFacing(1));
+  $('btnInspectDel').addEventListener('click', deleteInspectPlacement);
+
+  // ─── Google Sheet Toggle Settings drawer ───
+  $('btnToggleSyncSettings').addEventListener('click', () => {
+    const settings = $('sheetSyncSettings');
+    const isHidden = settings.style.display === 'none';
+    settings.style.display = isHidden ? 'block' : 'none';
+  });
+
   // ─── Edit modal bindings ───
   $('btnSaveEdit').addEventListener('click', saveEditProduct);
   $('btnCancelEdit').addEventListener('click', closeEditModal);
@@ -33,9 +45,15 @@
 
   // Close modal on Escape; undo/redo; panel toggle shortcuts
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && $('editModal').classList.contains('open')) {
-      closeEditModal();
-      return;
+    if (e.key === 'Escape') {
+      if ($('editModal').classList.contains('open')) {
+        closeEditModal();
+        return;
+      }
+      if ($('miniInspector').style.display !== 'none') {
+        closeMiniInspector();
+        return;
+      }
     }
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
     const mod = e.ctrlKey || e.metaKey;
@@ -88,6 +106,16 @@
         $('stage').scrollTo({ top: 0, behavior: 'smooth' });
       }
     });
+  });
+
+  // ─── Click outside inspector to close ───
+  document.addEventListener('click', (e) => {
+    const mini = $('miniInspector');
+    if (mini && mini.style.display !== 'none') {
+      if (!mini.contains(e.target) && !e.target.closest('.shelf-product')) {
+        closeMiniInspector();
+      }
+    }
   });
 
   // ─── Load saved state or build default ───

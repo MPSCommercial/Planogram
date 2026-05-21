@@ -2,11 +2,22 @@
    sheets.js — Google Sheet product database sync
    ═══════════════════════════════════════════════════════ */
 
-const PRODUCT_SHEET_ID = '1l8pkJUaXIhwTsKJzHP9AW5MLMYKjXNo7ApcIcOyNUqE';
-const PRODUCT_SHEET_GID = '0';
-const PRODUCT_SHEET_URL = `https://docs.google.com/spreadsheets/d/${PRODUCT_SHEET_ID}/gviz/tq?gid=${PRODUCT_SHEET_GID}&headers=1&tqx=out:json`;
-const PRODUCT_SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${PRODUCT_SHEET_ID}/export?format=csv&gid=${PRODUCT_SHEET_GID}`;
-const PRODUCT_CATEGORY_FILTER = 'Accessories';
+let currentSheetId = '1l8pkJUaXIhwTsKJzHP9AW5MLMYKjXNo7ApcIcOyNUqE';
+let currentCategoryFilter = 'Accessories';
+
+function getSheetCsvUrl() {
+  const sheetId = $('syncSheetId') ? $('syncSheetId').value.trim() : currentSheetId;
+  return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`;
+}
+
+function getSheetJsonpUrl() {
+  const sheetId = $('syncSheetId') ? $('syncSheetId').value.trim() : currentSheetId;
+  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?gid=0&headers=1&tqx=out:json`;
+}
+
+function getCategoryFilter() {
+  return $('syncCategory') ? $('syncCategory').value.trim() : currentCategoryFilter;
+}
 
 const CATEGORY_COLORS = {
   Accessories: '#0f6b5f',
@@ -40,7 +51,8 @@ function syncProductsFromSheet() {
       saveState();
 
       const missingImages = products.filter((product) => !product.image).length;
-      setSheetSyncState('ok', `Synced ${products.length} Accessories SKU · missing image ${missingImages}`);
+      const catFilter = getCategoryFilter();
+      setSheetSyncState('ok', `Synced ${products.length} ${catFilter || 'All'} SKU · missing image ${missingImages}`);
       showToast(`Sync สินค้า ${products.length} SKU สำเร็จ`);
     })
     .catch((error) => {
@@ -52,7 +64,7 @@ function syncProductsFromSheet() {
 
 function loadSheetRows() {
   if (window.fetch) {
-    return fetch(PRODUCT_SHEET_CSV_URL, { cache: 'no-store' })
+    return fetch(getSheetCsvUrl(), { cache: 'no-store' })
       .then((response) => {
         if (!response.ok) throw new Error(`CSV export failed: ${response.status}`);
         return response.text();
@@ -83,7 +95,7 @@ function loadSheetRowsViaJsonp() {
       resolve(convertGoogleTable(response.table));
     };
 
-    script.src = `${PRODUCT_SHEET_URL};responseHandler:${callbackName}`;
+    script.src = `${getSheetJsonpUrl()};responseHandler:${callbackName}`;
     script.async = true;
     script.onerror = () => {
       cleanupSheetCallback(callbackName, script);
@@ -195,7 +207,9 @@ function applyProductLibraryFilter() {
 }
 
 function isAllowedProductCategory(product) {
-  return cleanCell(product.category).toLowerCase() === PRODUCT_CATEGORY_FILTER.toLowerCase();
+  const catFilter = getCategoryFilter();
+  if (!catFilter) return true; // ถ้าเว้นว่างไว้ จะอนุญาตทุก category
+  return cleanCell(product.category).toLowerCase() === catFilter.toLowerCase();
 }
 
 function cleanCell(value) {

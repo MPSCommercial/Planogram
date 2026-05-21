@@ -7,6 +7,8 @@ let shelfData = {}; // { "seg-shelf": [productId, ...] }
 let spec = {};
 let undoStack = [];
 let redoStack = [];
+let draggedSource = null; // { seg, shelf, idx, productId }
+let activeInspectorTarget = null; // { seg, shelf, idx }
 
 const PX_PER_CM = 3.4;   // horizontal scale: pixels per centimeter
 const MIN_ITEM_W = 34;    // minimum px width for very narrow products
@@ -158,10 +160,15 @@ function makeShelfRow(seg, shelf, segWidthPx, gapPx, shelfThickPx, cellH) {
   el.addEventListener('drop', (e) => {
     e.preventDefault();
     el.classList.remove('drag-over');
-    const productId = e.dataTransfer.getData('text/plain');
-    if (!productId) return;
     const insertIdx = dropInsertIndex(el, seg, shelf, e.clientX);
-    insertProduct(productId, seg, shelf, insertIdx);
+
+    if (draggedSource) {
+      moveProductOnBoard(draggedSource.seg, draggedSource.shelf, draggedSource.idx, seg, shelf, insertIdx);
+    } else {
+      const productId = e.dataTransfer.getData('text/plain');
+      if (!productId) return;
+      insertProduct(productId, seg, shelf, insertIdx);
+    }
   });
 
   el.addEventListener('click', (e) => {
@@ -221,6 +228,47 @@ function insertProduct(productId, seg, shelf, idx) {
 }
 
 /**
+ * Move/rearrange a product from one shelf location to another on the board
+ */
+function moveProductOnBoard(sourceSeg, sourceShelf, sourceIdx, targetSeg, targetShelf, targetIdx) {
+  if (!spec.segments) return;
+
+  const sourceKey = `${sourceSeg}-${sourceShelf}`;
+  const targetKey = `${targetSeg}-${targetShelf}`;
+
+  const sourceItems = shelfData[sourceKey];
+  if (!sourceItems || sourceItems[sourceIdx] === undefined) return;
+
+  pushHistory();
+
+  const [movedProductId] = sourceItems.splice(sourceIdx, 1);
+  if (!sourceItems.length) {
+    delete shelfData[sourceKey];
+  }
+
+  if (!shelfData[targetKey]) {
+    shelfData[targetKey] = [];
+  }
+
+  let finalTargetIdx = targetIdx;
+  if (sourceKey === targetKey && targetIdx > sourceIdx) {
+    finalTargetIdx = targetIdx - 1;
+  }
+
+  shelfData[targetKey].splice(finalTargetIdx, 0, movedProductId);
+
+  renderShelfRow($(`shelf-${sourceSeg}-${sourceShelf}`), sourceSeg, sourceShelf);
+  if (sourceKey !== targetKey) {
+    renderShelfRow($(`shelf-${targetSeg}-${targetShelf}`), targetSeg, targetShelf);
+  }
+
+  closeMiniInspector();
+  updateSummary();
+  saveState();
+  showToast('ย้ายตำแหน่งสินค้าแล้ว');
+}
+
+/**
  * Re-render all shelves from shelfData
  */
 function renderShelfFill() {
@@ -258,6 +306,27 @@ function renderShelfRow(el, seg, shelf) {
     item.style.width = `${wPx}px`;
     item.style.height = `${hPx}px`;
     item.title = `${product.name} (${product.width || '?'}cm × ${product.height || '?'}cm)`;
+    item.draggable = true;
+
+    // Event listeners สำหรับการลากย้ายสินค้าที่อยู่บน Shelf
+    item.addEventListener('dragstart', (e) => {
+      draggedSource = { seg, shelf, idx, productId };
+      item.classList.add('dragging');
+      setTimeout(() => item.style.visibility = 'hidden', 0);
+      closeMiniInspector();
+    });
+
+    item.addEventListener('dragend', () => {
+      draggedSource = null;
+      item.classList.remove('dragging');
+      item.style.visibility = 'visible';
+    });
+
+    // Event listener สำหรับการคลิกเพื่อแก้ไข Facing / ลบสินค้า
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openMiniInspector(seg, shelf, idx, e, item);
+    });
 
     const visual = product.image
       ? `<img src="${product.image}" alt="${esc(product.name)}" draggable="false">`
@@ -377,4 +446,91 @@ function loadDemo() {
 
   selectProduct('p_a');
   showToast('โหลดตัวอย่างแล้ว');
+}
+
+/**
+ * Open the mini-inspector popup above the clicked product on shelf
+ */
+function openMiniInspector(seg, shelf, idx, event, el) {
+  activeInspectorTarget = { seg, shelf, idx };
+
+  const key = `${seg}-${shelf}`;
+  const productId = shelfData[key] ? shelfData[key][idx] : null;
+  if (!productId) return;
+
+  const product = products.find((p) => p.id === productId);
+  if (!product) return;
+
+  const popup = $('miniInspector');
+  $('inspectorSku').textContent = `${product.name}`;
+  $('inspectorFacingVal').textContent = product.facing || 1;
+
+  const rect = el.getBoundingClientRect();
+  const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+  popup.style.display = 'flex';
+  
+  const left = rect.left + rect.width / 2 + scrollLeft;
+  const top = rect.top + scrollTop;
+
+  popup.style.left = `${left}px`;
+  popup.style.top = `${top}px`;
+}
+
+/**
+ * Close the mini-inspector popup
+ */
+function closeMiniInspector() {
+  activeInspectorTarget = null;
+  const popup = $('miniInspector');
+  if (popup) popup.style.display = 'none';
+}
+
+/**
+ * Adjust the facing value of the currently inspected product
+ */
+function adjustInspectFacing(diff) {
+  if (!activeInspectorTarget) return;
+  const { seg, shelf, idx } = activeInspectorTarget;
+  const key = `${seg}-${shelf}`;
+  const productId = shelfData[key] ? shelfData[key][idx] : null;
+  if (!productId) return;
+
+  const product = products.find((p) => p.id === productId);
+  if (!product) return;
+
+  pushHistory();
+  product.facing = Math.max(1, (product.facing || 1) + diff);
+  
+  $('inspectorFacingVal').textContent = product.facing;
+
+  renderShelfFill();
+  renderProductList();
+  updateSummary();
+  saveState();
+
+  setTimeout(() => {
+    const rowEl = $(`shelf-${seg}-${shelf}`);
+    if (rowEl) {
+      const prodEls = rowEl.querySelectorAll('.shelf-product');
+      if (prodEls[idx]) {
+        const rect = prodEls[idx].getBoundingClientRect();
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const popup = $('miniInspector');
+        popup.style.left = `${rect.left + rect.width / 2 + scrollLeft}px`;
+        popup.style.top = `${rect.top + scrollTop}px`;
+      }
+    }
+  }, 50);
+}
+
+function deleteInspectPlacement() {
+  if (!activeInspectorTarget) return;
+  const { seg, shelf, idx } = activeInspectorTarget;
+
+  removeFromShelf(seg, shelf, idx);
+  closeMiniInspector();
+  showToast('ลบสินค้าออกจากชั้นวางแล้ว');
 }

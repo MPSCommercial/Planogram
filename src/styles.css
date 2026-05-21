@@ -1354,3 +1354,153 @@ input[type="checkbox"] {
   opacity: .35;
   cursor: not-allowed;
 }
+
+/* ═══════════════════ MINI INSPECTOR OVERLAY ═══════════════════ */
+.mini-inspector {
+  position: absolute;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  background: rgba(28, 26, 23, 0.96);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 10px 14px;
+  min-width: 170px;
+  transform: translate(-50%, -100%) translateY(-10px);
+  animation: inspectorIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  color: white;
+}
+
+@keyframes inspectorIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -100%) translateY(-2px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -100%) translateY(-10px) scale(1);
+  }
+}
+
+.inspector-arrow {
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%) rotate(45deg);
+  width: 12px;
+  height: 12px;
+  background: rgba(28, 26, 23, 0.96);
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.inspector-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.inspector-sku {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--line-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px;
+}
+
+.inspector-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-inspect-action {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.btn-inspect-action:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.inspector-facing-val {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85rem;
+  font-weight: 700;
+  min-width: 16px;
+  text-align: center;
+}
+
+.inspector-divider {
+  width: 1px;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 0 2px;
+}
+
+.btn-inspect-action.btn-inspect-del {
+  color: #ff6b6b;
+  border-color: rgba(255, 107, 107, 0.2);
+  background: rgba(255, 107, 107, 0.08);
+}
+
+.btn-inspect-action.btn-inspect-del:hover {
+  color: white;
+  background: #ff4a4a;
+  border-color: #ff4a4a;
+}
+
+/* ─── Dragging Visual Feedback ─── */
+.shelf-product {
+  transition: transform 0.18s, opacity 0.18s;
+  cursor: grab;
+}
+
+.shelf-product:active {
+  cursor: grabbing;
+}
+
+.shelf-product.dragging {
+  opacity: 0.4 !important;
+  transform: scale(0.95);
+  outline: 2px dashed var(--accent);
+  outline-offset: 1px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.shelf-row.drag-over {
+  background: rgba(15, 107, 95, 0.06) !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 107, 95, 0.3);
+}
+
+/* ─── Collapsible Sheet settings visual drawer ─── */
+.sheet-sync-settings {
+  animation: drawerSlide 0.22s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes drawerSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
