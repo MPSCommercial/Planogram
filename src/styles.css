@@ -762,18 +762,18 @@ input[type="checkbox"] {
 .stage-toolbar {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
-  margin-bottom: 18px;
+  margin: -22px -26px 18px -26px;
+  padding: 14px 26px;
   position: sticky;
   top: 0;
   z-index: 10;
-  padding: 0 0 12px;
-  background: linear-gradient(180deg,
-    rgba(255, 108, 12, 0.08) 0%,
-    var(--bg) 42%,
-    rgba(247,247,245,0) 100%
-  );
+  background: rgba(236, 239, 241, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
 }
 
 .stage-title h2 {
