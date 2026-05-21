@@ -7,11 +7,11 @@
 
 ## ⚡ NOW
 
-- **Status**: Redesigned Sticky Stage Toolbar layout to resolve overlap/z-index issues on scroll with premium backdrop-blur and full-width margin alignment
-- **Branch**: main | **Commit**: `latest` — style: redesign sticky stage toolbar with solid blur bg and margins to resolve scroll overlap
+- **Status**: Completed Stage Toolbar aesthetic cleanup by reverting sticky behaviors and setting background to 100% transparent to ensure a highly minimal font-only layout
+- **Branch**: main | **Commit**: `latest` — style: revert sticky stage toolbar and apply transparent minimal font-only design
 - **Deploy**: Ready to push to `origin/main`
 - **Blocker**: None
-- **Next**: พร้อมตรวจสอบ Visual QA และผลการจัดเลย์เอาต์ตอนเลื่อนบอร์ดร่วมกับผู้ใช้
+- **Next**: พร้อมตรวจสอบ Visual QA โทนสีและเลย์เอาต์มินิมอลแบบใหม่ร่วมกับผู้ใช้
 
 ---
 
