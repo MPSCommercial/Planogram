@@ -7,17 +7,23 @@
 
 ## ⚡ NOW
 
-- **Status**: Shipped 3D Perspective Mode and Shelf Capacity Utilization Warnings to index.html and assets
-- **Branch**: main | **Commit**: `286bf75` — feat: add 3D perspective mode and shelf capacity utilization warning badge
+- **Status**: Shipped primary CI theme color change to Orange (#FF6C0C) across main CSS styles and prototype file
+- **Branch**: main | **Commit**: `be9783e` — style: change primary CI theme color to Orange (#FF6C0C)
 - **Deploy**: Ready to push to `origin/main`
 - **Blocker**: None
-- **Next**: พร้อมทดสอบ 3D visual effects และรับความเห็นเพิ่มเติมจากผู้ใช้
+- **Next**: ตรวจสอบ visual QA และผลลัพธ์ของ CI สีส้ม และรับความคิดเห็นหรือคำสั่งอื่นเพิ่มเติมจากผู้ใช้
 
 ---
 
 ## 📜 LOG
 
 > ย้าย NOW เก่ามาใส่ที่นี่ทุกครั้งที่อัปเดต — ไม่ต้องลบ
+
+### 🗓️ 2026-05-21
+- ✅ Previous NOW: Shipped 3D Perspective Mode and Shelf Capacity Utilization Warnings to index.html and assets
+- ✅ Branch: `main` | Commit: `286bf75` — feat: add 3D perspective mode and shelf capacity utilization warning badge
+- ✅ Next เดิม: พร้อมทดสอบ 3D visual effects และรับความเห็นเพิ่มเติมจากผู้ใช้
+- Files: `index.html`, `src/app.js`, `src/planogram.js`, `src/styles.css`, `state.md`
 
 ### 🗓️ 2026-05-21
 - ✅ Previous NOW: Shipped interactive UI/UX enhancements (on-board rearranging, direct facing manipulation, and dynamic sync configuration)
