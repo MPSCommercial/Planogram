@@ -7,11 +7,11 @@
 
 ## ⚡ NOW
 
-- **Status**: Completed Orange CI (#FF6C0C) theme migration by replacing remaining lime-green highlights on Workspace, Stage Toolbar, and Product Cards
-- **Branch**: main | **Commit**: `latest` — style: replace remaining lime green highlights with premium soft orange matching CI
+- **Status**: Redesigned Sticky Stage Toolbar layout to resolve overlap/z-index issues on scroll with premium backdrop-blur and full-width margin alignment
+- **Branch**: main | **Commit**: `latest` — style: redesign sticky stage toolbar with solid blur bg and margins to resolve scroll overlap
 - **Deploy**: Ready to push to `origin/main`
 - **Blocker**: None
-- **Next**: พร้อมตรวจสอบ Visual QA ร่วมกับผู้ใช้หลังการเปลี่ยนสีเต็มรูปแบบ
+- **Next**: พร้อมตรวจสอบ Visual QA และผลการจัดเลย์เอาต์ตอนเลื่อนบอร์ดร่วมกับผู้ใช้
 
 ---
 
