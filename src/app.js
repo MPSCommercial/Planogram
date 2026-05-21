@@ -18,6 +18,22 @@
   $('btnRedo').addEventListener('click', redo);
   $('btnRemoveImage').addEventListener('click', (e) => removeUploadedImage(e));
   $('imgInput').addEventListener('change', handleImageUpload);
+  
+  // ─── 3D Perspective toggle binding ───
+  $('btnToggle3D').addEventListener('click', () => {
+    const wrap = $('gondolaWrap');
+    const btn = $('btnToggle3D');
+    const is3D = wrap.classList.toggle('mode-3d');
+    btn.classList.toggle('active', is3D);
+    if (is3D) {
+      showToast('เปิดใช้งานมุมมอง 3D');
+    } else {
+      showToast('ปิดใช้งานมุมมอง 3D');
+    }
+    try {
+      localStorage.setItem('planogram_3d_mode', is3D ? '1' : '0');
+    } catch (err) {}
+  });
 
   // ─── Mini Inspector bindings ───
   $('btnInspectDec').addEventListener('click', () => adjustInspectFacing(-1));
@@ -125,6 +141,14 @@
     buildShelf();
     syncProductsFromSheet();
   }
+
+  // ─── Restore 3D mode state ───
+  try {
+    if (localStorage.getItem('planogram_3d_mode') === '1') {
+      $('gondolaWrap').classList.add('mode-3d');
+      $('btnToggle3D').classList.add('active');
+    }
+  } catch (err) {}
 })();
 
 function restorePanelState() {
