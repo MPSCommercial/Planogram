@@ -7,17 +7,23 @@
 
 ## ⚡ NOW
 
-- **Status**: Shipped interactive UI/UX enhancements (on-board rearranging, direct facing manipulation, and dynamic sync configuration)
-- **Branch**: main | **Commit**: `4807b43` — feat: on-board rearranging, direct facing manipulation via mini-inspector, and dynamic sheet sync settings
+- **Status**: Shipped 3D Perspective Mode and Shelf Capacity Utilization Warnings to index.html and assets
+- **Branch**: main | **Commit**: `286bf75` — feat: add 3D perspective mode and shelf capacity utilization warning badge
 - **Deploy**: Ready to push to `origin/main`
 - **Blocker**: None
-- **Next**: ตรวจสอบการทำงานของ feature ทั้ง 3 และรับ requirement/feedback อื่น ๆ เพิ่มเติม
+- **Next**: พร้อมทดสอบ 3D visual effects และรับความเห็นเพิ่มเติมจากผู้ใช้
 
 ---
 
 ## 📜 LOG
 
 > ย้าย NOW เก่ามาใส่ที่นี่ทุกครั้งที่อัปเดต — ไม่ต้องลบ
+
+### 🗓️ 2026-05-21
+- ✅ Previous NOW: Shipped interactive UI/UX enhancements (on-board rearranging, direct facing manipulation, and dynamic sync configuration)
+- ✅ Branch: `main` | Commit: `4807b43` — feat: on-board rearranging, direct facing manipulation via mini-inspector, and dynamic sheet sync settings
+- ✅ Next เดิม: ตรวจสอบการทำงานของ feature ทั้ง 3 และรับ requirement/feedback อื่น ๆ เพิ่มเติม
+- Files: `index.html`, `src/app.js`, `src/planogram.js`, `src/styles.css`, `state.md`
 
 ### 🗓️ 2026-05-21
 - ✅ Previous NOW: Checked repo hooks; no active Git/npm hook is configured
