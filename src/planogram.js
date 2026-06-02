@@ -9,9 +9,55 @@ let undoStack = [];
 let redoStack = [];
 let draggedSource = null; // { seg, shelf, idx, productId }
 let activeInspectorTarget = null; // { seg, shelf, idx }
+let pendingShelfHeights = null;   // heights to honour on the next buildShelf (from loadState)
 
 const PX_PER_CM = 3.4;   // horizontal scale: pixels per centimeter
+const V_PX_PER_CM = 2.4;  // vertical scale: pixels per centimeter (shelf heights / ruler)
 const MIN_ITEM_W = 34;    // minimum px width for very narrow products
+const MIN_CELL_CM = 8;    // smallest allowed shelf cell height in cm
+const MIN_ROW_PX = 38;    // smallest pixel height a shelf row may render at
+
+/**
+ * Even cell heights (cm) for `count` shelves filling `total` cm.
+ */
+function evenHeights(total, count) {
+  const h = (total || 0) / (count || 1);
+  return Array.from({ length: count }, () => h);
+}
+
+/**
+ * Return an array of `count` cell heights summing to `total`, keeping the
+ * proportions of `arr` when it is usable, otherwise an even split.
+ */
+function normalizeHeights(arr, total, count) {
+  const a = (Array.isArray(arr) ? arr : []).map(Number).filter((n) => n > 0);
+  if (a.length !== count) return evenHeights(total, count);
+  const sum = a.reduce((s, x) => s + x, 0) || total;
+  return a.map((x) => (x * total) / sum);
+}
+
+/**
+ * Current per-shelf cell heights in cm (top shelf first), always valid.
+ */
+function getCellHeights() {
+  if (Array.isArray(spec.shelfHeights) && spec.shelfHeights.length === spec.shelves) {
+    return spec.shelfHeights;
+  }
+  return evenHeights(spec.height, spec.shelves);
+}
+
+/**
+ * Cumulative board heights from the floor (cm) for every shelf boundary,
+ * bottom → top: [0, h_last, h_last+h_{last-1}, ..., total]. Length = shelves + 1.
+ */
+function boardBoundaries() {
+  const heights = getCellHeights();
+  const bottomUp = heights.slice().reverse();
+  const out = [0];
+  let cum = 0;
+  bottomUp.forEach((h) => { cum += h; out.push(cum); });
+  return out;
+}
 
 function pushHistory() {
   undoStack.push(JSON.stringify(shelfData));
@@ -82,14 +128,26 @@ function readSpec() {
  * Build the entire multi-segment planogram canvas
  */
 function buildShelf() {
+  const prevHeights = (spec && Array.isArray(spec.shelfHeights)) ? spec.shelfHeights.slice() : null;
   spec = readSpec();
   shelfData = {};
   undoStack = [];
   redoStack = [];
   updateUndoButtons();
 
+  // ─── Resolve per-shelf cell heights (custom board positions) ───
+  if (pendingShelfHeights && pendingShelfHeights.length === spec.shelves) {
+    spec.shelfHeights = normalizeHeights(pendingShelfHeights, spec.height, spec.shelves);
+  } else if (prevHeights && prevHeights.length === spec.shelves) {
+    spec.shelfHeights = normalizeHeights(prevHeights, spec.height, spec.shelves);
+  } else {
+    spec.shelfHeights = evenHeights(spec.height, spec.shelves);
+  }
+  pendingShelfHeights = null;
+
   const wrap = $('gondolaWrap');
   wrap.innerHTML = '';
+  wrap.classList.add('has-ruler');
 
   const outer = document.createElement('div');
   outer.className = 'gondola-outer';
@@ -97,9 +155,7 @@ function buildShelf() {
   if (!spec.hasBackPanel) outer.classList.add('no-back');
 
   const segWidthPx = Math.round((spec.width / spec.segments) * PX_PER_CM);
-  const gapPx = clamp(Math.round(spec.gap * 0.44), 8, 40);
   const shelfThickPx = Math.max(5, spec.shelfThickness * 2);
-  const cellH = clamp(Math.round((spec.height / spec.shelves) * 2.2), 64, 140);
 
   for (let seg = 0; seg < spec.segments; seg++) {
     if (seg > 0 && spec.hasDivider) {
@@ -118,7 +174,8 @@ function buildShelf() {
     inner.style.setProperty('--shelf-surface', spec.shelfColor);
 
     for (let shelf = 0; shelf < spec.shelves; shelf++) {
-      const row = makeShelfRow(seg, shelf, segWidthPx, gapPx, shelfThickPx, cellH);
+      const cellPx = Math.max(MIN_ROW_PX, Math.round(spec.shelfHeights[shelf] * V_PX_PER_CM));
+      const row = makeShelfRow(seg, shelf, segWidthPx, shelfThickPx, cellPx);
       inner.appendChild(row);
     }
 
@@ -126,6 +183,7 @@ function buildShelf() {
     outer.appendChild(segment);
   }
 
+  wrap.appendChild(buildRuler());
   wrap.appendChild(outer);
   updateBoardMeta();
   updateSummary();
@@ -134,19 +192,63 @@ function buildShelf() {
 }
 
 /**
+ * Build the vertical cm height ruler shown on the left of the gondola.
+ * Ticks are placed at every shelf board boundary (cumulative cm from floor).
+ */
+function buildRuler() {
+  const ruler = document.createElement('div');
+  ruler.className = 'shelf-ruler';
+
+  const track = document.createElement('div');
+  track.className = 'ruler-track';
+
+  const total = spec.height || 1;
+  boardBoundaries().forEach((cm, i, arr) => {
+    const tick = document.createElement('div');
+    const isEdge = i === 0 || i === arr.length - 1;
+    tick.className = `ruler-tick${isEdge ? ' edge' : ''}`;
+    tick.style.bottom = `${(cm / total) * 100}%`;
+    tick.innerHTML = `<span class="ruler-num">${Math.round(cm)}</span>`;
+    track.appendChild(tick);
+  });
+
+  ruler.appendChild(track);
+  return ruler;
+}
+
+/**
  * Create a shelf row element (free-placement flex container)
  */
-function makeShelfRow(seg, shelf, segWidthPx, gapPx, shelfThickPx, cellH) {
+function makeShelfRow(seg, shelf, segWidthPx, shelfThickPx, cellH) {
   const el = document.createElement('div');
   el.className = 'shelf-row';
   el.id = `shelf-${seg}-${shelf}`;
   el.dataset.label = `S${spec.shelves - shelf}`;
   el.style.width = `${segWidthPx}px`;
-  el.style.setProperty('--gap', `${gapPx}px`);
   el.style.setProperty('--shelf-thick', `${shelfThickPx}px`);
   el.style.setProperty('--cell-h', `${cellH}px`);
   el.style.setProperty('--shelf-surface', spec.shelfColor);
-  el.style.marginBottom = shelf < spec.shelves - 1 ? `${gapPx}px` : '0';
+  el.style.marginBottom = '0';
+
+  // Per-shelf editable cell-height pill (numeric input), shown on the first segment only
+  if (seg === 0) {
+    const pill = document.createElement('div');
+    pill.className = 'cell-height-pill';
+    pill.innerHTML = `<input type="number" class="cell-height-input" min="${MIN_CELL_CM}" step="1" value="${Math.round(getCellHeights()[shelf])}"><span>cm</span>`;
+    const input = pill.querySelector('input');
+    ['mousedown', 'click'].forEach((evt) => input.addEventListener(evt, (e) => e.stopPropagation()));
+    input.addEventListener('change', () => setCellHeight(shelf, parseFloat(input.value)));
+    el.appendChild(pill);
+  }
+
+  // Draggable board grip (resize boundary with the shelf below). Not on the bottom shelf.
+  if (shelf < spec.shelves - 1) {
+    const grip = document.createElement('div');
+    grip.className = 'board-grip';
+    grip.title = 'ลากเพื่อปรับตำแหน่งแผ่นชั้น';
+    grip.addEventListener('mousedown', (e) => startBoardDrag(e, shelf));
+    el.appendChild(grip);
+  }
 
   el.addEventListener('dragover', (e) => {
     e.preventDefault();
@@ -172,12 +274,104 @@ function makeShelfRow(seg, shelf, segWidthPx, gapPx, shelfThickPx, cellH) {
   });
 
   el.addEventListener('click', (e) => {
-    if (e.target.closest('.shelf-product')) return;
+    if (e.target.closest('.shelf-product') || e.target.closest('.board-grip') || e.target.closest('.cell-height-pill')) return;
     if (!selectedProductId) { showToast('เลือกสินค้าก่อน'); return; }
     placeProduct(selectedProductId, seg, shelf);
   });
 
   return el;
+}
+
+/**
+ * Set the cell height (cm) of one shelf, compensating from the shelf below
+ * (or above for the bottom shelf) so the gondola total stays constant.
+ */
+function setCellHeight(shelf, cm) {
+  const heights = getCellHeights().slice();
+  if (!isFinite(cm)) { relayoutShelves(false); return; }
+
+  const partner = shelf < heights.length - 1 ? shelf + 1 : shelf - 1;
+  if (partner < 0) return; // single shelf — nothing to balance against
+
+  const pair = heights[shelf] + heights[partner];
+  const next = clamp(cm, MIN_CELL_CM, pair - MIN_CELL_CM);
+  heights[shelf] = next;
+  heights[partner] = pair - next;
+
+  spec.shelfHeights = heights;
+  relayoutShelves(true);
+}
+
+/**
+ * Drag a shelf board up/down to move the boundary between this shelf and the
+ * one below it, transferring cm between the two cells.
+ */
+function startBoardDrag(e, shelf) {
+  e.preventDefault();
+  e.stopPropagation();
+  closeMiniInspector();
+
+  const start = getCellHeights().slice();
+  const startY = e.clientY;
+  const above = shelf;        // dragging down grows the shelf above the board
+  const below = shelf + 1;
+  const pair = start[above] + start[below];
+  let changed = false;
+  let queued = false;
+  document.body.classList.add('resizing-shelf');
+
+  function onMove(ev) {
+    const dCm = (ev.clientY - startY) / V_PX_PER_CM;
+    const heights = start.slice();
+    const next = clamp(start[above] + dCm, MIN_CELL_CM, pair - MIN_CELL_CM);
+    heights[above] = next;
+    heights[below] = pair - next;
+    spec.shelfHeights = heights;
+    changed = true;
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => { queued = false; relayoutShelves(false); });
+  }
+
+  function onUp() {
+    document.removeEventListener('mousemove', onMove);
+    document.removeEventListener('mouseup', onUp);
+    document.body.classList.remove('resizing-shelf');
+    if (changed) saveState();
+  }
+
+  document.addEventListener('mousemove', onMove);
+  document.addEventListener('mouseup', onUp);
+}
+
+/**
+ * Re-apply current shelf heights to the live DOM (rows, ruler, pills) and
+ * re-render products + 3D without clearing any placements.
+ */
+function relayoutShelves(persist) {
+  const heights = getCellHeights();
+
+  for (let seg = 0; seg < spec.segments; seg++) {
+    for (let shelf = 0; shelf < spec.shelves; shelf++) {
+      const el = $(`shelf-${seg}-${shelf}`);
+      if (!el) continue;
+      const cellPx = Math.max(MIN_ROW_PX, Math.round(heights[shelf] * V_PX_PER_CM));
+      el.style.height = `${cellPx}px`;
+      el.style.setProperty('--cell-h', `${cellPx}px`);
+      const input = el.querySelector('.cell-height-input');
+      if (input && document.activeElement !== input) input.value = Math.round(heights[shelf]);
+    }
+  }
+
+  // Rebuild the ruler in place
+  const wrap = $('gondolaWrap');
+  const oldRuler = wrap && wrap.querySelector('.shelf-ruler');
+  if (wrap && oldRuler) wrap.replaceChild(buildRuler(), oldRuler);
+
+  renderShelfFill();
+  if (window.Planogram3D && Planogram3D.isOpen()) Planogram3D.refresh();
+  updateSummary();
+  if (persist) saveState();
 }
 
 /**
@@ -296,16 +490,19 @@ function renderShelfRow(el, seg, shelf) {
     const product = products.find((p) => p.id === productId);
     if (!product) return;
 
+    const stack = Math.max(1, product.stack || 1);
     const wCm = parseCm(product.width, 10) * (product.facing || 1);
     const hCm = parseCm(product.height, 20);
     const wPx = Math.max(MIN_ITEM_W, Math.round(wCm * PX_PER_CM));
-    const hPx = Math.min(Math.round(hCm * PX_PER_CM), cellH - 4);
+    const unitPx = Math.round(hCm * PX_PER_CM);
+    const hPx = Math.min(unitPx * stack, cellH - 4);
 
     const item = document.createElement('div');
-    item.className = 'shelf-product';
+    item.className = stack > 1 ? 'shelf-product stacked' : 'shelf-product';
     item.style.width = `${wPx}px`;
     item.style.height = `${hPx}px`;
-    item.title = `${product.name} (${product.width || '?'}cm × ${product.height || '?'}cm)`;
+    const stackLabel = stack > 1 ? ` · ซ้อน ${stack}` : '';
+    item.title = `${product.name} (${product.width || '?'}cm × ${product.height || '?'}cm${stackLabel})`;
     item.draggable = true;
 
     // Event listeners สำหรับการลากย้ายสินค้าที่อยู่บน Shelf
@@ -332,8 +529,10 @@ function renderShelfRow(el, seg, shelf) {
       ? `<img src="${product.image}" alt="${esc(product.name)}" draggable="false">`
       : `<div class="pack-fallback" style="background:${product.color};color:${contrast(product.color)}">${esc(shortName(product.name))}</div>`;
 
+    const units = Array.from({ length: stack }, () => `<div class="stack-unit">${visual}</div>`).join('');
+
     item.innerHTML = `
-      ${visual}
+      ${units}
       <button class="slot-remove" onclick="removeFromShelf(${seg},${shelf},${idx},event)" title="ลบ">×</button>
     `;
 
@@ -490,6 +689,7 @@ function openMiniInspector(seg, shelf, idx, event, el) {
   const popup = $('miniInspector');
   $('inspectorSku').textContent = `${product.name}`;
   $('inspectorFacingVal').textContent = product.facing || 1;
+  $('inspectorStackVal').textContent = product.stack || 1;
 
   const rect = el.getBoundingClientRect();
   const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
@@ -530,6 +730,45 @@ function adjustInspectFacing(diff) {
   product.facing = Math.max(1, (product.facing || 1) + diff);
   
   $('inspectorFacingVal').textContent = product.facing;
+
+  renderShelfFill();
+  renderProductList();
+  updateSummary();
+  saveState();
+
+  setTimeout(() => {
+    const rowEl = $(`shelf-${seg}-${shelf}`);
+    if (rowEl) {
+      const prodEls = rowEl.querySelectorAll('.shelf-product');
+      if (prodEls[idx]) {
+        const rect = prodEls[idx].getBoundingClientRect();
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const popup = $('miniInspector');
+        popup.style.left = `${rect.left + rect.width / 2 + scrollLeft}px`;
+        popup.style.top = `${rect.top + scrollTop}px`;
+      }
+    }
+  }, 50);
+}
+
+/**
+ * Adjust how many units are stacked on top of each other for the inspected product
+ */
+function adjustInspectStack(diff) {
+  if (!activeInspectorTarget) return;
+  const { seg, shelf, idx } = activeInspectorTarget;
+  const key = `${seg}-${shelf}`;
+  const productId = shelfData[key] ? shelfData[key][idx] : null;
+  if (!productId) return;
+
+  const product = products.find((p) => p.id === productId);
+  if (!product) return;
+
+  pushHistory();
+  product.stack = Math.max(1, (product.stack || 1) + diff);
+
+  $('inspectorStackVal').textContent = product.stack;
 
   renderShelfFill();
   renderProductList();

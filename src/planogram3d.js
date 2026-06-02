@@ -158,7 +158,14 @@
     const segCount = s.segments;
     const shelfCount = s.shelves;
     const segW = W / segCount;
-    const cellH = H / shelfCount;
+    // Per-shelf cell heights (top shelf first); fall back to an even split.
+    const cellHeights = (Array.isArray(s.shelfHeights) && s.shelfHeights.length === shelfCount)
+      ? s.shelfHeights
+      : Array.from({ length: shelfCount }, () => H / shelfCount);
+    // Surface (board top) height from the floor for each shelf index.
+    const surfaceYs = [];
+    let cumTop = 0;
+    for (let i = 0; i < shelfCount; i++) { cumTop += cellHeights[i]; surfaceYs.push(H - cumTop); }
     const thick = Math.max(2, s.shelfThickness);
     const panelT = 3;
     const frontPad = 2;           // products sit slightly back from the lip
@@ -211,7 +218,7 @@
     // ── Shelf surfaces ──
     // shelf i = 0 is the TOP shelf (matches 2D label S{shelves-i}).
     for (let i = 0; i < shelfCount; i++) {
-      const surfaceY = H - (i + 1) * cellH; // bottom shelf -> y=0
+      const surfaceY = surfaceYs[i]; // custom board height; bottom shelf -> y≈0
       const board = makeBox(W - (s.hasSidePanel ? panelT * 2 : 0), thick, D - 2, s.shelfColor);
       board.position.set(0, surfaceY + thick / 2, 0);
       contentGroup.add(board);
@@ -226,7 +233,7 @@
         const placed = (typeof shelfData !== 'undefined' && shelfData[key]) ? shelfData[key] : [];
         if (!placed.length) continue;
 
-        const surfaceY = H - (i + 1) * cellH;
+        const surfaceY = surfaceYs[i];
         let cursorX = segLeft + 2;
 
         placed.forEach((pid) => {
@@ -238,13 +245,17 @@
           const fallbackD = clamp(parseCm(p.width, 8) * 1.3, 4, D * 0.85);
           const d = parseCm(p.depth, fallbackD);
 
-          const mesh = makeProduct(p, w, h, d);
-          mesh.position.set(
-            cursorX + w / 2,
-            surfaceY + thick + h / 2,
-            D / 2 - d / 2 - frontPad
-          );
-          contentGroup.add(mesh);
+          const stack = Math.max(1, p.stack || 1);
+          const base = makeProduct(p, w, h, d);
+          for (let k = 0; k < stack; k++) {
+            const mesh = k === 0 ? base : base.clone();
+            mesh.position.set(
+              cursorX + w / 2,
+              surfaceY + thick + h / 2 + k * h,
+              D / 2 - d / 2 - frontPad
+            );
+            contentGroup.add(mesh);
+          }
           cursorX += w + 0.6; // tiny gap between SKUs
         });
       }

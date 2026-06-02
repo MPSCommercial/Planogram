@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="src/styles.css?v=design-layout">
+  <link rel="stylesheet" href="src/styles.css?v=shelf">
 </head>
 <body>
   <div class="app-shell">
@@ -117,6 +117,21 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 สร้าง / อัปเดต Shelf
               </button>
+
+              <div class="template-block">
+                <div class="template-block-label">เทมเพลตเชลฟ์</div>
+                <div class="template-row">
+                  <select id="templateSelect" class="template-select" aria-label="เลือกเทมเพลตเชลฟ์">
+                    <option value="">เลือกเทมเพลต…</option>
+                  </select>
+                  <button class="btn btn-mini" id="btnApplyTemplate" type="button">ใช้</button>
+                </div>
+                <div class="template-row">
+                  <button class="btn btn-mini btn-ghost" id="btnSaveTemplate" type="button">บันทึกขนาดปัจจุบันเป็นเทมเพลต</button>
+                  <button class="btn btn-mini btn-danger" id="btnDeleteTemplate" type="button" disabled aria-label="ลบเทมเพลต">ลบ</button>
+                </div>
+                <button class="template-restore" id="btnRestoreTemplates" type="button" style="display:none">คืนค่าเทมเพลตพื้นฐาน</button>
+              </div>
             </div>
           </section>
         </div>
@@ -356,9 +371,16 @@
     <div class="inspector-body">
       <div class="inspector-sku" id="inspectorSku">Product SKU</div>
       <div class="inspector-controls">
+        <span class="inspector-ctl-label">Facing</span>
         <button class="btn-inspect-action" id="btnInspectDec" type="button" title="ลด Facing">-</button>
         <span class="inspector-facing-val" id="inspectorFacingVal">1</span>
         <button class="btn-inspect-action" id="btnInspectInc" type="button" title="เพิ่ม Facing">+</button>
+      </div>
+      <div class="inspector-controls">
+        <span class="inspector-ctl-label">Stack</span>
+        <button class="btn-inspect-action" id="btnInspectStackDec" type="button" title="ลดชั้นวางซ้อน">-</button>
+        <span class="inspector-facing-val" id="inspectorStackVal">1</span>
+        <button class="btn-inspect-action" id="btnInspectStackInc" type="button" title="วางซ้อนเพิ่ม">+</button>
         <div class="inspector-divider"></div>
         <button class="btn-inspect-action btn-inspect-del" id="btnInspectDel" type="button" title="ลบจากชั้นวาง">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -375,12 +397,13 @@
   <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 
   <!-- Application Scripts (modular) -->
-  <script src="src/utils.js?v=3d"></script>
-  <script src="src/sheets.js?v=3d"></script>
-  <script src="src/products.js?v=3d"></script>
-  <script src="src/planogram.js?v=3d"></script>
-  <script src="src/planogram3d.js?v=3d"></script>
-  <script src="src/export.js?v=3d"></script>
-  <script src="src/app.js?v=3d"></script>
+  <script src="src/utils.js?v=shelf"></script>
+  <script src="src/sheets.js?v=shelf"></script>
+  <script src="src/products.js?v=shelf"></script>
+  <script src="src/planogram.js?v=shelf"></script>
+  <script src="src/templates.js?v=shelf"></script>
+  <script src="src/planogram3d.js?v=shelf"></script>
+  <script src="src/export.js?v=shelf"></script>
+  <script src="src/app.js?v=shelf"></script>
 </body>
 </html>
