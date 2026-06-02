@@ -164,6 +164,10 @@
             </div>
             <div class="legend" id="legendBox"></div>
           </div>
+          <!-- SketchUp-style 3D view (Three.js renders here) -->
+          <div class="stage-3d" id="stage3d" style="display:none">
+            <div class="stage-3d-hint">ลากเพื่อหมุน · scroll ซูม · คลิกขวาลากเพื่อเลื่อน</div>
+          </div>
         </div>
       </section>
 
@@ -366,12 +370,17 @@
   <!-- Hidden file input for JSON import -->
   <input type="file" id="jsonImportInput" accept=".json" style="display:none">
 
+  <!-- 3D engine (SketchUp-style view) -->
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
   <!-- Application Scripts (modular) -->
-  <script src="src/utils.js?v=design-layout"></script>
-  <script src="src/sheets.js?v=design-layout"></script>
-  <script src="src/products.js?v=design-layout"></script>
-  <script src="src/planogram.js?v=design-layout"></script>
-  <script src="src/export.js?v=design-layout"></script>
-  <script src="src/app.js?v=design-layout"></script>
+  <script src="src/utils.js?v=3d"></script>
+  <script src="src/sheets.js?v=3d"></script>
+  <script src="src/products.js?v=3d"></script>
+  <script src="src/planogram.js?v=3d"></script>
+  <script src="src/planogram3d.js?v=3d"></script>
+  <script src="src/export.js?v=3d"></script>
+  <script src="src/app.js?v=3d"></script>
 </body>
 </html>

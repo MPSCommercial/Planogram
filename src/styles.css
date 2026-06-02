@@ -1541,47 +1541,8 @@ input[type="checkbox"] {
   color: rgba(255, 255, 255, 0.45);
 }
 
-/* ═══════════════════ 3D PERSPECTIVE MODE ═══════════════════ */
 .gondola-wrap {
   position: relative;
-  perspective: 1600px;
-  perspective-origin: 50% 30%;
-  transition: perspective 0.4s ease;
-}
-
-.gondola-wrap .gondola-outer {
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
-  transform-style: preserve-3d;
-}
-
-/* 3D view styling when active */
-.gondola-wrap.mode-3d .gondola-outer {
-  transform: rotateX(10deg) rotateY(-5deg) rotateZ(0.5deg);
-  box-shadow: 0 35px 70px rgba(0, 0, 0, 0.4), 0 15px 30px rgba(0, 0, 0, 0.25);
-}
-
-.gondola-wrap.mode-3d .shelf-row {
-  transform: translateZ(12px);
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: visible; /* to let 3D shadow flow */
-}
-
-.gondola-wrap.mode-3d .shelf-row::after {
-  transform: translateZ(14px) translateY(2px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
-  transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.gondola-wrap.mode-3d .shelf-product {
-  transform: translateZ(26px) scale(0.98);
-  box-shadow: -5px 12px 20px rgba(0, 0, 0, 0.45);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, opacity 0.18s;
-}
-
-.gondola-wrap.mode-3d .shelf-product:hover {
-  transform: translateZ(40px) scale(1.04);
-  box-shadow: -10px 18px 28px rgba(0, 0, 0, 0.55);
-  z-index: 100;
 }
 
 /* Button Active State for btnToggle3D */
@@ -1590,5 +1551,44 @@ input[type="checkbox"] {
   color: var(--accent) !important;
   border-color: rgba(255, 108, 12, 0.3) !important;
   box-shadow: 0 0 12px rgba(255, 108, 12, 0.2);
+}
+
+/* ═══════════════════ SKETCHUP-STYLE 3D VIEW ═══════════════════ */
+.stage-3d {
+  position: relative;
+  width: 100%;
+  height: min(74vh, 760px);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #eef1f5;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06), 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.stage-3d canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  cursor: grab;
+}
+
+.stage-3d canvas:active {
+  cursor: grabbing;
+}
+
+.stage-3d-hint {
+  position: absolute;
+  left: 14px;
+  bottom: 12px;
+  z-index: 2;
+  padding: 6px 12px;
+  font-size: 11px;
+  letter-spacing: 0.2px;
+  color: #51585f;
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  pointer-events: none;
 }
 
