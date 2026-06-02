@@ -8,6 +8,14 @@
 
   // ─── Button bindings ───
   $('btnBuildShelf').addEventListener('click', buildShelf);
+
+  // ─── Shelf template bindings ───
+  renderTemplateOptions();
+  $('btnApplyTemplate').addEventListener('click', applySelectedTemplate);
+  $('btnSaveTemplate').addEventListener('click', saveCurrentAsTemplate);
+  $('btnDeleteTemplate').addEventListener('click', deleteSelectedTemplate);
+  $('btnRestoreTemplates').addEventListener('click', restoreBuiltinTemplates);
+  $('templateSelect').addEventListener('change', () => renderTemplateOptions($('templateSelect').value));
   $('btnAddProduct').addEventListener('click', addProduct);
   $('btnExportPNG').addEventListener('click', exportPNG);
   $('btnExportJSON').addEventListener('click', exportJSON);
@@ -37,6 +45,8 @@
   // ─── Mini Inspector bindings ───
   $('btnInspectDec').addEventListener('click', () => adjustInspectFacing(-1));
   $('btnInspectInc').addEventListener('click', () => adjustInspectFacing(1));
+  $('btnInspectStackDec').addEventListener('click', () => adjustInspectStack(-1));
+  $('btnInspectStackInc').addEventListener('click', () => adjustInspectStack(1));
   $('btnInspectDel').addEventListener('click', deleteInspectPlacement);
 
   // ─── Google Sheet Toggle Settings drawer ───

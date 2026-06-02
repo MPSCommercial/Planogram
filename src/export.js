@@ -82,6 +82,9 @@ function importJSON(file) {
         $('hasBackPanel').checked = s.hasBackPanel !== false;
         $('hasSidePanel').checked = s.hasSidePanel !== false;
         $('hasSegmentDivider').checked = s.hasDivider !== false;
+
+        // Carry custom shelf board positions into the rebuild
+        pendingShelfHeights = Array.isArray(s.shelfHeights) ? s.shelfHeights : null;
       }
 
       if (data.products) {
@@ -150,6 +153,9 @@ function loadState() {
       $('hasBackPanel').checked = s.hasBackPanel !== false;
       $('hasSidePanel').checked = s.hasSidePanel !== false;
       $('hasSegmentDivider').checked = s.hasDivider !== false;
+
+      // Restore custom shelf board positions for the next buildShelf
+      pendingShelfHeights = Array.isArray(s.shelfHeights) ? s.shelfHeights : null;
 
       if (data.products) {
         products = data.products;

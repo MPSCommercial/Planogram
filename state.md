@@ -7,17 +7,33 @@
 
 ## ⚡ NOW
 
-- **Status**: Pushed all recent local commits up to date with `origin/main`
-- **Branch**: main | **Commit**: `be7bfb1` — style: revert sticky stage toolbar and apply transparent minimal font-only layout
-- **Deploy**: Pushed successfully to GitHub
+- **Status**: เพิ่มชั้นวางแบบปรับตำแหน่งแผ่นชั้นได้อิสระ + สเกลความสูง — แต่ละชั้นมี cell height (cm) ของตัวเอง (`spec.shelfHeights`), ลากแผ่นชั้นบนแคนวาส (board-grip) หรือพิมพ์ตัวเลข cm ต่อชั้น (pill input) ได้, มีไม้บรรทัด cm ด้านซ้าย (ruler) + ป้ายความสูงต่อชั้น. อัปเดตทั้ง 2D, 3D (`surfaceYs` cumulative) และ persistence
+- **Branch**: main | **Commit**: `3046950` (ยังไม่ commit งานใหม่)
+- **Deploy**: ยังไม่ push — รอรีวิว/ทดสอบ
 - **Blocker**: None
-- **Next**: พร้อมเริ่มงานพัฒนาส่วนถัดไปตาม `PLANOGRAM_REQUIREMENTS.md` หรือรอรับ feedback จากผู้ใช้
+- **Next**: ทดสอบใน browser (ลาก/พิมพ์ปรับความสูงชั้น, ดู ruler, 3D refresh, save/load) แล้ว commit + push
+- **Files**: `src/planogram.js`, `src/planogram3d.js`, `src/export.js`, `index.html`, `src/styles.css`
+- **หมายเหตุ**: ช่อง "Gap Between Shelves" ในฟอร์มไม่ถูกใช้ใน layout แล้ว (แทนด้วยตำแหน่งแผ่นชั้น) — ยังเก็บค่าไว้ ยังไม่ลบ
 
 ---
 
 ## 📜 LOG
 
 > ย้าย NOW เก่ามาใส่ที่นี่ทุกครั้งที่อัปเดต — ไม่ต้องลบ
+
+### 🗓️ 2026-06-02
+- ✅ Previous NOW: เพิ่มการวางสินค้าซ้อนกัน (stacking) — property `stack` ต่อสินค้า ปรับใน mini-inspector, เรนเดอร์ 2D (stack-unit) + 3D (clone mesh)
+- Files: `src/planogram.js`, `src/planogram3d.js`, `index.html`, `src/app.js`, `src/styles.css`, `state.md`
+
+### 🗓️ 2026-06-02
+- ✅ Previous NOW: เพิ่มฟีเจอร์ Shelf Templates — เทมเพลตพื้นฐาน 5 แบบ + บันทึก/ลบ/ซ่อน-คืนค่า (localStorage)
+- Files: `src/templates.js`, `index.html`, `src/app.js`, `src/styles.css`, `state.md`
+
+### 🗓️ 2026-06-02
+- ✅ Previous NOW: Pushed all recent local commits up to date with `origin/main`
+- ✅ Branch: `main` | Commit: `be7bfb1` — style: revert sticky stage toolbar and apply transparent minimal font-only layout | Deploy: Pushed to `origin/main`
+- ✅ Next เดิม: พร้อมเริ่มงานพัฒนาส่วนถัดไปตาม `PLANOGRAM_REQUIREMENTS.md` หรือรอรับ feedback จากผู้ใช้
+- Files: `state.md`
 
 ### 🗓️ 2026-05-21
 - ✅ Previous NOW: Completed Stage Toolbar aesthetic cleanup by reverting sticky behaviors and setting background to 100% transparent to ensure a highly minimal font-only layout
