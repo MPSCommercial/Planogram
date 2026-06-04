@@ -224,25 +224,55 @@
       }
     }
 
-    // ── Shelf surfaces ──
+    // ── Shelf surfaces & Products ──
     // shelf i = 0 is the TOP shelf (matches 2D label S{shelves-i}).
-    for (let i = 0; i < shelfCount; i++) {
-      const surfaceY = surfaceYs[i]; // custom board height; bottom shelf -> y≈0
-      const board = makeBox(W - (s.hasSidePanel ? panelT * 2 : 0), thick, D - 2, s.shelfColor);
-      board.position.set(0, surfaceY + thick / 2, 0);
-      contentGroup.add(board);
-    }
-
-    // ── Products ──
     const list = (typeof products !== 'undefined') ? products : [];
+
     for (let seg = 0; seg < segCount; seg++) {
+      const segW = segmentWidths[seg];
       const segLeft = segmentLefts[seg];
+      const centerX = segLeft + segW / 2;
+
+      // Calculate surfaceYs for this specific segment
+      const segHeights = (s.segmentShelfHeights && Array.isArray(s.segmentShelfHeights[seg]))
+        ? s.segmentShelfHeights[seg]
+        : cellHeights;
+      
+      const segSurfaceYs = [];
+      let segCumTop = 0;
+      for (let i = 0; i < shelfCount; i++) {
+        segCumTop += segHeights[i];
+        segSurfaceYs.push(H - segCumTop);
+      }
+
+      // Draw shelf boards for this segment
+      for (let i = 0; i < shelfCount; i++) {
+        const surfaceY = segSurfaceYs[i];
+        let boardW = segW;
+        let boardX = centerX;
+        // Compensate for outer side panels at boundaries
+        if (s.hasSidePanel) {
+          if (seg === 0) {
+            boardW -= panelT;
+            boardX += panelT / 2;
+          }
+          if (seg === segCount - 1) {
+            boardW -= panelT;
+            boardX -= panelT / 2;
+          }
+        }
+        const board = makeBox(boardW, thick, D - 2, s.shelfColor);
+        board.position.set(boardX, surfaceY + thick / 2, 0);
+        contentGroup.add(board);
+      }
+
+      // Place products for this segment
       for (let i = 0; i < shelfCount; i++) {
         const key = `${seg}-${i}`;
         const placed = (typeof shelfData !== 'undefined' && shelfData[key]) ? shelfData[key] : [];
         if (!placed.length) continue;
 
-        const surfaceY = surfaceYs[i];
+        const surfaceY = segSurfaceYs[i];
         let cursorX = segLeft + 2;
 
         placed.forEach((pid) => {

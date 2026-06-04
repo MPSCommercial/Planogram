@@ -10,6 +10,7 @@ let redoStack = [];
 let draggedSource = null; // { seg, shelf, idx, productId }
 let activeInspectorTarget = null; // { seg, shelf, idx }
 let pendingShelfHeights = null;   // heights to honour on the next buildShelf (from loadState)
+let pendingSegmentShelfHeights = null; // heights to honour per segment on the next buildShelf
 
 const PX_PER_CM = 3.4;   // horizontal scale: pixels per centimeter
 const V_PX_PER_CM = 2.4;  // vertical scale: pixels per centimeter (shelf heights / ruler)
@@ -37,21 +38,26 @@ function normalizeHeights(arr, total, count) {
 }
 
 /**
- * Current per-shelf cell heights in cm (top shelf first), always valid.
+ * Current per-shelf cell heights in cm (top shelf first) for a specific segment.
  */
-function getCellHeights() {
-  if (Array.isArray(spec.shelfHeights) && spec.shelfHeights.length === spec.shelves) {
+function getCellHeights(seg = 0) {
+  if (spec && Array.isArray(spec.segmentShelfHeights) && Array.isArray(spec.segmentShelfHeights[seg]) && spec.segmentShelfHeights[seg].length === spec.shelves) {
+    return spec.segmentShelfHeights[seg];
+  }
+  if (spec && Array.isArray(spec.shelfHeights) && spec.shelfHeights.length === spec.shelves) {
     return spec.shelfHeights;
   }
-  return evenHeights(spec.height, spec.shelves);
+  const totalH = (spec && spec.height) ? spec.height : 220;
+  const shelvesCount = (spec && spec.shelves) ? spec.shelves : 6;
+  return evenHeights(totalH, shelvesCount);
 }
 
 /**
  * Cumulative board heights from the floor (cm) for every shelf boundary,
  * bottom → top: [0, h_last, h_last+h_{last-1}, ..., total]. Length = shelves + 1.
  */
-function boardBoundaries() {
-  const heights = getCellHeights();
+function boardBoundaries(seg = 0) {
+  const heights = getCellHeights(seg);
   const bottomUp = heights.slice().reverse();
   const out = [0];
   let cum = 0;
@@ -109,6 +115,8 @@ function parseCm(val, fallback) {
 function readSpec() {
   const segments = clamp(parseInt($('numSegments').value) || 3, 1, 8);
   const overallWidth = clamp(parseInt($('overallWidth').value) || 360, 60, 1200);
+  const shelvesCount = clamp(parseInt($('shelvesPerSegment').value) || 6, 1, 12);
+  const height = clamp(parseInt($('overallHeight').value) || 220, 80, 400);
 
   // Read customized segment widths if they exist in UI
   let segmentWidths = [];
@@ -124,19 +132,42 @@ function readSpec() {
   // Fallback to even split if customization inputs don't exist yet or values don't sum to overallWidth
   if (!hasCustomWidths || segmentWidths.length !== segments) {
     segmentWidths = Array.from({ length: segments }, () => Math.round(overallWidth / segments));
-    // adjust last segment to match overallWidth exactly in case of division remainders
     const sum = segmentWidths.reduce((a, b) => a + b, 0);
     if (sum !== overallWidth) {
       segmentWidths[segmentWidths.length - 1] += (overallWidth - sum);
     }
   }
 
+  // Read customized shelf heights per segment
+  let segmentShelfHeights = [];
+  for (let seg = 0; seg < segments; seg++) {
+    let heights = [];
+    let hasInputs = false;
+    for (let shelf = 0; shelf < shelvesCount; shelf++) {
+      const el = document.querySelector(`#shelf-${seg}-${shelf} .cell-height-input`);
+      if (el) {
+        heights.push(clamp(parseFloat(el.value) || 0, MIN_CELL_CM, height));
+        hasInputs = true;
+      }
+    }
+    if (!hasInputs || heights.length !== shelvesCount) {
+      if (spec && Array.isArray(spec.segmentShelfHeights) && Array.isArray(spec.segmentShelfHeights[seg]) && spec.segmentShelfHeights[seg].length === shelvesCount) {
+        heights = spec.segmentShelfHeights[seg].slice();
+      } else if (spec && Array.isArray(spec.shelfHeights) && spec.shelfHeights.length === shelvesCount) {
+        heights = spec.shelfHeights.slice();
+      } else {
+        heights = evenHeights(height, shelvesCount);
+      }
+    }
+    segmentShelfHeights.push(heights);
+  }
+
   return {
     name: $('planogramName').value.trim() || 'Multiple Segment Planogram',
     segments,
-    shelves: clamp(parseInt($('shelvesPerSegment').value) || 6, 1, 12),
+    shelves: shelvesCount,
     width: overallWidth,
-    height: clamp(parseInt($('overallHeight').value) || 220, 80, 400),
+    height,
     depth: clamp(parseInt($('shelfDepth').value) || 48, 10, 120),
     gap: clamp(parseInt($('gapSize').value) || 28, 8, 80),
     shelfThickness: clamp(parseInt($('shelfThickness').value) || 3, 1, 12),
@@ -145,7 +176,8 @@ function readSpec() {
     hasBackPanel: $('hasBackPanel').checked,
     hasSidePanel: $('hasSidePanel').checked,
     hasDivider: $('hasSegmentDivider').checked,
-    segmentWidths
+    segmentWidths,
+    segmentShelfHeights
   };
 }
 
@@ -153,7 +185,6 @@ function readSpec() {
  * Build the entire multi-segment planogram canvas
  */
 function buildShelf() {
-  const prevHeights = (spec && Array.isArray(spec.shelfHeights)) ? spec.shelfHeights.slice() : null;
   spec = readSpec();
 
   // If customized segment width inputs are missing or incorrect, render them
@@ -178,15 +209,26 @@ function buildShelf() {
   redoStack = [];
   updateUndoButtons();
 
-  // ─── Resolve per-shelf cell heights (custom board positions) ───
-  if (pendingShelfHeights && pendingShelfHeights.length === spec.shelves) {
-    spec.shelfHeights = normalizeHeights(pendingShelfHeights, spec.height, spec.shelves);
-  } else if (prevHeights && prevHeights.length === spec.shelves) {
-    spec.shelfHeights = normalizeHeights(prevHeights, spec.height, spec.shelves);
+  // ─── Resolve per-shelf cell heights (custom board positions per segment) ───
+  if (pendingSegmentShelfHeights && pendingSegmentShelfHeights.length === spec.segments) {
+    spec.segmentShelfHeights = pendingSegmentShelfHeights.map(h => normalizeHeights(h, spec.height, spec.shelves));
   } else {
-    spec.shelfHeights = evenHeights(spec.height, spec.shelves);
+    const oldSegmentShelfHeights = spec.segmentShelfHeights;
+    spec.segmentShelfHeights = [];
+    for (let seg = 0; seg < spec.segments; seg++) {
+      let heights = null;
+      if (oldSegmentShelfHeights && Array.isArray(oldSegmentShelfHeights[seg]) && oldSegmentShelfHeights[seg].length === spec.shelves) {
+        heights = oldSegmentShelfHeights[seg].slice();
+      } else if (spec.shelfHeights && spec.shelfHeights.length === spec.shelves) {
+        heights = spec.shelfHeights.slice();
+      } else {
+        heights = evenHeights(spec.height, spec.shelves);
+      }
+      spec.segmentShelfHeights.push(normalizeHeights(heights, spec.height, spec.shelves));
+    }
   }
-  pendingShelfHeights = null;
+  pendingSegmentShelfHeights = null;
+  spec.shelfHeights = spec.segmentShelfHeights[0].slice(); // keep backward compatibility
 
   const wrap = $('gondolaWrap');
   wrap.innerHTML = '';
@@ -218,8 +260,10 @@ function buildShelf() {
     const segW = spec.segmentWidths[seg] || (spec.width / spec.segments);
     const segWidthPx = Math.round(segW * PX_PER_CM);
 
+    const segHeights = getCellHeights(seg);
+
     for (let shelf = 0; shelf < spec.shelves; shelf++) {
-      const cellPx = Math.max(MIN_ROW_PX, Math.round(spec.shelfHeights[shelf] * V_PX_PER_CM));
+      const cellPx = Math.max(MIN_ROW_PX, Math.round(segHeights[shelf] * V_PX_PER_CM));
       const row = makeShelfRow(seg, shelf, segWidthPx, shelfThickPx, cellPx);
       inner.appendChild(row);
     }
@@ -338,23 +382,21 @@ function makeShelfRow(seg, shelf, segWidthPx, shelfThickPx, cellH) {
   el.style.setProperty('--shelf-surface', spec.shelfColor);
   el.style.marginBottom = '0';
 
-  // Per-shelf editable cell-height pill (numeric input), shown on the first segment only
-  if (seg === 0) {
-    const pill = document.createElement('div');
-    pill.className = 'cell-height-pill';
-    pill.innerHTML = `<input type="number" class="cell-height-input" min="${MIN_CELL_CM}" step="1" value="${Math.round(getCellHeights()[shelf])}"><span>cm</span>`;
-    const input = pill.querySelector('input');
-    ['mousedown', 'click'].forEach((evt) => input.addEventListener(evt, (e) => e.stopPropagation()));
-    input.addEventListener('change', () => setCellHeight(shelf, parseFloat(input.value)));
-    el.appendChild(pill);
-  }
+  // Per-shelf editable cell-height pill (numeric input), shown on all segments
+  const pill = document.createElement('div');
+  pill.className = 'cell-height-pill';
+  pill.innerHTML = `<input type="number" class="cell-height-input" min="${MIN_CELL_CM}" step="1" value="${Math.round(getCellHeights(seg)[shelf])}"><span>cm</span>`;
+  const input = pill.querySelector('input');
+  ['mousedown', 'click'].forEach((evt) => input.addEventListener(evt, (e) => e.stopPropagation()));
+  input.addEventListener('change', () => setCellHeight(seg, shelf, parseFloat(input.value)));
+  el.appendChild(pill);
 
   // Draggable board grip (resize boundary with the shelf below). Not on the bottom shelf.
   if (shelf < spec.shelves - 1) {
     const grip = document.createElement('div');
     grip.className = 'board-grip';
     grip.title = 'ลากเพื่อปรับตำแหน่งแผ่นชั้น';
-    grip.addEventListener('mousedown', (e) => startBoardDrag(e, shelf));
+    grip.addEventListener('mousedown', (e) => startBoardDrag(e, seg, shelf));
     el.appendChild(grip);
   }
 
@@ -394,8 +436,11 @@ function makeShelfRow(seg, shelf, segWidthPx, shelfThickPx, cellH) {
  * Set the cell height (cm) of one shelf, compensating from the shelf below
  * (or above for the bottom shelf) so the gondola total stays constant.
  */
-function setCellHeight(shelf, cm) {
-  const heights = getCellHeights().slice();
+function setCellHeight(seg, shelf, cm) {
+  if (!spec.segmentShelfHeights) spec.segmentShelfHeights = [];
+  if (!spec.segmentShelfHeights[seg]) spec.segmentShelfHeights[seg] = getCellHeights(seg).slice();
+
+  const heights = spec.segmentShelfHeights[seg].slice();
   if (!isFinite(cm)) { relayoutShelves(false); return; }
 
   const partner = shelf < heights.length - 1 ? shelf + 1 : shelf - 1;
@@ -406,7 +451,8 @@ function setCellHeight(shelf, cm) {
   heights[shelf] = next;
   heights[partner] = pair - next;
 
-  spec.shelfHeights = heights;
+  spec.segmentShelfHeights[seg] = heights;
+  spec.shelfHeights = spec.segmentShelfHeights[0].slice(); // keep sync with base property for backward compatibility
   relayoutShelves(true);
 }
 
@@ -414,12 +460,15 @@ function setCellHeight(shelf, cm) {
  * Drag a shelf board up/down to move the boundary between this shelf and the
  * one below it, transferring cm between the two cells.
  */
-function startBoardDrag(e, shelf) {
+function startBoardDrag(e, seg, shelf) {
   e.preventDefault();
   e.stopPropagation();
   closeMiniInspector();
 
-  const start = getCellHeights().slice();
+  if (!spec.segmentShelfHeights) spec.segmentShelfHeights = [];
+  if (!spec.segmentShelfHeights[seg]) spec.segmentShelfHeights[seg] = getCellHeights(seg).slice();
+
+  const start = spec.segmentShelfHeights[seg].slice();
   const startY = e.clientY;
   const above = shelf;        // dragging down grows the shelf above the board
   const below = shelf + 1;
@@ -434,7 +483,8 @@ function startBoardDrag(e, shelf) {
     const next = clamp(start[above] + dCm, MIN_CELL_CM, pair - MIN_CELL_CM);
     heights[above] = next;
     heights[below] = pair - next;
-    spec.shelfHeights = heights;
+    spec.segmentShelfHeights[seg] = heights;
+    spec.shelfHeights = spec.segmentShelfHeights[0].slice(); // sync seg 0
     changed = true;
     if (queued) return;
     queued = true;
@@ -457,9 +507,8 @@ function startBoardDrag(e, shelf) {
  * re-render products + 3D without clearing any placements.
  */
 function relayoutShelves(persist) {
-  const heights = getCellHeights();
-
   for (let seg = 0; seg < spec.segments; seg++) {
+    const heights = getCellHeights(seg);
     for (let shelf = 0; shelf < spec.shelves; shelf++) {
       const el = $(`shelf-${seg}-${shelf}`);
       if (!el) continue;
