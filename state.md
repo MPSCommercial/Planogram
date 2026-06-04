@@ -8,10 +8,10 @@
 ## ⚡ NOW
 
 - **Status**: แก้ไขฟีเจอร์การป้อนระดับความสูงเชลฟ์ย่อย (cell-height-input) ให้เปลี่ยนชนิดช่องกรอกเป็น `text` พร้อมระบุ `numeric` inputmode เพื่อตัดปัญหาเบราว์เซอร์บีบ/ตัดตัวเลขตัวแรก (spin-button crop) และปรับ CSS จัดกึ่งกลางตัวเลขพร้อมกำหนดความกว้างขั้นต่ำของกล่องบอกระยะ cm (cell-height-pill) ให้แสดงผลครบถ้วนสวยงามทุกตู้
-- **Branch**: main | **Commit**: wip
-- **Deploy**: Local development
+- **Branch**: main | **Commit**: 132d261
+- **Deploy**: Cloudflare Pages (Auto-deployed)
 - **Blocker**: None
-- **Next**: ทดสอบการแสดงผลกล่องบอกระยะ cm ในทุกความกว้างของตู้ย่อย, ทำการ commit และ push ขึ้น GitHub
+- **Next**: ทดสอบการแสดงผลกล่องบอกระยะ cm ในทุกความกว้างของตู้ย่อย
 - **Files**: `src/planogram.js`, `src/styles.css`, `state.md`
 
 ---
