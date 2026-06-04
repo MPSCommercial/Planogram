@@ -8,10 +8,10 @@
 ## ⚡ NOW
 
 - **Status**: เพิ่มฟังก์ชันกำหนดความกว้างของ Segment แยกกันอิสระ (Independent Segment Widths) พร้อมอินพุตย่อยรายตู้ (Bay) ใน Left Panel โดยเมื่อผู้ใช้แก้ไขความกว้างตู้ย่อย ค่าความกว้างรวม (overallWidth) จะคำนวณสะสมอัตโนมัติ และอัปเดตตำแหน่งสินค้าและ Divider ทั้งบน Canvas 2D และ WebGL 3D ทันที
-- **Branch**: main | **Commit**: wip
-- **Deploy**: Local development
+- **Branch**: main | **Commit**: 679abab
+- **Deploy**: Cloudflare Pages (Auto-deployed)
 - **Blocker**: None
-- **Next**: ทดสอบการจัดวางและการคำนวณความกว้างใน 2D & 3D, ตรวจสอบความถูกต้องของการเซฟและนำเข้า JSON, ทำการ commit และ push ขึ้น GitHub
+- **Next**: ทดสอบการจัดวางและการคำนวณความกว้างใน 2D & 3D, ตรวจสอบความถูกต้องของการเซฟและนำเข้า JSON
 - **Files**: `index.html`, `src/app.js`, `src/planogram.js`, `src/planogram3d.js`, `src/export.js`, `state.md`
 
 ---
