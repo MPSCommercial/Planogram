@@ -155,6 +155,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
             </button>
             <button class="btn btn-ghost btn-sm" id="btnLoadDemo">โหลดตัวอย่าง</button>
+            <button class="btn btn-ghost btn-sm" id="btnShowReport">รายงานสินค้า (BOM)</button>
             <button class="btn btn-ghost btn-sm" id="btnClearAll">ล้างชั้นวาง</button>
           </div>
         </div>
@@ -358,6 +359,57 @@
         <button class="btn btn-build" id="btnSaveEdit" style="width:auto; margin:0; padding:0 20px;">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
           บันทึก
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════ PLANOGRAM REPORT MODAL ═══════════════════ -->
+  <div class="modal-overlay" id="reportModal">
+    <div class="modal modal-large">
+      <div class="modal-header">
+        <h3>รายงานสรุปการจัดเรียงสินค้า (BOM & Placements)</h3>
+        <button class="modal-close" id="btnCloseReportModal">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="report-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
+          <div class="stat-card" style="background: var(--surface-2); padding: 14px; border-radius: 10px; border: 1px solid var(--line); text-align: center;">
+            <div style="font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">จำนวน SKU ที่วาง</div>
+            <div id="reportTotalSKUs" style="font-size: 1.8rem; font-weight: 800; color: var(--ink); margin-top: 4px;">0</div>
+          </div>
+          <div class="stat-card" style="background: var(--surface-2); padding: 14px; border-radius: 10px; border: 1px solid var(--line); text-align: center;">
+            <div style="font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">จำนวนชิ้นรวม (Facing × Stack)</div>
+            <div id="reportTotalQty" style="font-size: 1.8rem; font-weight: 800; color: var(--ink); margin-top: 4px;">0</div>
+          </div>
+          <div class="stat-card" style="background: var(--surface-2); padding: 14px; border-radius: 10px; border: 1px solid var(--line); text-align: center;">
+            <div style="font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">พื้นที่ใช้งานสะสมบนเชลฟ์</div>
+            <div id="reportSpaceUtil" style="font-size: 1.8rem; font-weight: 800; color: var(--ink); margin-top: 4px;">0 cm</div>
+          </div>
+        </div>
+
+        <div class="report-tab-nav" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
+          <button class="report-tab-btn active" id="btnTabBOM" type="button">สรุปยอดสินค้า (BOM Summary)</button>
+          <button class="report-tab-btn" id="btnTabPlacements" type="button">รายละเอียดจุดจัดวาง (Placement Details)</button>
+        </div>
+        
+        <div class="report-table-wrap" style="max-height: 380px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);">
+          <table class="report-table" id="reportTable" style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+            <thead>
+              <tr id="reportTableHeader">
+                <!-- Generated dynamic headers -->
+              </tr>
+            </thead>
+            <tbody id="reportTableBody">
+              <!-- Generated dynamic rows -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <button class="btn btn-ghost" id="btnCancelReport">ปิด</button>
+        <button class="btn btn-primary" id="btnExportReportCSV" style="width:auto; margin:0; padding:0 20px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export CSV
         </button>
       </div>
     </div>

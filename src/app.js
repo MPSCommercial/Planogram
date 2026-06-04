@@ -28,6 +28,26 @@
   $('btnLoadDemo').addEventListener('click', loadDemo);
   $('btnClearAll').addEventListener('click', clearAll);
   $('btnSyncSheet').addEventListener('click', syncProductsFromSheet);
+
+  // ─── Report Modal bindings ───
+  $('btnShowReport').addEventListener('click', openReportModal);
+  $('btnCloseReportModal').addEventListener('click', closeReportModal);
+  $('btnCancelReport').addEventListener('click', closeReportModal);
+  $('btnExportReportCSV').addEventListener('click', exportReportCSV);
+
+  $('btnTabBOM').addEventListener('click', () => {
+    activeReportTab = 'BOM';
+    $('btnTabBOM').classList.add('active');
+    $('btnTabPlacements').classList.remove('active');
+    updateReportTable();
+  });
+
+  $('btnTabPlacements').addEventListener('click', () => {
+    activeReportTab = 'Placements';
+    $('btnTabBOM').classList.remove('active');
+    $('btnTabPlacements').classList.add('active');
+    updateReportTable();
+  });
   $('btnUndo').addEventListener('click', undo);
   $('btnRedo').addEventListener('click', redo);
   $('btnRemoveImage').addEventListener('click', (e) => removeUploadedImage(e));
@@ -74,11 +94,19 @@
     if (e.target === $('editModal')) closeEditModal();
   });
 
+  $('reportModal').addEventListener('click', (e) => {
+    if (e.target === $('reportModal')) closeReportModal();
+  });
+
   // Close modal on Escape; undo/redo; panel toggle shortcuts
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape') {
       if ($('editModal').classList.contains('open')) {
         closeEditModal();
+        return;
+      }
+      if ($('reportModal').classList.contains('open')) {
+        closeReportModal();
         return;
       }
       if ($('miniInspector').style.display !== 'none') {
