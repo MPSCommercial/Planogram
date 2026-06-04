@@ -8,10 +8,10 @@
 ## ⚡ NOW
 
 - **Status**: เพิ่มฟังก์ชันกำหนดความสูงของชั้นวางแยกกันอิสระราย Segment (Independent Shelf Heights per Segment) โดยทุก Segment จะมีช่องกรอก cm และตัว grip สำหรับลากปรับความสูงของแผ่นชั้นแต่ละตู้ (Bay) แยกกันเป็นอิสระ และอัปเดตการเรนเดอร์ในมุมมอง 3D (Three.js WebGL) ให้วาดแผ่นชั้นวางและตัวสินค้าแยกชิ้นตามระดับความสูงจริงของแต่ละ Segment
-- **Branch**: main | **Commit**: wip
-- **Deploy**: Local development
+- **Branch**: main | **Commit**: 307e93f
+- **Deploy**: Cloudflare Pages (Auto-deployed)
 - **Blocker**: None
-- **Next**: ทดสอบการลากแผ่นชั้นปรับระยะความสูงแยกตู้ใน 2D & 3D, ตรวจสอบการเซฟและโหลด JSON, ทำการ commit และ push ขึ้น GitHub
+- **Next**: ทดสอบการลากแผ่นชั้นปรับระยะความสูงแยกตู้ใน 2D & 3D, ตรวจสอบการเซฟและโหลด JSON
 - **Files**: `src/planogram.js`, `src/planogram3d.js`, `src/export.js`, `state.md`
 
 ---
