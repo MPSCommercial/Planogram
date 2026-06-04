@@ -8,8 +8,8 @@
 ## ⚡ NOW
 
 - **Status**: เพิ่มฟังก์ชันรายงานตำแหน่งจัดวางสินค้า (BOM & Placement Report) แบบเปิดหน้าต่างรายงานสรุป และรองรับการดึงภาพสินค้าจริง พร้อมระบบ Export CSV (รองรับภาษาไทยใน Excel) ปรับสลับข้อมูลได้สองมุมมอง (BOM Summary / Placement Details)
-- **Branch**: main | **Commit**: wip
-- **Deploy**: Local development (และ Cloudflare Pages อัปเดตอัตโนมัติเมื่อ push)
+- **Branch**: main | **Commit**: f1853ba
+- **Deploy**: Cloudflare Pages (Auto-deployed)
 - **Blocker**: None
 - **Next**: ทดสอบระบบ CSV Export, ตรวจสอบ Visual UI ของ modal รายงาน และพัฒนาฟังก์ชันปรับสเปคแยกราย Segment ต่อไป
 - **Files**: `index.html`, `src/styles.css`, `src/export.js`, `src/app.js`, `state.md`
