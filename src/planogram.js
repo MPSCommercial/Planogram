@@ -130,7 +130,19 @@ function readSpec() {
 function buildShelf() {
   const prevHeights = (spec && Array.isArray(spec.shelfHeights)) ? spec.shelfHeights.slice() : null;
   spec = readSpec();
+
+  // Preserve existing placements where the segment and shelf coordinates still exist
+  const oldData = shelfData || {};
   shelfData = {};
+  for (let seg = 0; seg < spec.segments; seg++) {
+    for (let shelf = 0; shelf < spec.shelves; shelf++) {
+      const key = `${seg}-${shelf}`;
+      if (oldData[key]) {
+        shelfData[key] = oldData[key];
+      }
+    }
+  }
+
   undoStack = [];
   redoStack = [];
   updateUndoButtons();
@@ -188,6 +200,13 @@ function buildShelf() {
   updateBoardMeta();
   updateSummary();
   saveState();
+
+  // Render existing products on the new shelf layout
+  renderShelfFill();
+  if (window.Planogram3D && Planogram3D.isOpen()) {
+    Planogram3D.refresh();
+  }
+
   showToast(`สร้าง ${spec.segments} segment planogram แล้ว`);
 }
 

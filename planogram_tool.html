@@ -933,7 +933,18 @@ function buildShelf() {
   shelfSpec = readSpec();
   numRows = shelfSpec.rows;
   numCols = shelfSpec.cols;
+
+  // Preserve existing placements where the row and col coordinates still exist
+  const oldData = shelfData || {};
   shelfData = {};
+  for (let r = 0; r < numRows; r++) {
+    for (let c = 0; c < numCols; c++) {
+      const key = `${r}-${c}`;
+      if (oldData[key]) {
+        shelfData[key] = oldData[key];
+      }
+    }
+  }
 
   const canvas = $('shelfCanvas');
   canvas.innerHTML = '';
@@ -957,6 +968,7 @@ function buildShelf() {
 
   updateBoardMeta();
   updateSummary();
+  renderShelfFill();
   showToast('สร้าง shelf แล้ว');
 }
 
@@ -1288,6 +1300,12 @@ function clamp(value, min, max) {
 
 renderProductList();
 buildShelf();
+
+// Auto-update shelf layout on style & toggle option changes
+['hasSidePanel', 'hasBackPanel', 'shelfColor', 'backColor'].forEach(id => {
+  const el = $(id);
+  if (el) el.addEventListener('change', buildShelf);
+});
 </script>
 </body>
 </html>

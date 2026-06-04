@@ -7,17 +7,21 @@
 
 ## ⚡ NOW
 
-- **Status**: เพิ่มชั้นวางแบบปรับตำแหน่งแผ่นชั้นได้อิสระ + สเกลความสูง — แต่ละชั้นมี cell height (cm) ของตัวเอง (`spec.shelfHeights`), ลากแผ่นชั้นบนแคนวาส (board-grip) หรือพิมพ์ตัวเลข cm ต่อชั้น (pill input) ได้, มีไม้บรรทัด cm ด้านซ้าย (ruler) + ป้ายความสูงต่อชั้น. อัปเดตทั้ง 2D, 3D (`surfaceYs` cumulative) และ persistence
-- **Branch**: main | **Commit**: `3046950` (ยังไม่ commit งานใหม่)
-- **Deploy**: ยังไม่ push — รอรีวิว/ทดสอบ
+- **Status**: เพิ่มการซ่อน/แสดงผนังข้าง (Side panels) แบบ real-time โดยไม่ล้างสินค้าเดิมบนชั้นวาง (preserve placements) เมื่อปรับเปลี่ยนตัวเลือกสไตล์หรือขนาดตู้ และรีเฟรชทั้ง 2D และ 3D อัตโนมัติเมื่อกดเลือก
+- **Branch**: main | **Commit**: wip
+- **Deploy**: Local development
 - **Blocker**: None
-- **Next**: ทดสอบใน browser (ลาก/พิมพ์ปรับความสูงชั้น, ดู ruler, 3D refresh, save/load) แล้ว commit + push
-- **Files**: `src/planogram.js`, `src/planogram3d.js`, `src/export.js`, `index.html`, `src/styles.css`
-- **หมายเหตุ**: ช่อง "Gap Between Shelves" ในฟอร์มไม่ถูกใช้ใน layout แล้ว (แทนด้วยตำแหน่งแผ่นชั้น) — ยังเก็บค่าไว้ ยังไม่ลบ
+- **Next**: ทดสอบเพิ่มเติมเกี่ยวกับการเคลื่อนย้าย/ปรับปรุง layout ตู้และการ export
+- **Files**: `src/planogram.js`, `src/app.js`, `planogram_tool.html`, `state.md`
 
 ---
 
 ## 📜 LOG
+
+### 🗓️ 2026-06-04
+- ✅ Previous NOW: เพิ่มชั้นวางแบบปรับตำแหน่งแผ่นชั้นได้อิสระ + สเกลความสูง — แต่ละชั้นมี cell height (cm) ของตัวเอง (`spec.shelfHeights`), ลากแผ่นชั้นบนแคนวาส (board-grip) หรือพิมพ์ตัวเลข cm ต่อชั้น (pill input) ได้, มีไม้บรรทัด cm ด้านซ้าย (ruler) + ป้ายความสูงต่อชั้น. อัปเดตทั้ง 2D, 3D (`surfaceYs` cumulative) และ persistence
+- Files: `src/planogram.js`, `src/planogram3d.js`, `src/export.js`, `index.html`, `src/styles.css`
+- หมายเหตุ: ช่อง "Gap Between Shelves" ในฟอร์มไม่ถูกใช้ใน layout แล้ว (แทนด้วยตำแหน่งแผ่นชั้น) — ยังเก็บค่าไว้ ยังไม่ลบ
 
 > ย้าย NOW เก่ามาใส่ที่นี่ทุกครั้งที่อัปเดต — ไม่ต้องลบ
 
