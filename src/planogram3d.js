@@ -205,10 +205,19 @@
       });
     }
 
+    // Calculate segment left boundaries and custom widths
+    const segmentWidths = s.segmentWidths || Array.from({ length: segCount }, () => W / segCount);
+    const segmentLefts = [];
+    let tempLeft = -W / 2;
+    for (let i = 0; i < segCount; i++) {
+      segmentLefts.push(tempLeft);
+      tempLeft += segmentWidths[i];
+    }
+
     // ── Segment dividers ──
     if (s.hasDivider) {
       for (let seg = 1; seg < segCount; seg++) {
-        const x = -W / 2 + seg * segW;
+        const x = segmentLefts[seg];
         const div = makeBox(panelT, H, D, '#b9bec5');
         div.position.set(x, H / 2, 0);
         contentGroup.add(div);
@@ -227,7 +236,7 @@
     // ── Products ──
     const list = (typeof products !== 'undefined') ? products : [];
     for (let seg = 0; seg < segCount; seg++) {
-      const segLeft = -W / 2 + seg * segW;
+      const segLeft = segmentLefts[seg];
       for (let i = 0; i < shelfCount; i++) {
         const key = `${seg}-${i}`;
         const placed = (typeof shelfData !== 'undefined' && shelfData[key]) ? shelfData[key] : [];

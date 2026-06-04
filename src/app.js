@@ -15,6 +15,24 @@
     if (el) el.addEventListener('change', buildShelf);
   });
 
+  // ─── Segment Custom Width bindings ───
+  if ($('btnToggleCustomSeg')) {
+    $('btnToggleCustomSeg').addEventListener('click', () => {
+      const panel = $('customSegmentPanel');
+      const isHidden = panel.style.display === 'none';
+      panel.style.display = isHidden ? 'block' : 'none';
+    });
+  }
+
+  $('numSegments').addEventListener('change', () => {
+    renderSegmentWidthInputs();
+    buildShelf();
+  });
+  $('overallWidth').addEventListener('change', () => {
+    renderSegmentWidthInputs();
+    buildShelf();
+  });
+
   // ─── Shelf template bindings ───
   renderTemplateOptions();
   $('btnApplyTemplate').addEventListener('click', applySelectedTemplate);

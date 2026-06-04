@@ -107,11 +107,35 @@ function parseCm(val, fallback) {
  * Read the shelf specification from form inputs
  */
 function readSpec() {
+  const segments = clamp(parseInt($('numSegments').value) || 3, 1, 8);
+  const overallWidth = clamp(parseInt($('overallWidth').value) || 360, 60, 1200);
+
+  // Read customized segment widths if they exist in UI
+  let segmentWidths = [];
+  let hasCustomWidths = false;
+  for (let i = 0; i < segments; i++) {
+    const el = $(`segWidth-${i}`);
+    if (el) {
+      segmentWidths.push(clamp(parseInt(el.value) || 0, 10, 1000));
+      hasCustomWidths = true;
+    }
+  }
+
+  // Fallback to even split if customization inputs don't exist yet or values don't sum to overallWidth
+  if (!hasCustomWidths || segmentWidths.length !== segments) {
+    segmentWidths = Array.from({ length: segments }, () => Math.round(overallWidth / segments));
+    // adjust last segment to match overallWidth exactly in case of division remainders
+    const sum = segmentWidths.reduce((a, b) => a + b, 0);
+    if (sum !== overallWidth) {
+      segmentWidths[segmentWidths.length - 1] += (overallWidth - sum);
+    }
+  }
+
   return {
     name: $('planogramName').value.trim() || 'Multiple Segment Planogram',
-    segments: clamp(parseInt($('numSegments').value) || 3, 1, 8),
+    segments,
     shelves: clamp(parseInt($('shelvesPerSegment').value) || 6, 1, 12),
-    width: clamp(parseInt($('overallWidth').value) || 360, 60, 1200),
+    width: overallWidth,
     height: clamp(parseInt($('overallHeight').value) || 220, 80, 400),
     depth: clamp(parseInt($('shelfDepth').value) || 48, 10, 120),
     gap: clamp(parseInt($('gapSize').value) || 28, 8, 80),
@@ -121,6 +145,7 @@ function readSpec() {
     hasBackPanel: $('hasBackPanel').checked,
     hasSidePanel: $('hasSidePanel').checked,
     hasDivider: $('hasSegmentDivider').checked,
+    segmentWidths
   };
 }
 
@@ -130,6 +155,12 @@ function readSpec() {
 function buildShelf() {
   const prevHeights = (spec && Array.isArray(spec.shelfHeights)) ? spec.shelfHeights.slice() : null;
   spec = readSpec();
+
+  // If customized segment width inputs are missing or incorrect, render them
+  const currentInputCount = document.querySelectorAll('#segmentWidthInputs [id^="segWidth-"]').length;
+  if (currentInputCount !== spec.segments) {
+    renderSegmentWidthInputs(spec.segmentWidths);
+  }
 
   // Preserve existing placements where the segment and shelf coordinates still exist
   const oldData = shelfData || {};
@@ -166,7 +197,6 @@ function buildShelf() {
   if (spec.hasSidePanel) outer.classList.add('with-sides');
   if (!spec.hasBackPanel) outer.classList.add('no-back');
 
-  const segWidthPx = Math.round((spec.width / spec.segments) * PX_PER_CM);
   const shelfThickPx = Math.max(5, spec.shelfThickness * 2);
 
   for (let seg = 0; seg < spec.segments; seg++) {
@@ -184,6 +214,9 @@ function buildShelf() {
     inner.style.setProperty('--back-panel', spec.hasBackPanel ? spec.backColor : '#efe8dc');
     inner.style.background = spec.hasBackPanel ? spec.backColor : '';
     inner.style.setProperty('--shelf-surface', spec.shelfColor);
+
+    const segW = spec.segmentWidths[seg] || (spec.width / spec.segments);
+    const segWidthPx = Math.round(segW * PX_PER_CM);
 
     for (let shelf = 0; shelf < spec.shelves; shelf++) {
       const cellPx = Math.max(MIN_ROW_PX, Math.round(spec.shelfHeights[shelf] * V_PX_PER_CM));
@@ -208,6 +241,62 @@ function buildShelf() {
   }
 
   showToast(`สร้าง ${spec.segments} segment planogram แล้ว`);
+}
+
+/**
+ * Render dynamic inputs for individual segment widths
+ */
+function renderSegmentWidthInputs(prevWidths = null) {
+  const container = $('segmentWidthInputs');
+  if (!container) return;
+
+  const segments = clamp(parseInt($('numSegments').value) || 3, 1, 8);
+  const overallWidth = clamp(parseInt($('overallWidth').value) || 360, 60, 1200);
+
+  // Initialize widths
+  let widths = [];
+  if (Array.isArray(prevWidths) && prevWidths.length === segments) {
+    widths = prevWidths.slice();
+  } else {
+    // split evenly
+    widths = Array.from({ length: segments }, () => Math.round(overallWidth / segments));
+    const sum = widths.reduce((a, b) => a + b, 0);
+    if (sum !== overallWidth) {
+      widths[widths.length - 1] += (overallWidth - sum);
+    }
+  }
+
+  container.innerHTML = '';
+  for (let i = 0; i < segments; i++) {
+    const row = document.createElement('div');
+    row.style.display = 'flex';
+    row.style.alignItems = 'center';
+    row.style.justifyContent = 'space-between';
+    row.style.gap = '8px';
+
+    row.innerHTML = `
+      <span style="font-size: 0.8rem; font-weight: 500; color: var(--ink);">ตู้ที่ ${i + 1} (Bay ${i + 1})</span>
+      <div style="display: flex; align-items: center; gap: 4px; width: 100px;">
+        <input id="segWidth-${i}" type="number" value="${widths[i]}" min="10" max="600" style="padding: 4px 8px; font-size: 0.8rem; text-align: right; width: 100%;">
+        <span style="font-size: 0.72rem; color: var(--muted); font-weight: 500;">cm</span>
+      </div>
+    `;
+
+    // Listen to input changes
+    const input = row.querySelector('input');
+    input.addEventListener('change', () => {
+      // Calculate new overallWidth from the sum of all segments
+      let sum = 0;
+      for (let j = 0; j < segments; j++) {
+        const el = $(`segWidth-${j}`);
+        sum += clamp(parseInt(el ? el.value : 0) || 0, 10, 1000);
+      }
+      $('overallWidth').value = sum;
+      buildShelf();
+    });
+
+    container.appendChild(row);
+  }
 }
 
 /**
@@ -560,7 +649,7 @@ function renderShelfRow(el, seg, shelf) {
 
   // ─── Render capacity & utilization warning badge ───
   if (spec.width && spec.segments) {
-    const segWidthCm = spec.width / spec.segments;
+    const segWidthCm = (spec.segmentWidths && spec.segmentWidths[seg]) || (spec.width / spec.segments);
     let usedCm = 0;
     placements.forEach((productId) => {
       const product = products.find((p) => p.id === productId);

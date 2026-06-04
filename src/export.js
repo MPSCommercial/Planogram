@@ -85,6 +85,10 @@ function importJSON(file) {
 
         // Carry custom shelf board positions into the rebuild
         pendingShelfHeights = Array.isArray(s.shelfHeights) ? s.shelfHeights : null;
+
+        if (typeof renderSegmentWidthInputs === 'function') {
+          renderSegmentWidthInputs(s.segmentWidths);
+        }
       }
 
       if (data.products) {
@@ -156,6 +160,10 @@ function loadState() {
 
       // Restore custom shelf board positions for the next buildShelf
       pendingShelfHeights = Array.isArray(s.shelfHeights) ? s.shelfHeights : null;
+
+      if (typeof renderSegmentWidthInputs === 'function') {
+        renderSegmentWidthInputs(s.segmentWidths);
+      }
 
       if (data.products) {
         products = data.products;

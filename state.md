@@ -7,21 +7,23 @@
 
 ## ⚡ NOW
 
-- **Status**: เพิ่มฟังก์ชันรายงานตำแหน่งจัดวางสินค้า (BOM & Placement Report) แบบเปิดหน้าต่างรายงานสรุป และรองรับการดึงภาพสินค้าจริง พร้อมระบบ Export CSV (รองรับภาษาไทยใน Excel) ปรับสลับข้อมูลได้สองมุมมอง (BOM Summary / Placement Details)
-- **Branch**: main | **Commit**: f1853ba
-- **Deploy**: Cloudflare Pages (Auto-deployed)
+- **Status**: เพิ่มฟังก์ชันกำหนดความกว้างของ Segment แยกกันอิสระ (Independent Segment Widths) พร้อมอินพุตย่อยรายตู้ (Bay) ใน Left Panel โดยเมื่อผู้ใช้แก้ไขความกว้างตู้ย่อย ค่าความกว้างรวม (overallWidth) จะคำนวณสะสมอัตโนมัติ และอัปเดตตำแหน่งสินค้าและ Divider ทั้งบน Canvas 2D และ WebGL 3D ทันที
+- **Branch**: main | **Commit**: wip
+- **Deploy**: Local development
 - **Blocker**: None
-- **Next**: ทดสอบระบบ CSV Export, ตรวจสอบ Visual UI ของ modal รายงาน และพัฒนาฟังก์ชันปรับสเปคแยกราย Segment ต่อไป
-- **Files**: `index.html`, `src/styles.css`, `src/export.js`, `src/app.js`, `state.md`
+- **Next**: ทดสอบการจัดวางและการคำนวณความกว้างใน 2D & 3D, ตรวจสอบความถูกต้องของการเซฟและนำเข้า JSON, ทำการ commit และ push ขึ้น GitHub
+- **Files**: `index.html`, `src/app.js`, `src/planogram.js`, `src/planogram3d.js`, `src/export.js`, `state.md`
 
 ---
 
 ## 📜 LOG
 
 ### 🗓️ 2026-06-04
-- ✅ Previous NOW: เพิ่มการซ่อน/แสดงผนังข้าง (Side panels) แบบ real-time โดยไม่ล้างสินค้าเดิมบนชั้นวาง (preserve placements) เมื่อปรับเปลี่ยนตัวเลือกสไตล์หรือขนาดตู้ และรีเฟรชทั้ง 2D และ 3D อัตโนมัติเมื่อกดเลือก
+- ✅ Previous NOW: เพิ่มฟังก์ชันรายงานตำแหน่งจัดวางสินค้า (BOM & Placement Report) แบบเปิดหน้าต่างรายงานสรุป และรองรับการดึงภาพสินค้าจริง พร้อมระบบ Export CSV (รองรับภาษาไทยใน Excel) ปรับสลับข้อมูลได้สองมุมมอง (BOM Summary / Placement Details)
+- Files: `index.html`, `src/styles.css`, `src/export.js`, `src/app.js`
+- ✅ Previous NOW (2): เพิ่มการซ่อน/แสดงผนังข้าง (Side panels) แบบ real-time โดยไม่ล้างสินค้าเดิมบนชั้นวาง (preserve placements) เมื่อปรับเปลี่ยนตัวเลือกสไตล์หรือขนาดตู้ และรีเฟรชทั้ง 2D และ 3D อัตโนมัติเมื่อกดเลือก
 - Files: `src/planogram.js`, `src/app.js`, `planogram_tool.html`
-- ✅ Previous NOW (2): เพิ่มชั้นวางแบบปรับตำแหน่งแผ่นชั้นได้อิสระ + สเกลความสูง — แต่ละชั้นมี cell height (cm) ของตัวเอง (`spec.shelfHeights`), ลากแผ่นชั้นบนแคนวาส (board-grip) หรือพิมพ์ตัวเลข cm ต่อชั้น (pill input) ได้, มีไม้บรรทัด cm ด้านซ้าย (ruler) + ป้ายความสูงต่อชั้น. อัปเดตทั้ง 2D, 3D (`surfaceYs` cumulative) และ persistence
+- ✅ Previous NOW (3): เพิ่มชั้นวางแบบปรับตำแหน่งแผ่นชั้นได้อิสระ + สเกลความสูง — แต่ละชั้นมี cell height (cm) ของตัวเอง (`spec.shelfHeights`), ลากแผ่นชั้นบนแคนวาส (board-grip) หรือพิมพ์ตัวเลข cm ต่อชั้น (pill input) ได้, มีไม้บรรทัด cm ด้านซ้าย (ruler) + ป้ายความสูงต่อชั้น. อัปเดตทั้ง 2D, 3D (`surfaceYs` cumulative) และ persistence
 - Files: `src/planogram.js`, `src/planogram3d.js`, `src/export.js`, `index.html`, `src/styles.css`
 - หมายเหตุ: ช่อง "Gap Between Shelves" ในฟอร์มไม่ถูกใช้ใน layout แล้ว (แทนด้วยตำแหน่งแผ่นชั้น) — ยังเก็บค่าไว้ ยังไม่ลบ
 
