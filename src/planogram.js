@@ -382,13 +382,17 @@ function makeShelfRow(seg, shelf, segWidthPx, shelfThickPx, cellH) {
   el.style.setProperty('--shelf-surface', spec.shelfColor);
   el.style.marginBottom = '0';
 
-  // Per-shelf editable cell-height pill (numeric input), shown on all segments
+  // Per-shelf editable cell-height pill (text input with numeric mode to avoid browser spin-button crop)
   const pill = document.createElement('div');
   pill.className = 'cell-height-pill';
-  pill.innerHTML = `<input type="number" class="cell-height-input" min="${MIN_CELL_CM}" step="1" value="${Math.round(getCellHeights(seg)[shelf])}"><span>cm</span>`;
+  pill.innerHTML = `<input type="text" inputmode="numeric" pattern="[0-9]*" class="cell-height-input" value="${Math.round(getCellHeights(seg)[shelf])}"><span>cm</span>`;
   const input = pill.querySelector('input');
   ['mousedown', 'click'].forEach((evt) => input.addEventListener(evt, (e) => e.stopPropagation()));
-  input.addEventListener('change', () => setCellHeight(seg, shelf, parseFloat(input.value)));
+  input.addEventListener('change', () => {
+    let val = parseInt(input.value);
+    if (isNaN(val)) val = Math.round(getCellHeights(seg)[shelf]);
+    setCellHeight(seg, shelf, val);
+  });
   el.appendChild(pill);
 
   // Draggable board grip (resize boundary with the shelf below). Not on the bottom shelf.

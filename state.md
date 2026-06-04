@@ -7,21 +7,23 @@
 
 ## ⚡ NOW
 
-- **Status**: เพิ่มฟังก์ชันกำหนดความสูงของชั้นวางแยกกันอิสระราย Segment (Independent Shelf Heights per Segment) โดยทุก Segment จะมีช่องกรอก cm และตัว grip สำหรับลากปรับความสูงของแผ่นชั้นแต่ละตู้ (Bay) แยกกันเป็นอิสระ และอัปเดตการเรนเดอร์ในมุมมอง 3D (Three.js WebGL) ให้วาดแผ่นชั้นวางและตัวสินค้าแยกชิ้นตามระดับความสูงจริงของแต่ละ Segment
-- **Branch**: main | **Commit**: 307e93f
-- **Deploy**: Cloudflare Pages (Auto-deployed)
+- **Status**: แก้ไขฟีเจอร์การป้อนระดับความสูงเชลฟ์ย่อย (cell-height-input) ให้เปลี่ยนชนิดช่องกรอกเป็น `text` พร้อมระบุ `numeric` inputmode เพื่อตัดปัญหาเบราว์เซอร์บีบ/ตัดตัวเลขตัวแรก (spin-button crop) และปรับ CSS จัดกึ่งกลางตัวเลขพร้อมกำหนดความกว้างขั้นต่ำของกล่องบอกระยะ cm (cell-height-pill) ให้แสดงผลครบถ้วนสวยงามทุกตู้
+- **Branch**: main | **Commit**: wip
+- **Deploy**: Local development
 - **Blocker**: None
-- **Next**: ทดสอบการลากแผ่นชั้นปรับระยะความสูงแยกตู้ใน 2D & 3D, ตรวจสอบการเซฟและโหลด JSON
-- **Files**: `src/planogram.js`, `src/planogram3d.js`, `src/export.js`, `state.md`
+- **Next**: ทดสอบการแสดงผลกล่องบอกระยะ cm ในทุกความกว้างของตู้ย่อย, ทำการ commit และ push ขึ้น GitHub
+- **Files**: `src/planogram.js`, `src/styles.css`, `state.md`
 
 ---
 
 ## 📜 LOG
 
 ### 🗓️ 2026-06-04
-- ✅ Previous NOW: เพิ่มฟังก์ชันกำหนดความกว้างของ Segment แยกกันอิสระ (Independent Segment Widths) พร้อมอินพุตย่อยรายตู้ (Bay) ใน Left Panel โดยเมื่อผู้ใช้แก้ไขความกว้างตู้ย่อย ค่าความกว้างรวม (overallWidth) จะคำนวณสะสมอัตโนมัติ และอัปเดตตำแหน่งสินค้าและ Divider ทั้งบน Canvas 2D และ WebGL 3D ทันที
+- ✅ Previous NOW: เพิ่มฟังก์ชันกำหนดความสูงของชั้นวางแยกกันอิสระราย Segment (Independent Shelf Heights per Segment) โดยทุก Segment จะมีช่องกรอก cm และตัว grip สำหรับลากปรับความสูงของแผ่นชั้นแต่ละตู้ (Bay) แยกกันเป็นอิสระ และอัปเดตการเรนเดอร์ในมุมมอง 3D (Three.js WebGL) ให้วาดแผ่นชั้นวางและตัวสินค้าแยกชิ้นตามระดับความสูงจริงของแต่ละ Segment
+- Files: `src/planogram.js`, `src/planogram3d.js`, `src/export.js`
+- ✅ Previous NOW (2): เพิ่มฟังก์ชันกำหนดความกว้างของ Segment แยกกันอิสระ (Independent Segment Widths) พร้อมอินพุตย่อยรายตู้ (Bay) ใน Left Panel โดยเมื่อผู้ใช้แก้ไขความกว้างตู้ย่อย ค่าความกว้างรวม (overallWidth) จะคำนวณสะสมอัตโนมัติ และอัปเดตตำแหน่งสินค้าและ Divider ทั้งบน Canvas 2D และ WebGL 3D ทันที
 - Files: `index.html`, `src/app.js`, `src/planogram.js`, `src/planogram3d.js`, `src/export.js`
-- ✅ Previous NOW (2): เพิ่มฟังก์ชันรายงานตำแหน่งจัดวางสินค้า (BOM & Placement Report) แบบเปิดหน้าต่างรายงานสรุป และรองรับการดึงภาพสินค้าจริง พร้อมระบบ Export CSV (รองรับภาษาไทยใน Excel) ปรับสลับข้อมูลได้สองมุมมอง (BOM Summary / Placement Details)
+- ✅ Previous NOW (3): เพิ่มฟังก์ชันรายงานตำแหน่งจัดวางสินค้า (BOM & Placement Report) แบบเปิดหน้าต่างรายงานสรุป และรองรับการดึงภาพสินค้าจริง พร้อมระบบ Export CSV (รองรับภาษาไทยใน Excel) ปรับสลับข้อมูลได้สองมุมมอง (BOM Summary / Placement Details)
 - Files: `index.html`, `src/styles.css`, `src/export.js`, `src/app.js`
 - ✅ Previous NOW (3): เพิ่มการซ่อน/แสดงผนังข้าง (Side panels) แบบ real-time โดยไม่ล้างสินค้าเดิมบนชั้นวาง (preserve placements) เมื่อปรับเปลี่ยนตัวเลือกสไตล์หรือขนาดตู้ และรีเฟรชทั้ง 2D และ 3D อัตโนมัติเมื่อกดเลือก
 - Files: `src/planogram.js`, `src/app.js`, `planogram_tool.html`
