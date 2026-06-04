@@ -9,6 +9,12 @@
   // ─── Button bindings ───
   $('btnBuildShelf').addEventListener('click', buildShelf);
 
+  // ─── Auto-update shelf layout on style & toggle option changes ───
+  ['hasSidePanel', 'hasBackPanel', 'hasSegmentDivider', 'backColor', 'shelfColor'].forEach((id) => {
+    const el = $(id);
+    if (el) el.addEventListener('change', buildShelf);
+  });
+
   // ─── Shelf template bindings ───
   renderTemplateOptions();
   $('btnApplyTemplate').addEventListener('click', applySelectedTemplate);
