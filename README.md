@@ -18,7 +18,7 @@ A lightweight, browser-based planogram builder for visualizing retail shelf layo
 
 ```bash
 # Clone the repo
-git clone https://github.com/Grabbitz/Planogram.git
+git clone https://github.com/MPSCommercial/Planogram.git
 cd Planogram
 
 # Serve locally (any static server works)
