@@ -97,16 +97,6 @@ function redo() {
   updateSummary();
   saveState();
   updateUndoButtons();
-  showToast('Redo');
-}
-
-/**
- * Parse the first numeric value from a cm field (handles ranges like "7-12")
- */
-function parseCm(val, fallback) {
-  if (!val) return fallback;
-  const m = String(val).match(/[\d.]+/);
-  return m ? Math.max(1, parseFloat(m[0])) : fallback;
 }
 
 /**
@@ -547,7 +537,8 @@ function dropInsertIndex(el, seg, shelf, clientX) {
   for (let i = 0; i < items.length; i++) {
     const p = products.find((q) => q.id === items[i]);
     if (!p) continue;
-    const w = Math.max(MIN_ITEM_W, Math.round(parseCm(p.width, 10) * (p.facing || 1) * PX_PER_CM));
+    const dims = getProductDimensions(p, spec.depth);
+    const w = Math.max(MIN_ITEM_W, Math.round(dims.width * (p.facing || 1) * PX_PER_CM));
     if (dropX <= cumX + w / 2) return i;
     cumX += w;
   }
@@ -651,9 +642,10 @@ function renderShelfRow(el, seg, shelf) {
     const product = products.find((p) => p.id === productId);
     if (!product) return;
 
+    const dims = getProductDimensions(product, spec.depth);
     const stack = Math.max(1, product.stack || 1);
-    const wCm = parseCm(product.width, 10) * (product.facing || 1);
-    const hCm = parseCm(product.height, 20);
+    const wCm = dims.width * (product.facing || 1);
+    const hCm = dims.height;
     const wPx = Math.max(MIN_ITEM_W, Math.round(wCm * PX_PER_CM));
     const unitPx = Math.round(hCm * PX_PER_CM);
     const hPx = Math.min(unitPx * stack, cellH - 4);
@@ -663,7 +655,7 @@ function renderShelfRow(el, seg, shelf) {
     item.style.width = `${wPx}px`;
     item.style.height = `${hPx}px`;
     const stackLabel = stack > 1 ? ` · ซ้อน ${stack}` : '';
-    item.title = `${product.name} (${product.width || '?'}cm × ${product.height || '?'}cm${stackLabel})`;
+    item.title = `${product.name} (${Math.round(dims.width)}cm × ${Math.round(dims.height)}cm${stackLabel})`;
     item.draggable = true;
 
     // Event listeners สำหรับการลากย้ายสินค้าที่อยู่บน Shelf
@@ -707,7 +699,8 @@ function renderShelfRow(el, seg, shelf) {
     placements.forEach((productId) => {
       const product = products.find((p) => p.id === productId);
       if (product) {
-        usedCm += parseCm(product.width, 10) * (product.facing || 1);
+        const dims = getProductDimensions(product, spec.depth);
+        usedCm += dims.width * (product.facing || 1);
       }
     });
 
@@ -785,7 +778,8 @@ function updateSummary() {
     arr.forEach((pid) => {
       const p = products.find((q) => q.id === pid);
       if (!p) return;
-      usedCm += parseCm(p.width, 10) * (p.facing || 1);
+      const dims = getProductDimensions(p, spec.depth);
+      usedCm += dims.width * (p.facing || 1);
       skuSet.add(pid);
     });
   });
@@ -851,6 +845,12 @@ function openMiniInspector(seg, shelf, idx, event, el) {
   $('inspectorSku').textContent = `${product.name}`;
   $('inspectorFacingVal').textContent = product.facing || 1;
   $('inspectorStackVal').textContent = product.stack || 1;
+
+  // Set orientation and rotation in UI
+  const orientationSelect = $('inspectorOrientation');
+  if (orientationSelect) orientationSelect.value = product.orientation || 'front';
+  const rotateValSpan = $('inspectorRotateVal');
+  if (rotateValSpan) rotateValSpan.textContent = `${product.rotation || 0}°`;
 
   const rect = el.getBoundingClientRect();
   const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
@@ -959,4 +959,84 @@ function deleteInspectPlacement() {
   removeFromShelf(seg, shelf, idx);
   closeMiniInspector();
   showToast('ลบสินค้าออกจากชั้นวางแล้ว');
+}
+
+/**
+ * Change the orientation value of the inspected product
+ */
+function changeInspectOrientation(newVal) {
+  if (!activeInspectorTarget) return;
+  const { seg, shelf, idx } = activeInspectorTarget;
+  const key = `${seg}-${shelf}`;
+  const productId = shelfData[key] ? shelfData[key][idx] : null;
+  if (!productId) return;
+
+  const product = products.find((p) => p.id === productId);
+  if (!product) return;
+
+  pushHistory();
+  product.orientation = newVal;
+
+  renderShelfFill();
+  renderProductList();
+  updateSummary();
+  saveState();
+
+  if (window.Planogram3D && Planogram3D.isOpen()) {
+    Planogram3D.refresh();
+  }
+
+  // Adjust mini inspector popup position to new center
+  repositionMiniInspector(seg, shelf, idx);
+}
+
+/**
+ * Rotate the inspected product by toggling between 0 and 90 degrees
+ */
+function rotateInspect90() {
+  if (!activeInspectorTarget) return;
+  const { seg, shelf, idx } = activeInspectorTarget;
+  const key = `${seg}-${shelf}`;
+  const productId = shelfData[key] ? shelfData[key][idx] : null;
+  if (!productId) return;
+
+  const product = products.find((p) => p.id === productId);
+  if (!product) return;
+
+  pushHistory();
+  product.rotation = (product.rotation === 90) ? 0 : 90;
+
+  $('inspectorRotateVal').textContent = `${product.rotation}°`;
+
+  renderShelfFill();
+  renderProductList();
+  updateSummary();
+  saveState();
+
+  if (window.Planogram3D && Planogram3D.isOpen()) {
+    Planogram3D.refresh();
+  }
+
+  // Adjust mini inspector popup position to new center
+  repositionMiniInspector(seg, shelf, idx);
+}
+
+/**
+ * Reposition mini inspector based on the product element's updated geometry
+ */
+function repositionMiniInspector(seg, shelf, idx) {
+  setTimeout(() => {
+    const rowEl = $(`shelf-${seg}-${shelf}`);
+    if (rowEl) {
+      const prodEls = rowEl.querySelectorAll('.shelf-product');
+      if (prodEls[idx]) {
+        const rect = prodEls[idx].getBoundingClientRect();
+        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        const popup = $('miniInspector');
+        popup.style.left = `${rect.left + rect.width / 2 + scrollLeft}px`;
+        popup.style.top = `${rect.top + scrollTop}px`;
+      }
+    }
+  }, 50);
 }

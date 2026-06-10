@@ -1444,10 +1444,31 @@ input[type="checkbox"] {
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4), 0 4px 10px rgba(0, 0, 0, 0.2);
   border-radius: 12px;
   padding: 10px 14px;
-  min-width: 170px;
+  min-width: 190px;
   transform: translate(-50%, -100%) translateY(-10px);
   animation: inspectorIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
   color: white;
+}
+
+.inspector-select {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.75rem;
+  padding: 3px 6px;
+  outline: none;
+  cursor: pointer;
+}
+
+.inspector-select option {
+  background: #1c1a17;
+  color: white;
+}
+
+.inspector-select:focus {
+  border-color: rgba(255, 255, 255, 0.4);
 }
 
 @keyframes inspectorIn {

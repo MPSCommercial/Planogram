@@ -7,16 +7,20 @@
 
 ## ⚡ NOW
 
-- **Status**: แก้ไขฟีเจอร์การป้อนระดับความสูงเชลฟ์ย่อย (cell-height-input) ให้เปลี่ยนชนิดช่องกรอกเป็น `text` พร้อมระบุ `numeric` inputmode เพื่อตัดปัญหาเบราว์เซอร์บีบ/ตัดตัวเลขตัวแรก (spin-button crop) และปรับ CSS จัดกึ่งกลางตัวเลขพร้อมกำหนดความกว้างขั้นต่ำของกล่องบอกระยะ cm (cell-height-pill) ให้แสดงผลครบถ้วนสวยงามทุกตู้
-- **Branch**: main | **Commit**: 132d261
+- **Status**: เพิ่มฟีเจอร์หันด้านสินค้า (Orientation: Front / Side / Top) และฟีเจอร์หมุนสินค้า 90 องศา (Rotation) รองรับการแสดงผลทั้งแบบ Canvas 2D และ Three.js WebGL 3D, การคำนวณพื้นที่จัดเก็บจริงในรายงาน BOM, และการเก็บรักษาข้อมูลผ่าน JSON/localStorage อย่างครบถ้วน
+- **Branch**: main
 - **Deploy**: Cloudflare Pages (Auto-deployed)
 - **Blocker**: None
-- **Next**: ทดสอบการแสดงผลกล่องบอกระยะ cm ในทุกความกว้างของตู้ย่อย
-- **Files**: `src/planogram.js`, `src/styles.css`, `state.md`
+- **Next**: ตรวจสอบการหันด้านสินค้าจากผู้ใช้งานและการบันทึกข้อมูล JSON เมื่อมี orientation/rotation ของ SKU หลากหลาย
+- **Files**: `src/utils.js`, `index.html`, `src/styles.css`, `src/planogram.js`, `src/planogram3d.js`, `src/export.js`, `src/app.js`, `state.md`
 
 ---
 
 ## 📜 LOG
+
+### 🗓️ 2026-06-10
+- ✅ Previous NOW: แก้ไขฟีเจอร์การป้อนระดับความสูงเชลฟ์ย่อย (cell-height-input) ให้เปลี่ยนชนิดช่องกรอกเป็น `text` พร้อมระบุ `numeric` inputmode เพื่อตัดปัญหาเบราว์เซอร์บีบ/ตัดตัวเลขตัวแรก (spin-button crop) และปรับ CSS จัดกึ่งกลางตัวเลขพร้อมกำหนดความกว้างขั้นต่ำของกล่องบอกระยะ cm (cell-height-pill) ให้แสดงผลครบถ้วนสวยงามทุกตู้
+- Files: `src/planogram.js`, `src/styles.css`
 
 ### 🗓️ 2026-06-04
 - ✅ Previous NOW: เพิ่มฟังก์ชันกำหนดความสูงของชั้นวางแยกกันอิสระราย Segment (Independent Shelf Heights per Segment) โดยทุก Segment จะมีช่องกรอก cm และตัว grip สำหรับลากปรับความสูงของแผ่นชั้นแต่ละตู้ (Bay) แยกกันเป็นอิสระ และอัปเดตการเรนเดอร์ในมุมมอง 3D (Three.js WebGL) ให้วาดแผ่นชั้นวางและตัวสินค้าแยกชิ้นตามระดับความสูงจริงของแต่ละ Segment

@@ -247,8 +247,9 @@ function updateReportTable() {
 
       const pFacing = Math.max(1, parseInt(product.facing) || 1);
       const pStack = Math.max(1, parseInt(product.stack) || 1);
+      const dims = getProductDimensions(product, spec.depth || 48);
+      const itemWidth = dims.width;
       const itemQty = pFacing * pStack;
-      const itemWidth = parseFloat(product.width) || 0;
       
       totalQty += itemQty;
       totalSpaceUsedCm += (itemWidth * pFacing);

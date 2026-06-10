@@ -450,6 +450,21 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
+      <div class="inspector-controls">
+        <span class="inspector-ctl-label">หันด้าน</span>
+        <select id="inspectorOrientation" class="inspector-select" title="เลือกด้านที่แสดง">
+          <option value="front">ด้านหน้า (Front)</option>
+          <option value="side">ด้านข้าง (Side)</option>
+          <option value="top">ด้านบน (Top)</option>
+        </select>
+      </div>
+      <div class="inspector-controls">
+        <span class="inspector-ctl-label">หมุน</span>
+        <button class="btn-inspect-action" id="btnInspectRotate" type="button" title="หมุนสินค้า 90 องศา">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+        </button>
+        <span class="inspector-facing-val" id="inspectorRotateVal" style="font-size:0.75rem; min-width:30px;">0°</span>
+      </div>
     </div>
   </div>
 

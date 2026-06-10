@@ -120,6 +120,10 @@
     if (prod.image) {
       const tex = textureLoader.load(prod.image);
       tex.encoding = THREE.sRGBEncoding;
+      if (prod.rotation === 90) {
+        tex.rotation = Math.PI / 2; // Rotate 90 degrees
+        tex.center.set(0.5, 0.5);
+      }
       front = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 });
     }
     // BoxGeometry face order: +X, -X, +Y, -Y, +Z(front), -Z(back)
@@ -279,10 +283,10 @@
           const p = list.find((q) => q.id === pid);
           if (!p) return;
           const facing = p.facing || 1;
-          const w = parseCm(p.width, 8) * facing;
-          const h = parseCm(p.height, 18);
-          const fallbackD = clamp(parseCm(p.width, 8) * 1.3, 4, D * 0.85);
-          const d = parseCm(p.depth, fallbackD);
+          const dims = getProductDimensions(p, D);
+          const w = dims.width * facing;
+          const h = dims.height;
+          const d = dims.depth;
 
           const stack = Math.max(1, p.stack || 1);
           const base = makeProduct(p, w, h, d);

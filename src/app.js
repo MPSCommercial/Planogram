@@ -92,6 +92,8 @@
   $('btnInspectStackDec').addEventListener('click', () => adjustInspectStack(-1));
   $('btnInspectStackInc').addEventListener('click', () => adjustInspectStack(1));
   $('btnInspectDel').addEventListener('click', deleteInspectPlacement);
+  $('inspectorOrientation').addEventListener('change', (e) => changeInspectOrientation(e.target.value));
+  $('btnInspectRotate').addEventListener('click', rotateInspect90);
 
   // ─── Google Sheet Toggle Settings drawer ───
   $('btnToggleSyncSettings').addEventListener('click', () => {

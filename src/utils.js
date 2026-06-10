@@ -68,3 +68,53 @@ function showToast(message) {
 function uid() {
   return 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
 }
+
+/**
+ * Parse the first numeric value from a cm field (handles ranges like "7-12")
+ */
+function parseCm(val, fallback) {
+  if (!val) return fallback;
+  const m = String(val).match(/[\d.]+/);
+  return m ? Math.max(1, parseFloat(m[0])) : fallback;
+}
+
+/**
+ * Get product dimensions (width, height, depth) based on its orientation and rotation.
+ * orientation: 'front' | 'side' | 'top'
+ * rotation: 0 | 90
+ */
+function getProductDimensions(p, shelfDepth = 48) {
+  // Parse original dimensions
+  const origW = parseCm(p.width, 10);
+  const origH = parseCm(p.height, 20);
+  const fallbackD = clamp(origW * 1.3, 4, shelfDepth * 0.85);
+  const origD = parseCm(p.depth, fallbackD);
+
+  const orientation = p.orientation || 'front';
+  const rotation = parseInt(p.rotation) || 0;
+
+  let w = origW;
+  let h = origH;
+  let d = origD;
+
+  // Apply Orientation mapping
+  if (orientation === 'side') {
+    w = origD;
+    h = origH;
+    d = origW;
+  } else if (orientation === 'top') {
+    w = origW;
+    h = origD;
+    d = origH;
+  }
+
+  // Apply 90 degree rotation (swaps width and height, depth remains same)
+  if (rotation === 90) {
+    const temp = w;
+    w = h;
+    h = temp;
+  }
+
+  return { width: w, height: h, depth: d };
+}
+
