@@ -7,18 +7,21 @@
 
 ## ⚡ NOW
 
-- **Status**: ปรับปรุงเนื้อหาใน README.md ให้ถูกต้องสอดคล้องกับฟีเจอร์และโครงสร้างของ Repository ในปัจจุบัน (ระบบ Free-Placement, 3D, Stacking, รายงาน BOM และไฟล์ใน src/)
+- **Status**: แก้ไขปัญหาตู้ตรงกลาง (Segment 1) แสดงเป็นสีขาวทึบบดบังแผ่นหลังและชั้นวาง โดยการจำกัดความสูงสินค้าสูงสุดใน 3D View (Clamp height) ไม่ให้ทะลุออกนอกช่องชั้นวางขึ้นไปด้านบน พร้อมทั้ง deploy ขึ้น Surge อีกครั้ง
 - **Branch**: main
 - **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh)
 - **Blocker**: None
-- **Next**: ตรวจสอบผลลัพธ์หรือรอรับ feedback เพิ่มเติมจากผู้ใช้
-- **Files**: `README.md`, `state.md`
+- **Next**: รอรับ feedback เพิ่มเติมจากผู้ใช้งานหลังการแก้ปัญหาสีตู้ตรงกลาง
+- **Files**: `src/planogram3d.js`, `state.md`
 
 ---
 
 ## 📜 LOG
 
 ### 🗓️ 2026-06-11
+- ✅ Previous NOW: ปรับปรุงเนื้อหาใน README.md ให้ถูกต้องสอดคล้องกับฟีเจอร์และโครงสร้างของ Repository ในปัจจุบัน (ระบบ Free-Placement, 3D, Stacking, รายงาน BOM และไฟล์ใน src/)
+- Files: `README.md`, `state.md`
+- ✅ Previous NOW (2): อัปเดตข้อมูลการ Deploy ไปยัง Surge.sh ลงใน README.md เรียบร้อยแล้ว
 - ✅ Previous NOW: อัปเดตข้อมูลการ Deploy ไปยัง Surge.sh ลงใน README.md เรียบร้อยแล้ว
 - Files: `README.md`, `state.md`
 - ✅ Previous NOW (2): แก้ไขปัญหาสีกระพริบ (Shadow acne) ใน Three.js 3D View และแก้ไขการคำนวณตำแหน่งแผ่นชั้นวาง (shelf boards) ไม่ให้ทับซ้อนกับ divider/side panel พร้อมทั้ง deploy ขึ้น Surge อีกครั้ง

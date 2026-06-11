@@ -285,13 +285,16 @@
         const surfaceY = segSurfaceYs[i];
         let cursorX = segLeft + 2;
 
+        const cellH = segHeights[i];
+        const maxH = Math.max(2, cellH - thick); // Clamp to prevent vertical overflow
+
         placed.forEach((pid) => {
           const p = list.find((q) => q.id === pid);
           if (!p) return;
           const facing = p.facing || 1;
           const dims = getProductDimensions(p, D);
           const w = dims.width * facing;
-          const h = dims.height;
+          const h = Math.min(dims.height, maxH); // Clamp product height to cell space
           const d = dims.depth;
 
           const stack = Math.max(1, p.stack || 1);
