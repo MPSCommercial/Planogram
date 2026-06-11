@@ -135,8 +135,8 @@ function renderProductList() {
     card.draggable = true;
 
     const thumb = product.image
-      ? `<div class="thumb"><img src="${product.image}" alt=""></div>`
-      : `<div class="thumb" style="background:${product.color};color:${contrast(product.color)}">${esc(initials(product.name))}</div>`;
+      ? `<div class="thumb"><img src="${product.image}" alt="" draggable="false"></div>`
+      : `<div class="thumb" style="background:${product.color};color:${contrast(product.color)}" draggable="false">${esc(initials(product.name))}</div>`;
 
     const meta = [
       product.odoo,
@@ -160,6 +160,8 @@ function renderProductList() {
     card.addEventListener('click', () => selectProduct(product.id));
     card.addEventListener('dragstart', (e) => {
       e.dataTransfer.setData('text/plain', product.id);
+      e.dataTransfer.setData('text', product.id);
+      e.dataTransfer.effectAllowed = 'move';
       selectProduct(product.id);
     });
     list.appendChild(card);

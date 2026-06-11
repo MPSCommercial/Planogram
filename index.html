@@ -232,6 +232,12 @@
                 <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text);">Top View Room Layout</h3>
                 <p id="topviewMeta" style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">600w × 400d cm</p>
               </div>
+              <div class="zoom-controls" style="display: flex; gap: 4px; align-items: center; background: var(--surface-2); padding: 4px 8px; border-radius: 20px; border: 1px solid var(--line);">
+                <button class="btn btn-mini" id="btnZoomOut" title="Zoom Out" type="button" style="padding: 2px 8px; font-weight: bold; border-radius: 12px; min-width: 24px;">−</button>
+                <span id="zoomPercent" style="font-size: 0.75rem; min-width: 42px; text-align: center; font-weight: 600; color: var(--text);">100%</span>
+                <button class="btn btn-mini" id="btnZoomIn" title="Zoom In" type="button" style="padding: 2px 8px; font-weight: bold; border-radius: 12px; min-width: 24px;">+</button>
+                <button class="btn btn-mini btn-ghost" id="btnZoomReset" title="Reset Zoom" type="button" style="padding: 2px 6px; font-size: 10px; border-radius: 12px;">Reset</button>
+              </div>
             </div>
             <div class="topview-wrap" id="topviewWrap" style="position: relative; overflow: auto; min-height: 400px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 8px; border: 1px dashed var(--line); padding: 20px;">
               <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--muted);">

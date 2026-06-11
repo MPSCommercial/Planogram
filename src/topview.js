@@ -8,6 +8,7 @@
   let areaSpec = { width: 600, depth: 400, gridSize: 20 };
   let placedItems = []; // Array of { id, productId, x, y, rotation }
   let pxPerCm = 0.8;    // Scale: pixels per cm, calculated on draw
+  let zoomScale = 1.0;  // Zoom multiplier for 2D room board
   let isDragging = false;
   let dragTarget = null;
   let dragOffset = { x: 0, y: 0 };
@@ -49,11 +50,31 @@
       }
     }
 
+    // Zoom buttons binding
+    const btnZoomIn = $('btnZoomIn');
+    if (btnZoomIn) btnZoomIn.addEventListener('click', () => adjustZoom(0.1));
+    const btnZoomOut = $('btnZoomOut');
+    if (btnZoomOut) btnZoomOut.addEventListener('click', () => adjustZoom(-0.1));
+    const btnZoomReset = $('btnZoomReset');
+    if (btnZoomReset) btnZoomReset.addEventListener('click', () => resetZoom());
+
     // Set up drag & drop events on topview wrapper
     const wrap = $('topviewWrap');
     if (wrap) {
-      wrap.addEventListener('dragover', (e) => e.preventDefault());
+      wrap.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      });
       wrap.addEventListener('drop', handleDrop);
+
+      // Zoom using mouse wheel + Ctrl/Cmd key
+      wrap.addEventListener('wheel', (e) => {
+        if (e.ctrlKey || e.metaKey) {
+          e.preventDefault();
+          const delta = e.deltaY < 0 ? 0.1 : -0.1;
+          adjustZoom(delta);
+        }
+      }, { passive: false });
     }
 
     // Hook tab switches from main app.js (we hook topbar navigation)
@@ -273,7 +294,7 @@
 
     const scaleX = hostWidth / areaSpec.width;
     const scaleY = hostHeight / areaSpec.depth;
-    pxPerCm = Math.min(scaleX, scaleY, 1.2); // Cap at 1.2px/cm
+    pxPerCm = Math.min(scaleX, scaleY, 1.2) * zoomScale; // Cap at 1.2px/cm, multiply by zoomScale
 
     const canvasW = Math.round(areaSpec.width * pxPerCm);
     const canvasH = Math.round(areaSpec.depth * pxPerCm);
@@ -515,10 +536,25 @@
     }
   }
 
+  /** Zoom control functions */
+  function adjustZoom(delta) {
+    zoomScale = clamp(zoomScale + delta, 0.4, 3.0);
+    const zoomText = $('zoomPercent');
+    if (zoomText) zoomText.textContent = Math.round(zoomScale * 100) + '%';
+    drawRoom();
+  }
+
+  function resetZoom() {
+    zoomScale = 1.0;
+    const zoomText = $('zoomPercent');
+    if (zoomText) zoomText.textContent = '100%';
+    drawRoom();
+  }
+
   /** Handle item dropped onto topview canvas */
   function handleDrop(e) {
     e.preventDefault();
-    const productId = e.dataTransfer.getData('text/plain');
+    const productId = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text');
     if (!productId) return;
 
     const p = products.find((q) => q.id === productId);
