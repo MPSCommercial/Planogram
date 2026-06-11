@@ -78,6 +78,19 @@ To update products, click **Sync Sheet** in the Product Library panel. Auto-sync
 
 State is saved automatically to `localStorage`. To back up or share a layout, use **Export JSON** / **Import JSON**.
 
+## Deployment
+
+This project is deployed to Surge.sh at:
+[http://planogram-mpsynergy.surge.sh](http://planogram-mpsynergy.surge.sh)
+
+To redeploy the project to Surge:
+1. Make sure you are logged into your Surge account.
+2. Run the following command from the project root:
+   ```bash
+   npx surge . planogram-mpsynergy.surge.sh
+   ```
+
 ## License
 
 MIT
+

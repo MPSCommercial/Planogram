@@ -7,16 +7,26 @@
 
 ## ⚡ NOW
 
-- **Status**: เพิ่มฟีเจอร์หันด้านสินค้า (Orientation: Front / Side / Top) และฟีเจอร์หมุนสินค้า 90 องศา (Rotation) รองรับการแสดงผลทั้งแบบ Canvas 2D และ Three.js WebGL 3D, การคำนวณพื้นที่จัดเก็บจริงในรายงาน BOM, และการเก็บรักษาข้อมูลผ่าน JSON/localStorage อย่างครบถ้วน
+- **Status**: อัปเดตข้อมูลการ Deploy ไปยัง Surge.sh ลงใน README.md เรียบร้อยแล้ว
 - **Branch**: main
-- **Deploy**: Cloudflare Pages (Auto-deployed)
+- **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh)
 - **Blocker**: None
-- **Next**: ตรวจสอบการหันด้านสินค้าจากผู้ใช้งานและการบันทึกข้อมูล JSON เมื่อมี orientation/rotation ของ SKU หลากหลาย
-- **Files**: `src/utils.js`, `index.html`, `src/styles.css`, `src/planogram.js`, `src/planogram3d.js`, `src/export.js`, `src/app.js`, `state.md`
+- **Next**: ตรวจสอบผลลัพธ์หรือรอรับ feedback เพิ่มเติมจากผู้ใช้
+- **Files**: `README.md`, `state.md`
 
 ---
 
 ## 📜 LOG
+
+### 🗓️ 2026-06-11
+- ✅ Previous NOW: แก้ไขปัญหาสีกระพริบ (Shadow acne) ใน Three.js 3D View และแก้ไขการคำนวณตำแหน่งแผ่นชั้นวาง (shelf boards) ไม่ให้ทับซ้อนกับ divider/side panel พร้อมทั้ง deploy ขึ้น Surge อีกครั้ง
+- Files: `src/planogram3d.js`, `state.md`
+- ✅ Previous NOW (2): Deploy โปรเจกต์ขึ้น Surge เรียบร้อยแล้วที่ URL: http://planogram-mpsynergy.surge.sh
+- ✅ Previous NOW: Deploy โปรเจกต์ขึ้น Surge เรียบร้อยแล้วที่ URL: http://planogram-mpsynergy.surge.sh
+- Files: `state.md`
+- ✅ Previous NOW (2): เพิ่มฟีเจอร์หันด้านสินค้า (Orientation: Front / Side / Top) และฟีเจอร์หมุนสินค้า 90 องศา (Rotation) รองรับการแสดงผลทั้งแบบ Canvas 2D และ Three.js WebGL 3D, การคำนวณพื้นที่จัดเก็บจริงในรายงาน BOM, และการเก็บรักษาข้อมูลผ่าน JSON/localStorage อย่างครบถ้วน
+- ✅ Previous NOW: เพิ่มฟีเจอร์หันด้านสินค้า (Orientation: Front / Side / Top) และฟีเจอร์หมุนสินค้า 90 องศา (Rotation) รองรับการแสดงผลทั้งแบบ Canvas 2D และ Three.js WebGL 3D, การคำนวณพื้นที่จัดเก็บจริงในรายงาน BOM, และการเก็บรักษาข้อมูลผ่าน JSON/localStorage อย่างครบถ้วน
+- Files: `src/utils.js`, `index.html`, `src/styles.css`, `src/planogram.js`, `src/planogram3d.js`, `src/export.js`, `src/app.js`
 
 ### 🗓️ 2026-06-10
 - ✅ Previous NOW: แก้ไขฟีเจอร์การป้อนระดับความสูงเชลฟ์ย่อย (cell-height-input) ให้เปลี่ยนชนิดช่องกรอกเป็น `text` พร้อมระบุ `numeric` inputmode เพื่อตัดปัญหาเบราว์เซอร์บีบ/ตัดตัวเลขตัวแรก (spin-button crop) และปรับ CSS จัดกึ่งกลางตัวเลขพร้อมกำหนดความกว้างขั้นต่ำของกล่องบอกระยะ cm (cell-height-pill) ให้แสดงผลครบถ้วนสวยงามทุกตู้

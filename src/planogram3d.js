@@ -51,7 +51,8 @@
     key.position.set(420, 620, 540);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
-    key.shadow.bias = -0.0004;
+    key.shadow.bias = -0.0005;
+    key.shadow.normalBias = 0.05;
     scene.add(key);
     scene.userData.keyLight = key;
 
@@ -252,19 +253,24 @@
       // Draw shelf boards for this segment
       for (let i = 0; i < shelfCount; i++) {
         const surfaceY = segSurfaceYs[i];
-        let boardW = segW;
-        let boardX = centerX;
-        // Compensate for outer side panels at boundaries
-        if (s.hasSidePanel) {
-          if (seg === 0) {
-            boardW -= panelT;
-            boardX += panelT / 2;
-          }
-          if (seg === segCount - 1) {
-            boardW -= panelT;
-            boardX -= panelT / 2;
-          }
+        
+        let leftBound = segLeft;
+        if (seg === 0) {
+          if (s.hasSidePanel) leftBound += panelT;
+        } else {
+          if (s.hasDivider) leftBound += panelT / 2;
         }
+
+        let rightBound = segLeft + segW;
+        if (seg === segCount - 1) {
+          if (s.hasSidePanel) rightBound -= panelT;
+        } else {
+          if (s.hasDivider) rightBound -= panelT / 2;
+        }
+
+        const boardW = Math.max(0, rightBound - leftBound);
+        const boardX = (leftBound + rightBound) / 2;
+
         const board = makeBox(boardW, thick, D - 2, s.shelfColor);
         board.position.set(boardX, surfaceY + thick / 2, 0);
         contentGroup.add(board);
