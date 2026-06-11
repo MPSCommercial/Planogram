@@ -7,19 +7,23 @@
 
 ## ⚡ NOW
 
-- **Status**: แก้ไขปัญหาตู้ตรงกลาง (Segment 1) แสดงเป็นสีขาวทึบบดบังแผ่นหลังและชั้นวาง โดยการจำกัดความสูงสินค้าสูงสุดใน 3D View (Clamp height) ไม่ให้ทะลุออกนอกช่องชั้นวางขึ้นไปด้านบน พร้อมทั้ง deploy ขึ้น Surge อีกครั้ง
+- **Status**: เพิ่มเมนูและพื้นที่ทำงาน "Top View Layout" สำหรับจัดวางแปลนห้อง (Floor Planning) รองรับสินค้าเฟอร์นิเจอร์หลัก (Fixture Shelf, Office Table, Office Chair, Comfort Bed) แบบ 2D drag & drop snap-to-grid และแสดงผล 3D ในมุมมองกล้องมุมสูงพร้อมโมเดลแบบ Procedural ที่มีรายละเอียด พร้อมเพิ่มอินพุต Depth (ความลึก) ในหน้าต่างเพิ่ม/แก้ไขสินค้า
 - **Branch**: main
 - **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh)
 - **Blocker**: None
-- **Next**: รอรับ feedback เพิ่มเติมจากผู้ใช้งานหลังการแก้ปัญหาสีตู้ตรงกลาง
-- **Files**: `src/planogram3d.js`, `state.md`
+- **Next**: รอรับข้อเสนอแนะเพิ่มเติมจากผู้ใช้งาน
+- **Files**: `index.html`, `src/topview.js`, `src/products.js`, `src/planogram3d.js`, `state.md`
 
 ---
 
 ## 📜 LOG
 
 ### 🗓️ 2026-06-11
-- ✅ Previous NOW: ปรับปรุงเนื้อหาใน README.md ให้ถูกต้องสอดคล้องกับฟีเจอร์และโครงสร้างของ Repository ในปัจจุบัน (ระบบ Free-Placement, 3D, Stacking, รายงาน BOM และไฟล์ใน src/)
+- ✅ Previous NOW: เพิ่มเมนูและพื้นที่ทำงาน "Top View Layout" สำหรับจัดวางแปลนห้อง (Floor Planning) รองรับสินค้าเฟอร์นิเจอร์หลัก (Fixture Shelf, Office Table, Office Chair, Comfort Bed) แบบ 2D drag & drop snap-to-grid และแสดงผล 3D ในมุมมองกล้องมุมสูงพร้อมโมเดลแบบ Procedural ที่มีรายละเอียด พร้อมเพิ่มอินพุต Depth (ความลึก) ในหน้าต่างเพิ่ม/แก้ไขสินค้า
+- Files: `index.html`, `src/topview.js`, `src/products.js`, `src/planogram3d.js`, `state.md`
+- ✅ Previous NOW (2): แก้ไขปัญหาตู้ตรงกลาง (Segment 1) แสดงเป็นสีขาวทึบบดบังแผ่นหลังและชั้นวาง โดยการจำกัดความสูงสินค้าสูงสุดใน 3D View (Clamp height) ไม่ให้ทะลุออกนอกช่องชั้นวางขึ้นไปด้านบน พร้อมทั้ง deploy ขึ้น Surge อีกครั้ง
+- Files: `src/planogram3d.js`, `state.md`
+- ✅ Previous NOW (3): ปรับปรุงเนื้อหาใน README.md ให้ถูกต้องสอดคล้องกับฟีเจอร์และโครงสร้างของ Repository ในปัจจุบัน (ระบบ Free-Placement, 3D, Stacking, รายงาน BOM และไฟล์ใน src/)
 - Files: `README.md`, `state.md`
 - ✅ Previous NOW (2): อัปเดตข้อมูลการ Deploy ไปยัง Surge.sh ลงใน README.md เรียบร้อยแล้ว
 - ✅ Previous NOW: อัปเดตข้อมูลการ Deploy ไปยัง Surge.sh ลงใน README.md เรียบร้อยแล้ว
