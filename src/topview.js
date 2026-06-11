@@ -437,39 +437,72 @@
       sizeInfo.style.pointerEvents = 'none';
       el.appendChild(sizeInfo);
 
-      // Delete Button (x)
+      // Delete Button (x) - Large round overlay button with hover effect
       const btnDel = document.createElement('button');
       btnDel.textContent = '×';
       btnDel.style.position = 'absolute';
-      btnDel.style.top = '1px';
-      btnDel.style.right = '3px';
-      btnDel.style.background = 'none';
-      btnDel.style.border = 'none';
-      btnDel.style.color = contrast(p.color || '#cccccc');
+      btnDel.style.top = '-8px';
+      btnDel.style.right = '-8px';
+      btnDel.style.width = '20px';
+      btnDel.style.height = '20px';
+      btnDel.style.borderRadius = '50%';
+      btnDel.style.background = '#e53e3e';
+      btnDel.style.color = '#ffffff';
+      btnDel.style.border = '1.5px solid #ffffff';
+      btnDel.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+      btnDel.style.display = 'flex';
+      btnDel.style.alignItems = 'center';
+      btnDel.style.justifyContent = 'center';
+      btnDel.style.fontSize = '14px';
       btnDel.style.fontWeight = 'bold';
-      btnDel.style.fontSize = '12px';
       btnDel.style.cursor = 'pointer';
-      btnDel.style.padding = '0';
+      btnDel.style.padding = '0 0 2px 0'; // Align vertical center for cross character
       btnDel.style.lineHeight = '1';
+      btnDel.style.transition = 'transform 0.1s ease, background-color 0.1s ease';
+      btnDel.addEventListener('mouseenter', () => {
+        btnDel.style.transform = 'scale(1.15)';
+        btnDel.style.backgroundColor = '#c53030';
+      });
+      btnDel.addEventListener('mouseleave', () => {
+        btnDel.style.transform = 'scale(1.0)';
+        btnDel.style.backgroundColor = '#e53e3e';
+      });
       btnDel.addEventListener('click', (e) => {
         e.stopPropagation();
         removeFurniture(item.id);
       });
       el.appendChild(btnDel);
 
-      // Rotate Button (↺)
+      // Rotate Button (↺) - Large round overlay button with hover effect
       const btnRot = document.createElement('button');
       btnRot.textContent = '↺';
       btnRot.style.position = 'absolute';
-      btnRot.style.bottom = '1px';
-      btnRot.style.right = '3px';
-      btnRot.style.background = 'none';
-      btnRot.style.border = 'none';
-      btnRot.style.color = contrast(p.color || '#cccccc');
-      btnRot.style.fontSize = '10px';
+      btnRot.style.bottom = '-8px';
+      btnRot.style.right = '-8px';
+      btnRot.style.width = '20px';
+      btnRot.style.height = '20px';
+      btnRot.style.borderRadius = '50%';
+      btnRot.style.background = '#2b6cb0';
+      btnRot.style.color = '#ffffff';
+      btnRot.style.border = '1.5px solid #ffffff';
+      btnRot.style.boxShadow = '0 2px 4px rgba(0,0,0,0.2)';
+      btnRot.style.display = 'flex';
+      btnRot.style.alignItems = 'center';
+      btnRot.style.justifyContent = 'center';
+      btnRot.style.fontSize = '12px';
+      btnRot.style.fontWeight = 'bold';
       btnRot.style.cursor = 'pointer';
       btnRot.style.padding = '0';
       btnRot.style.lineHeight = '1';
+      btnRot.style.transition = 'transform 0.1s ease, background-color 0.1s ease';
+      btnRot.addEventListener('mouseenter', () => {
+        btnRot.style.transform = 'scale(1.15)';
+        btnRot.style.backgroundColor = '#2b528a';
+      });
+      btnRot.addEventListener('mouseleave', () => {
+        btnRot.style.transform = 'scale(1.0)';
+        btnRot.style.backgroundColor = '#2b6cb0';
+      });
       btnRot.addEventListener('click', (e) => {
         e.stopPropagation();
         rotateFurniture(item.id);
