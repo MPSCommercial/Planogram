@@ -43,6 +43,7 @@ function addProduct() {
   updateSummary();
   selectProduct(product.id);
   saveState();
+  if (window.Planogram3D && Planogram3D.isOpen()) Planogram3D.refresh();
   showToast('เพิ่มสินค้าแล้ว');
 }
 
@@ -71,6 +72,7 @@ function deleteProduct(id, event) {
   updateLegend();
   updateSummary();
   saveState();
+  if (window.Planogram3D && Planogram3D.isOpen()) Planogram3D.refresh();
 }
 
 /**
@@ -301,6 +303,7 @@ function saveEditProduct() {
   updateLegend();
   updateSummary();
   saveState();
+  if (window.Planogram3D && Planogram3D.isOpen()) Planogram3D.refresh();
   showToast('บันทึกการแก้ไขแล้ว');
 }
 

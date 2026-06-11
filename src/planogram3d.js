@@ -413,7 +413,24 @@
         const legH = tableH - topH;
         
         // Table top
-        const top = makeBox(origW, topH, origD, color);
+        let top;
+        if (p.image) {
+          const tex = textureLoader.load(p.image);
+          tex.encoding = THREE.sRGBEncoding;
+          const imgMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 });
+          const sideMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), roughness: 0.6 });
+          const mats = [sideMat, sideMat, imgMat, sideMat, imgMat, sideMat];
+          top = new THREE.Mesh(new THREE.BoxGeometry(origW, topH, origD), mats);
+          top.castShadow = true;
+          top.receiveShadow = true;
+          const edges = new THREE.LineSegments(
+            new THREE.EdgesGeometry(top.geometry),
+            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.28 })
+          );
+          top.add(edges);
+        } else {
+          top = makeBox(origW, topH, origD, color);
+        }
         top.position.set(0, tableH - topH/2, 0);
         itemGroup.add(top);
 
@@ -468,8 +485,44 @@
         const seatH = 45;
         const seatThick = 6;
         
-        // Seat cushion
-        const seat = makeBox(origW * 0.9, seatThick, origD * 0.9, color);
+        // Seat cushion & backrest
+        let seat, backrest;
+        const backH = origH - seatH;
+        const backW = origW * 0.8;
+        const backD = 3;
+
+        if (p.image) {
+          const tex = textureLoader.load(p.image);
+          tex.encoding = THREE.sRGBEncoding;
+          const imgMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 });
+          const sideMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), roughness: 0.6 });
+          
+          // seat gets image on top (+Y)
+          const seatMats = [sideMat, sideMat, imgMat, sideMat, sideMat, sideMat];
+          seat = new THREE.Mesh(new THREE.BoxGeometry(origW * 0.9, seatThick, origD * 0.9), seatMats);
+          seat.castShadow = true;
+          seat.receiveShadow = true;
+          const seatEdges = new THREE.LineSegments(
+            new THREE.EdgesGeometry(seat.geometry),
+            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.28 })
+          );
+          seat.add(seatEdges);
+          
+          // backrest gets image on front (+Z) and top (+Y)
+          const backMats = [sideMat, sideMat, imgMat, sideMat, imgMat, sideMat];
+          backrest = new THREE.Mesh(new THREE.BoxGeometry(backW, backH, backD), backMats);
+          backrest.castShadow = true;
+          backrest.receiveShadow = true;
+          const backEdges = new THREE.LineSegments(
+            new THREE.EdgesGeometry(backrest.geometry),
+            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.28 })
+          );
+          backrest.add(backEdges);
+        } else {
+          seat = makeBox(origW * 0.9, seatThick, origD * 0.9, color);
+          backrest = makeBox(backW, backH, backD, color);
+        }
+
         seat.position.set(0, seatH - seatThick/2, 0);
         itemGroup.add(seat);
 
@@ -487,12 +540,6 @@
           itemGroup.add(pad);
         });
 
-        // Ergonomic backrest mesh
-        const backH = origH - seatH;
-        const backW = origW * 0.8;
-        const backD = 3;
-        
-        const backrest = makeBox(backW, backH, backD, color);
         backrest.position.set(0, seatH + backH/2, -origD/2 + backD/2 + 2);
         itemGroup.add(backrest);
 
@@ -533,7 +580,24 @@
         const backT = 1.5;
         
         // Back panel
-        const back = makeBox(shelfW, shelfH, backT, '#3a3a3a');
+        let back;
+        if (p.image) {
+          const tex = textureLoader.load(p.image);
+          tex.encoding = THREE.sRGBEncoding;
+          const imgMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 });
+          const sideMat = new THREE.MeshStandardMaterial({ color: new THREE.Color('#3a3a3a'), roughness: 0.6 });
+          const mats = [sideMat, sideMat, sideMat, sideMat, imgMat, sideMat]; // +Z is front
+          back = new THREE.Mesh(new THREE.BoxGeometry(shelfW, shelfH, backT), mats);
+          back.castShadow = true;
+          back.receiveShadow = true;
+          const edges = new THREE.LineSegments(
+            new THREE.EdgesGeometry(back.geometry),
+            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.28 })
+          );
+          back.add(edges);
+        } else {
+          back = makeBox(shelfW, shelfH, backT, '#3a3a3a');
+        }
         back.position.set(0, shelfH/2, -shelfD/2 + backT/2);
         itemGroup.add(back);
 
@@ -561,7 +625,24 @@
         const headT = 6;
         
         // Mattress base
-        const base = makeBox(origW, bedH, origD - headT, color);
+        let base;
+        if (p.image) {
+          const tex = textureLoader.load(p.image);
+          tex.encoding = THREE.sRGBEncoding;
+          const imgMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 });
+          const sideMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), roughness: 0.6 });
+          const mats = [sideMat, sideMat, imgMat, sideMat, imgMat, sideMat];
+          base = new THREE.Mesh(new THREE.BoxGeometry(origW, bedH, origD - headT), mats);
+          base.castShadow = true;
+          base.receiveShadow = true;
+          const edges = new THREE.LineSegments(
+            new THREE.EdgesGeometry(base.geometry),
+            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.28 })
+          );
+          base.add(edges);
+        } else {
+          base = makeBox(origW, bedH, origD - headT, color);
+        }
         base.position.set(0, bedH/2, headT/2);
         itemGroup.add(base);
 
@@ -577,7 +658,24 @@
       } 
       else {
         // Default generic furniture box
-        const defaultBox = makeBox(origW, origH, origD, color);
+        let defaultBox;
+        if (p.image) {
+          const tex = textureLoader.load(p.image);
+          tex.encoding = THREE.sRGBEncoding;
+          const imgMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.55 });
+          const sideMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(color), roughness: 0.6 });
+          const mats = [sideMat, sideMat, imgMat, sideMat, imgMat, sideMat];
+          defaultBox = new THREE.Mesh(new THREE.BoxGeometry(origW, origH, origD), mats);
+          defaultBox.castShadow = true;
+          defaultBox.receiveShadow = true;
+          const edges = new THREE.LineSegments(
+            new THREE.EdgesGeometry(defaultBox.geometry),
+            new THREE.LineBasicMaterial({ color: 0x20242a, transparent: true, opacity: 0.32 })
+          );
+          defaultBox.add(edges);
+        } else {
+          defaultBox = makeBox(origW, origH, origD, color);
+        }
         defaultBox.position.set(0, origH/2, 0);
         itemGroup.add(defaultBox);
       }

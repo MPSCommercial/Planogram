@@ -415,6 +415,14 @@
       el.style.padding = '4px';
       el.style.userSelect = 'none';
 
+      // Render actual image if uploaded
+      if (p.image) {
+        el.style.backgroundImage = `url(${p.image})`;
+        el.style.backgroundSize = 'contain';
+        el.style.backgroundPosition = 'center';
+        el.style.backgroundRepeat = 'no-repeat';
+      }
+
       // Outline edge effect
       el.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.15), 0 3px 6px rgba(0,0,0,0.08)';
 
@@ -423,7 +431,8 @@
       title.textContent = shortName(p.name);
       title.style.fontSize = '9px';
       title.style.fontWeight = 'bold';
-      title.style.color = contrast(p.color || '#cccccc');
+      title.style.color = p.image ? '#ffffff' : contrast(p.color || '#cccccc');
+      if (p.image) title.style.textShadow = '0 1px 3px rgba(0,0,0,0.8), 0 1px 1px rgba(0,0,0,0.8)';
       title.style.textAlign = 'center';
       title.style.pointerEvents = 'none';
       el.appendChild(title);
@@ -431,7 +440,8 @@
       const sizeInfo = document.createElement('div');
       sizeInfo.textContent = `${origW}x${origD} cm (${item.rotation}°)`;
       sizeInfo.style.fontSize = '8px';
-      sizeInfo.style.color = contrast(p.color || '#cccccc');
+      sizeInfo.style.color = p.image ? '#ffffff' : contrast(p.color || '#cccccc');
+      if (p.image) sizeInfo.style.textShadow = '0 1px 3px rgba(0,0,0,0.8), 0 1px 1px rgba(0,0,0,0.8)';
       sizeInfo.style.opacity = '0.78';
       sizeInfo.style.marginTop = '2px';
       sizeInfo.style.pointerEvents = 'none';

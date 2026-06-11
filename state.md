@@ -7,12 +7,12 @@
 
 ## ⚡ NOW
 
-- **Status**: ปรับปรุง UI ของปุ่มลบ (Delete Button) และปุ่มหมุนเฟอร์นิเจอร์ (Rotate Button) บนแคนวาส 2D ของพื้นที่ห้องให้มีขนาดใหญ่ขึ้นเป็นรูปทรงกลมสีสันชัดเจน (แดง/น้ำเงิน) ขอบสีขาวลอยเด่น และแสดงผลแบบทับเหลื่อมขอบมุมขวาบน/ล่าง (Overlapping badges) พร้อมเอฟเฟกต์ย่อขยายเมื่อวางเมาส์ (Hover scale) เพื่อการคลิกสั่งงานและลบสินค้าที่สะดวกขึ้นเรียบร้อยแล้ว
+- **Status**: พัฒนาระบบแสดงผลภาพสินค้าจริง (Real Product Mockup) ทั้งบน 2D Canvas และ 3D View ของหน้าหลัก Planogram และพื้นที่ห้อง Top View Layout โดยรองรับการทำ Texture Mapping บนโมเดล 3D แบบเรียลไทม์ทันทีที่มีการอัปโหลดหรือแก้ไขภาพสินค้าจริง
 - **Branch**: main
 - **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh)
 - **Blocker**: None
 - **Next**: รอรับข้อเสนอแนะเพิ่มเติมจากผู้ใช้งาน
-- **Files**: `src/topview.js`, `state.md`
+- **Files**: `src/planogram3d.js`, `src/products.js`, `state.md`
 
 ---
 
