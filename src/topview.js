@@ -18,6 +18,11 @@
   let redoStack = [];
   let dragSnapshot = null;     // History snapshot captured at drag start
   let dragMoved = false;
+  let dragEl = null;           // DOM element being dragged (moved incrementally)
+  let isPanning = false;       // Space+drag or middle-mouse pan
+  let spaceHeld = false;
+  let justPanned = false;      // Suppress the click that ends a pan
+  let panStart = { x: 0, y: 0, sl: 0, st: 0 };
 
   // Pre-configured furniture/fixture items
   const FURNITURE_PRESETS = [
@@ -55,11 +60,17 @@
       }
     }
 
-    // Zoom buttons binding
+    // Zoom buttons binding (anchored to viewport center)
+    const wrapCenter = () => {
+      const w = $('topviewWrap');
+      if (!w) return null;
+      const r = w.getBoundingClientRect();
+      return { clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 };
+    };
     const btnZoomIn = $('btnZoomIn');
-    if (btnZoomIn) btnZoomIn.addEventListener('click', () => adjustZoom(0.1));
+    if (btnZoomIn) btnZoomIn.addEventListener('click', () => adjustZoom(0.1, wrapCenter()));
     const btnZoomOut = $('btnZoomOut');
-    if (btnZoomOut) btnZoomOut.addEventListener('click', () => adjustZoom(-0.1));
+    if (btnZoomOut) btnZoomOut.addEventListener('click', () => adjustZoom(-0.1, wrapCenter()));
     const btnZoomReset = $('btnZoomReset');
     if (btnZoomReset) btnZoomReset.addEventListener('click', () => resetZoom());
 
@@ -76,14 +87,26 @@
       });
       wrap.addEventListener('drop', handleDrop);
 
-      // Zoom using mouse wheel + Ctrl/Cmd key
+      // Zoom using mouse wheel + Ctrl/Cmd key, anchored to cursor position
       wrap.addEventListener('wheel', (e) => {
         if (e.ctrlKey || e.metaKey) {
           e.preventDefault();
           const delta = e.deltaY < 0 ? 0.1 : -0.1;
-          adjustZoom(delta);
+          adjustZoom(delta, { clientX: e.clientX, clientY: e.clientY });
         }
       }, { passive: false });
+
+      // Pan: middle-mouse drag, or Space + left drag
+      wrap.addEventListener('mousedown', (e) => {
+        const middlePan = e.button === 1;
+        const spacePan = spaceHeld && e.button === 0;
+        if (!middlePan && !spacePan) return;
+        e.preventDefault();
+        isPanning = true;
+        justPanned = false;
+        panStart = { x: e.clientX, y: e.clientY, sl: wrap.scrollLeft, st: wrap.scrollTop };
+        wrap.style.cursor = 'grabbing';
+      });
     }
 
     // Global drag listeners (bound once — drawRoom only rebuilds the board)
@@ -92,6 +115,13 @@
 
     // Keyboard shortcuts for topview workspace
     document.addEventListener('keydown', handleKeydown);
+    document.addEventListener('keyup', (e) => {
+      if (e.code === 'Space' && spaceHeld) {
+        spaceHeld = false;
+        const w = $('topviewWrap');
+        if (w && !isPanning) w.style.cursor = '';
+      }
+    });
 
     // Item Inspector bindings
     const xInput = $('tvItemX');
@@ -337,6 +367,18 @@
     if (activeTab !== 'topview') return;
     const tag = e.target.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+    // Hold Space = pan mode (grab cursor, drag scrolls the canvas)
+    if (e.code === 'Space') {
+      e.preventDefault();
+      if (!spaceHeld) {
+        spaceHeld = true;
+        const w = $('topviewWrap');
+        if (w && !isPanning) w.style.cursor = 'grab';
+      }
+      return;
+    }
+
     if (!selectedItemId) return;
 
     const mod = e.ctrlKey || e.metaKey;
@@ -583,11 +625,18 @@
     const canvasW = Math.round(areaSpec.width * pxPerCm);
     const canvasH = Math.round(areaSpec.depth * pxPerCm);
 
+    // Center via auto margins instead of flex alignment — a flex-centered child
+    // larger than its container clips the top/left edge beyond scroll reach
+    wrap.style.alignItems = 'flex-start';
+    wrap.style.justifyContent = 'flex-start';
+
     // Create Floor Board
     const board = document.createElement('div');
     board.className = 'room-board';
     board.style.width = `${canvasW}px`;
     board.style.height = `${canvasH}px`;
+    board.style.margin = 'auto';
+    board.style.flexShrink = '0';
     board.style.position = 'relative';
     board.style.background = '#fcfcf9';
     board.style.border = '2px solid #20242a';
@@ -603,6 +652,11 @@
 
     // Click to place product on board
     board.addEventListener('click', (e) => {
+      // Ignore the click that ends a Space+drag pan
+      if (justPanned) {
+        justPanned = false;
+        return;
+      }
       // Ignore click on placed items or buttons
       if (e.target.closest('.placed-furniture') || e.target.tagName === 'BUTTON') return;
 
@@ -804,12 +858,14 @@
       // Select + drag to reposition logic
       el.addEventListener('mousedown', (e) => {
         if (e.target === btnDel || e.target === btnRot) return;
+        if (spaceHeld || e.button === 1) return; // Let the pan handler take over
         e.preventDefault();
         selectItem(item.id);
         isDragging = true;
         dragMoved = false;
         dragSnapshot = snapshot();
         dragTarget = item;
+        dragEl = el;
         const rect = board.getBoundingClientRect();
         dragOffset.x = e.clientX - rect.left - xPx;
         dragOffset.y = e.clientY - rect.top - yPx;
@@ -822,8 +878,77 @@
     updateInspector();
   }
 
-  /** Reposition furniture item on drag */
+  /** Find guide-snap targets (edges/centers of other items + room) near the dragged footprint */
+  function computeGuideSnap(xCm, yCm, w, d, tol) {
+    const vLines = [0, areaSpec.width / 2, areaSpec.width];
+    const hLines = [0, areaSpec.depth / 2, areaSpec.depth];
+    placedItems.forEach((it) => {
+      if (it === dragTarget) return;
+      const p = products.find((q) => q.id === it.productId);
+      if (!p) return;
+      const f = itemFootprint(it, p);
+      vLines.push(it.x, it.x + f.w / 2, it.x + f.w);
+      hLines.push(it.y, it.y + f.d / 2, it.y + f.d);
+    });
+
+    const best = { x: null, y: null, vLine: null, hLine: null, vDist: tol, hDist: tol };
+    // Dragged item's own anchors: leading edge, center, trailing edge
+    [[0, xCm], [w / 2, xCm + w / 2], [w, xCm + w]].forEach(([off, edge]) => {
+      vLines.forEach((line) => {
+        const dist = Math.abs(edge - line);
+        if (dist < best.vDist) { best.vDist = dist; best.x = line - off; best.vLine = line; }
+      });
+    });
+    [[0, yCm], [d / 2, yCm + d / 2], [d, yCm + d]].forEach(([off, edge]) => {
+      hLines.forEach((line) => {
+        const dist = Math.abs(edge - line);
+        if (dist < best.hDist) { best.hDist = dist; best.y = line - off; best.hLine = line; }
+      });
+    });
+    return best;
+  }
+
+  /** Show/hide inference guide lines on the board */
+  function updateGuides(board, sn) {
+    let v = board.querySelector('.tv-guide-v');
+    if (!v) {
+      v = document.createElement('div');
+      v.className = 'tv-guide-v';
+      board.appendChild(v);
+    }
+    let h = board.querySelector('.tv-guide-h');
+    if (!h) {
+      h = document.createElement('div');
+      h.className = 'tv-guide-h';
+      board.appendChild(h);
+    }
+
+    if (sn && sn.vLine !== null) {
+      v.style.left = `${Math.round(sn.vLine * pxPerCm)}px`;
+      v.style.display = 'block';
+    } else {
+      v.style.display = 'none';
+    }
+    if (sn && sn.hLine !== null) {
+      h.style.top = `${Math.round(sn.hLine * pxPerCm)}px`;
+      h.style.display = 'block';
+    } else {
+      h.style.display = 'none';
+    }
+  }
+
+  /** Handle pan and item-drag mouse movement */
   function handleDrag(e) {
+    if (isPanning) {
+      const wrap = $('topviewWrap');
+      if (wrap) {
+        wrap.scrollLeft = panStart.sl - (e.clientX - panStart.x);
+        wrap.scrollTop = panStart.st - (e.clientY - panStart.y);
+        if (Math.abs(e.clientX - panStart.x) + Math.abs(e.clientY - panStart.y) > 4) justPanned = true;
+      }
+      return;
+    }
+
     if (!isDragging || !dragTarget) return;
 
     const wrap = $('topviewWrap');
@@ -831,52 +956,62 @@
     if (!board) return;
 
     const rect = board.getBoundingClientRect();
-    
-    // Relative coordinates in pixels
-    let xPx = e.clientX - rect.left - dragOffset.x;
-    let yPx = e.clientY - rect.top - dragOffset.y;
 
-    // Convert to cm
-    let xCm = xPx / pxPerCm;
-    let yCm = yPx / pxPerCm;
-
-    // Snap to Grid
-    const snap = areaSpec.gridSize;
-    xCm = Math.round(xCm / snap) * snap;
-    yCm = Math.round(yCm / snap) * snap;
+    // Pointer position in cm
+    let xCm = (e.clientX - rect.left - dragOffset.x) / pxPerCm;
+    let yCm = (e.clientY - rect.top - dragOffset.y) / pxPerCm;
 
     // Get item dimensions
     const p = products.find((q) => q.id === dragTarget.productId);
     if (!p) return;
+    const { w, d } = itemFootprint(dragTarget, p);
 
-    const origW = parseCm(p.width, 10);
-    const origD = parseCm(p.depth, 10);
-    const isRotated = (dragTarget.rotation === 90 || dragTarget.rotation === 270);
-    const w = isRotated ? origD : origW;
-    const d = isRotated ? origW : origD;
+    // Inference snap to other items' edges/centers wins; otherwise grid snap
+    const tol = 8 / pxPerCm; // ~8 screen px in cm
+    const sn = computeGuideSnap(xCm, yCm, w, d, tol);
+    const snap = areaSpec.gridSize;
+    xCm = (sn.x !== null) ? sn.x : Math.round(xCm / snap) * snap;
+    yCm = (sn.y !== null) ? sn.y : Math.round(yCm / snap) * snap;
 
     // Clamp inside room
     xCm = clamp(xCm, 0, areaSpec.width - w);
     yCm = clamp(yCm, 0, areaSpec.depth - d);
 
-    // Update positioned data
+    // Update data + move only the dragged element (no full board rebuild)
     if (dragTarget.x !== xCm || dragTarget.y !== yCm) {
       dragTarget.x = xCm;
       dragTarget.y = yCm;
       dragMoved = true;
-      drawRoom();
+      if (dragEl) {
+        dragEl.style.left = `${Math.round(xCm * pxPerCm)}px`;
+        dragEl.style.top = `${Math.round(yCm * pxPerCm)}px`;
+      }
     }
+    updateGuides(board, sn);
   }
 
-  /** End dragging item */
+  /** End dragging item / panning */
   function endDrag() {
+    if (isPanning) {
+      isPanning = false;
+      const wrap = $('topviewWrap');
+      if (wrap) wrap.style.cursor = spaceHeld ? 'grab' : '';
+    }
+
     if (isDragging) {
       isDragging = false;
       if (dragMoved && dragSnapshot) pushHistory(dragSnapshot);
       dragSnapshot = null;
       dragMoved = false;
       dragTarget = null;
+      dragEl = null;
       saveState();
+
+      // Hide guide lines and refresh inspector X/Y readout
+      const wrap = $('topviewWrap');
+      const board = wrap ? wrap.querySelector('.room-board') : null;
+      if (board) updateGuides(board, null);
+      updateInspector();
 
       refresh3D();
     }
@@ -995,12 +1130,39 @@
     }
   }
 
-  /** Zoom control functions */
-  function adjustZoom(delta) {
+  /** Zoom control functions. cursor = {clientX, clientY} keeps that point stationary. */
+  function adjustZoom(delta, cursor) {
+    const oldScale = zoomScale;
     zoomScale = clamp(zoomScale + delta, 0.4, 3.0);
+    if (zoomScale === oldScale) return;
+
+    // Record the cm-coordinate under the cursor before rescaling
+    const wrap = $('topviewWrap');
+    const board = wrap ? wrap.querySelector('.room-board') : null;
+    let anchor = null;
+    if (cursor && board) {
+      const rect = board.getBoundingClientRect();
+      anchor = {
+        cmX: (cursor.clientX - rect.left) / pxPerCm,
+        cmY: (cursor.clientY - rect.top) / pxPerCm,
+        clientX: cursor.clientX,
+        clientY: cursor.clientY
+      };
+    }
+
     const zoomText = $('zoomPercent');
     if (zoomText) zoomText.textContent = Math.round(zoomScale * 100) + '%';
     drawRoom();
+
+    // Scroll so the anchored cm-point stays under the cursor
+    if (anchor && wrap) {
+      const newBoard = wrap.querySelector('.room-board');
+      if (newBoard) {
+        const nRect = newBoard.getBoundingClientRect();
+        wrap.scrollLeft += (nRect.left + anchor.cmX * pxPerCm) - anchor.clientX;
+        wrap.scrollTop += (nRect.top + anchor.cmY * pxPerCm) - anchor.clientY;
+      }
+    }
   }
 
   function resetZoom() {

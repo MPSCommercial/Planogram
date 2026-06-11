@@ -1904,3 +1904,26 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
   z-index: 5;
   box-shadow: 0 0 0 6px var(--accent-soft), 0 3px 6px rgba(0, 0, 0, 0.12) !important;
 }
+
+/* ═══════════════ TOP VIEW: INFERENCE GUIDES ═══════════════ */
+.tv-guide-v,
+.tv-guide-h {
+  position: absolute;
+  pointer-events: none;
+  z-index: 6;
+  display: none;
+}
+
+.tv-guide-v {
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1.5px dashed var(--accent-2);
+}
+
+.tv-guide-h {
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 1.5px dashed var(--accent-2);
+}
