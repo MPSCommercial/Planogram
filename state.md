@@ -7,19 +7,21 @@
 
 ## ⚡ NOW
 
-- **Status**: เพิ่มระบบคลิกเพื่อวางสินค้า (Click-to-Place) บนบอร์ด 2D Grid ของ Top View Layout เพื่อความมั่นใจ 100% ว่าผู้ใช้จะสามารถจัดวางสินค้าได้แม้มีปัญหา Drag & Drop ของบราวเซอร์ และเพิ่มระบบ "Room Layout Templates" (มี 3 แบบ: Showroom, Bedroom, Office Workspace) ซึ่งจัดพิกัดสินค้าเฟอร์นิเจอร์หลัก (โต๊ะ, เก้าอี้, เตียง, ชั้นวางสินค้า) ไว้เป็นตัวอย่างเรียบร้อย
+- **Status**: ปรับปรุงรูปทรงโมเดล 3D แบบสำนักงาน (Office-style) สำหรับโต๊ะทำงานและเก้าอี้สำนักงาน โดยเพิ่มแผงปิดบังขาส่วนหน้า (Modesty Panel), ตู้ลิ้นชักด้านข้าง (Drawer Unit) พร้อมหูจับโลหะ และออกแบบเก้าอี้ตามหลักการยศาสตร์ (Ergonomic armrests, Lumbar support) พร้อมโครงขา 5 แฉกและล้อเลื่อนเรียบร้อยแล้ว
 - **Branch**: main
 - **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh)
 - **Blocker**: None
 - **Next**: รอรับข้อเสนอแนะเพิ่มเติมจากผู้ใช้งาน
-- **Files**: `index.html`, `src/topview.js`, `state.md`
+- **Files**: `src/planogram3d.js`, `state.md`
 
 ---
 
 ## 📜 LOG
 
 ### 🗓️ 2026-06-11
-- ✅ Previous NOW: เพิ่มระบบคลิกเพื่อวางสินค้า (Click-to-Place) บนบอร์ด 2D Grid ของ Top View Layout เพื่อความมั่นใจ 100% ว่าผู้ใช้จะสามารถจัดวางสินค้าได้แม้มีปัญหา Drag & Drop ของบราวเซอร์ และเพิ่มระบบ "Room Layout Templates" (มี 3 แบบ: Showroom, Bedroom, Office Workspace) ซึ่งจัดพิกัดสินค้าเฟอร์นิเจอร์หลัก (โต๊ะ, เก้าอี้, เตียง, ชั้นวางสินค้า) ไว้เป็นตัวอย่างเรียบร้อย
+- ✅ Previous NOW: ปรับปรุงรูปทรงโมเดล 3D แบบสำนักงาน (Office-style) สำหรับโต๊ะทำงานและเก้าอี้สำนักงาน โดยเพิ่มแผงปิดบังขาส่วนหน้า (Modesty Panel), ตู้ลิ้นชักด้านข้าง (Drawer Unit) พร้อมหูจับโลหะ และออกแบบเก้าอี้ตามหลักการยศาสตร์ (Ergonomic armrests, Lumbar support) พร้อมโครงขา 5 แฉกและล้อเลื่อนเรียบร้อยแล้ว
+- Files: `src/planogram3d.js`, `state.md`
+- ✅ Previous NOW (2): เพิ่มระบบคลิกเพื่อวางสินค้า (Click-to-Place) บนบอร์ด 2D Grid ของ Top View Layout เพื่อความมั่นใจ 100% ว่าผู้ใช้จะสามารถจัดวางสินค้าได้แม้มีปัญหา Drag & Drop ของบราวเซอร์ และเพิ่มระบบ "Room Layout Templates" (มี 3 แบบ: Showroom, Bedroom, Office Workspace) ซึ่งจัดพิกัดสินค้าเฟอร์นิเจอร์หลัก (โต๊ะ, เก้าอี้, เตียง, ชั้นวางสินค้า) ไว้เป็นตัวอย่างเรียบร้อย
 - Files: `index.html`, `src/topview.js`, `state.md`
 - ✅ Previous NOW (2): แก้ไขปัญหาผู้ใช้ไม่สามารถเพิ่มสินค้าลงในแปลน Top View ได้เนื่องจากเปิด 3D View ค้างไว้บดบังหน้าจอการวาง 2D โดยการเพิ่มระบบ Auto-close 3D View เมื่อมีการเปลี่ยนสลับหน้าจอแท็บ (nav-tab) และปิด 3D View อัตโนมัติเมื่อผู้ใช้เริ่มคลิกขยับลากสินค้า (dragstart) เพื่อเปลี่ยนมุมมองกลับมาเป็น 2D Canvas พร้อมให้ทำการวางสิ่งของได้ทันทีอย่างลื่นไหล
 - Files: `src/topview.js`, `src/products.js`, `state.md`
