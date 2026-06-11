@@ -7,19 +7,21 @@
 
 ## ⚡ NOW
 
-- **Status**: แก้ไขปัญหาผู้ใช้ไม่สามารถเพิ่มสินค้าลงในแปลน Top View ได้เนื่องจากเปิด 3D View ค้างไว้บดบังหน้าจอการวาง 2D โดยการเพิ่มระบบ Auto-close 3D View เมื่อมีการเปลี่ยนสลับหน้าจอแท็บ (nav-tab) และปิด 3D View อัตโนมัติเมื่อผู้ใช้เริ่มคลิกขยับลากสินค้า (dragstart) เพื่อเปลี่ยนมุมมองกลับมาเป็น 2D Canvas พร้อมให้ทำการวางสิ่งของได้ทันทีอย่างลื่นไหล
+- **Status**: เพิ่มระบบคลิกเพื่อวางสินค้า (Click-to-Place) บนบอร์ด 2D Grid ของ Top View Layout เพื่อความมั่นใจ 100% ว่าผู้ใช้จะสามารถจัดวางสินค้าได้แม้มีปัญหา Drag & Drop ของบราวเซอร์ และเพิ่มระบบ "Room Layout Templates" (มี 3 แบบ: Showroom, Bedroom, Office Workspace) ซึ่งจัดพิกัดสินค้าเฟอร์นิเจอร์หลัก (โต๊ะ, เก้าอี้, เตียง, ชั้นวางสินค้า) ไว้เป็นตัวอย่างเรียบร้อย
 - **Branch**: main
 - **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh)
 - **Blocker**: None
 - **Next**: รอรับข้อเสนอแนะเพิ่มเติมจากผู้ใช้งาน
-- **Files**: `src/topview.js`, `src/products.js`, `state.md`
+- **Files**: `index.html`, `src/topview.js`, `state.md`
 
 ---
 
 ## 📜 LOG
 
 ### 🗓️ 2026-06-11
-- ✅ Previous NOW: แก้ไขปัญหาผู้ใช้ไม่สามารถเพิ่มสินค้าลงในแปลน Top View ได้เนื่องจากเปิด 3D View ค้างไว้บดบังหน้าจอการวาง 2D โดยการเพิ่มระบบ Auto-close 3D View เมื่อมีการเปลี่ยนสลับหน้าจอแท็บ (nav-tab) และปิด 3D View อัตโนมัติเมื่อผู้ใช้เริ่มคลิกขยับลากสินค้า (dragstart) เพื่อเปลี่ยนมุมมองกลับมาเป็น 2D Canvas พร้อมให้ทำการวางสิ่งของได้ทันทีอย่างลื่นไหล
+- ✅ Previous NOW: เพิ่มระบบคลิกเพื่อวางสินค้า (Click-to-Place) บนบอร์ด 2D Grid ของ Top View Layout เพื่อความมั่นใจ 100% ว่าผู้ใช้จะสามารถจัดวางสินค้าได้แม้มีปัญหา Drag & Drop ของบราวเซอร์ และเพิ่มระบบ "Room Layout Templates" (มี 3 แบบ: Showroom, Bedroom, Office Workspace) ซึ่งจัดพิกัดสินค้าเฟอร์นิเจอร์หลัก (โต๊ะ, เก้าอี้, เตียง, ชั้นวางสินค้า) ไว้เป็นตัวอย่างเรียบร้อย
+- Files: `index.html`, `src/topview.js`, `state.md`
+- ✅ Previous NOW (2): แก้ไขปัญหาผู้ใช้ไม่สามารถเพิ่มสินค้าลงในแปลน Top View ได้เนื่องจากเปิด 3D View ค้างไว้บดบังหน้าจอการวาง 2D โดยการเพิ่มระบบ Auto-close 3D View เมื่อมีการเปลี่ยนสลับหน้าจอแท็บ (nav-tab) และปิด 3D View อัตโนมัติเมื่อผู้ใช้เริ่มคลิกขยับลากสินค้า (dragstart) เพื่อเปลี่ยนมุมมองกลับมาเป็น 2D Canvas พร้อมให้ทำการวางสิ่งของได้ทันทีอย่างลื่นไหล
 - Files: `src/topview.js`, `src/products.js`, `state.md`
 - ✅ Previous NOW (2): เพิ่มฟังก์ชันการย่อ/ขยาย (Zoom In / Zoom Out / Zoom Reset และ Mouse Scroll Wheel + Ctrl) สำหรับแปลนห้อง 2D ใน Top View Layout พร้อมแก้ไขปัญหาระบบ Drag & Drop เพื่อรองรับความเสถียรของเบราว์เซอร์ในการจับลากสินค้า (โดยเฉพาะการ์ดที่มีรูปภาพ) และการันตี dropEffect = 'move' ในทุกการจัดวางสินค้าลงในพื้นที่แปลนห้องเรียบร้อยแล้ว
 - Files: `index.html`, `src/topview.js`, `src/products.js`, `state.md`
