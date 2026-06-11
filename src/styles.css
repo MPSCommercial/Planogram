@@ -1896,3 +1896,11 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
   margin-right: 6px;
   border: 1px solid rgba(0, 0, 0, 0.1);
 }
+
+/* ═══════════════ TOP VIEW: SELECTION ═══════════════ */
+.placed-furniture.tv-selected {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  z-index: 5;
+  box-shadow: 0 0 0 6px var(--accent-soft), 0 3px 6px rgba(0, 0, 0, 0.12) !important;
+}

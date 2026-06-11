@@ -66,8 +66,15 @@
     $('btnTabPlacements').classList.add('active');
     updateReportTable();
   });
-  $('btnUndo').addEventListener('click', undo);
-  $('btnRedo').addEventListener('click', redo);
+  // Undo/Redo route to topview stacks when Top View tab is active
+  $('btnUndo').addEventListener('click', () => {
+    if (window.TopViewLayout && TopViewLayout.isActive()) TopViewLayout.undo();
+    else undo();
+  });
+  $('btnRedo').addEventListener('click', () => {
+    if (window.TopViewLayout && TopViewLayout.isActive()) TopViewLayout.redo();
+    else redo();
+  });
   $('btnRemoveImage').addEventListener('click', (e) => removeUploadedImage(e));
   $('imgInput').addEventListener('change', handleImageUpload);
   
@@ -136,8 +143,9 @@
     }
     if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
     const mod = e.ctrlKey || e.metaKey;
-    if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); undo(); }
-    if (mod && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); redo(); }
+    const topviewActive = window.TopViewLayout && TopViewLayout.isActive();
+    if (mod && e.key === 'z' && !e.shiftKey) { e.preventDefault(); topviewActive ? TopViewLayout.undo() : undo(); }
+    if (mod && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) { e.preventDefault(); topviewActive ? TopViewLayout.redo() : redo(); }
     if (e.key === '[' && !mod) { e.preventDefault(); togglePanel('left'); }
     if (e.key === ']' && !mod) { e.preventDefault(); togglePanel('right'); }
     if (e.key === '\\' && !mod) { e.preventDefault(); togglePanel('left'); togglePanel('right'); }

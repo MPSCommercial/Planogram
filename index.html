@@ -189,6 +189,52 @@
               </div>
             </div>
           </section>
+
+          <!-- Top View Item Inspector (Hidden by default) -->
+          <section class="side-section" id="sectionTopviewInspector" style="display: none;">
+            <div class="section-header" data-collapse="topviewInspector">
+              <h2>Item Inspector</h2>
+              <span class="badge">cm</span>
+              <button class="collapse-btn" aria-label="Toggle section">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+            <div class="section-body" id="bodyTopviewInspector">
+              <p id="tvInspectorEmpty" style="font-size: 0.78rem; color: var(--muted); margin: 4px 0;">คลิกเลือกสิ่งของในแปลน เพื่อแก้ไขตำแหน่งและหมุน</p>
+              <div id="tvInspectorFields" style="display: none;">
+                <div id="tvItemName" style="font-size: 0.85rem; font-weight: 700; color: var(--ink); margin-bottom: 10px;"></div>
+                <div class="form-grid">
+                  <div>
+                    <label for="tvItemX">X (cm)</label>
+                    <input id="tvItemX" type="number" min="0" step="1">
+                  </div>
+                  <div>
+                    <label for="tvItemY">Y (cm)</label>
+                    <input id="tvItemY" type="number" min="0" step="1">
+                  </div>
+                  <div>
+                    <label for="tvItemRot">หมุน (°)</label>
+                    <select id="tvItemRot">
+                      <option value="0">0°</option>
+                      <option value="90">90°</option>
+                      <option value="180">180°</option>
+                      <option value="270">270°</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="tvItemSize">ขนาด W×D</label>
+                    <input id="tvItemSize" type="text" readonly tabindex="-1">
+                  </div>
+                </div>
+                <div style="display: flex; gap: 6px; margin-top: 12px;">
+                  <button class="btn btn-mini" id="btnTvDuplicate" type="button" style="flex: 1;">ทำซ้ำ ⌘D</button>
+                  <button class="btn btn-mini btn-ghost" id="btnTvRotate" type="button" style="flex: 1;">หมุน R</button>
+                  <button class="btn btn-mini btn-danger" id="btnTvDelete" type="button" style="flex: 1;">ลบ ⌫</button>
+                </div>
+                <p style="font-size: 0.7rem; color: var(--muted); margin-top: 10px; line-height: 1.6;">ลูกศร = ขยับตาม grid · Shift+ลูกศร = ขยับ 1 cm · Esc = ยกเลิกเลือก · ⌘Z = Undo</p>
+              </div>
+            </div>
+          </section>
         </div>
       </aside>
 

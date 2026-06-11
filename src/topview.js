@@ -13,6 +13,11 @@
   let dragTarget = null;
   let dragOffset = { x: 0, y: 0 };
   let activeTab = 'planogram'; // 'planogram' | 'topview' | 'library'
+  let selectedItemId = null;   // Currently selected placed item
+  let undoStack = [];          // Snapshots of { areaSpec, placedItems }
+  let redoStack = [];
+  let dragSnapshot = null;     // History snapshot captured at drag start
+  let dragMoved = false;
 
   // Pre-configured furniture/fixture items
   const FURNITURE_PRESETS = [
@@ -81,6 +86,27 @@
       }, { passive: false });
     }
 
+    // Global drag listeners (bound once — drawRoom only rebuilds the board)
+    document.addEventListener('mousemove', handleDrag);
+    document.addEventListener('mouseup', endDrag);
+
+    // Keyboard shortcuts for topview workspace
+    document.addEventListener('keydown', handleKeydown);
+
+    // Item Inspector bindings
+    const xInput = $('tvItemX');
+    if (xInput) xInput.addEventListener('change', applyInspectorPosition);
+    const yInput = $('tvItemY');
+    if (yInput) yInput.addEventListener('change', applyInspectorPosition);
+    const rotSelect = $('tvItemRot');
+    if (rotSelect) rotSelect.addEventListener('change', applyInspectorRotation);
+    const btnDup = $('btnTvDuplicate');
+    if (btnDup) btnDup.addEventListener('click', duplicateSelected);
+    const btnRotSel = $('btnTvRotate');
+    if (btnRotSel) btnRotSel.addEventListener('click', () => { if (selectedItemId) rotateFurniture(selectedItemId); });
+    const btnDelSel = $('btnTvDelete');
+    if (btnDelSel) btnDelSel.addEventListener('click', () => { if (selectedItemId) removeFurniture(selectedItemId); });
+
     // Hook tab switches from main app.js (we hook topbar navigation)
     hookTabs();
 
@@ -90,6 +116,246 @@
         drawRoom();
       }
     });
+  }
+
+  /* ─── Undo / Redo history ─── */
+
+  /** Serialize current room state */
+  function snapshot() {
+    return JSON.stringify({ areaSpec, placedItems });
+  }
+
+  /** Push a snapshot onto the undo stack (call BEFORE mutating state) */
+  function pushHistory(snap) {
+    undoStack.push(snap || snapshot());
+    if (undoStack.length > 50) undoStack.shift();
+    redoStack = [];
+    updateTopviewUndoButtons();
+  }
+
+  /** Restore room state from a serialized snapshot */
+  function restoreSnapshot(snap) {
+    const data = JSON.parse(snap);
+    areaSpec = data.areaSpec;
+    placedItems = data.placedItems;
+    if (selectedItemId && !placedItems.some((x) => x.id === selectedItemId)) selectedItemId = null;
+
+    const wInput = $('roomWidth');
+    const dInput = $('roomDepth');
+    const gInput = $('roomGridSize');
+    if (wInput) wInput.value = areaSpec.width;
+    if (dInput) dInput.value = areaSpec.depth;
+    if (gInput) gInput.value = areaSpec.gridSize;
+
+    saveState();
+    drawRoom();
+    refresh3D();
+  }
+
+  function undoTopview() {
+    if (!undoStack.length) return;
+    redoStack.push(snapshot());
+    restoreSnapshot(undoStack.pop());
+    updateTopviewUndoButtons();
+  }
+
+  function redoTopview() {
+    if (!redoStack.length) return;
+    undoStack.push(snapshot());
+    restoreSnapshot(redoStack.pop());
+    updateTopviewUndoButtons();
+  }
+
+  /** Sync the shared topbar undo/redo buttons with topview stacks */
+  function updateTopviewUndoButtons() {
+    if (activeTab !== 'topview') return;
+    const u = $('btnUndo'), r = $('btnRedo');
+    if (u) u.disabled = !undoStack.length;
+    if (r) r.disabled = !redoStack.length;
+  }
+
+  /** Refresh 3D view if currently open */
+  function refresh3D() {
+    if (window.Planogram3D && Planogram3D.isOpen()) {
+      Planogram3D.refresh();
+    }
+  }
+
+  /* ─── Selection & Item Inspector ─── */
+
+  /** Footprint (w × d in cm) of a placed item accounting for rotation */
+  function itemFootprint(item, p) {
+    const origW = parseCm(p.width, 10);
+    const origD = parseCm(p.depth, 10);
+    const isRotated = (item.rotation === 90 || item.rotation === 270);
+    return { w: isRotated ? origD : origW, d: isRotated ? origW : origD };
+  }
+
+  function selectItem(id) {
+    if (selectedItemId === id) return;
+    selectedItemId = id;
+    updateSelectionUI();
+  }
+
+  function deselectItem() {
+    if (!selectedItemId) return;
+    selectedItemId = null;
+    updateSelectionUI();
+  }
+
+  /** Apply selection highlight to rendered items + refresh inspector */
+  function updateSelectionUI() {
+    const wrap = $('topviewWrap');
+    if (wrap) {
+      wrap.querySelectorAll('.placed-furniture').forEach((el) => {
+        el.classList.toggle('tv-selected', el.dataset.itemId === selectedItemId);
+      });
+    }
+    updateInspector();
+  }
+
+  /** Populate the Item Inspector panel from the selected item */
+  function updateInspector() {
+    const empty = $('tvInspectorEmpty');
+    const fields = $('tvInspectorFields');
+    if (!empty || !fields) return;
+
+    const item = placedItems.find((x) => x.id === selectedItemId);
+    const p = item ? products.find((q) => q.id === item.productId) : null;
+
+    if (!item || !p) {
+      empty.style.display = 'block';
+      fields.style.display = 'none';
+      return;
+    }
+
+    empty.style.display = 'none';
+    fields.style.display = 'block';
+
+    const name = $('tvItemName');
+    if (name) name.textContent = p.name;
+    const xInput = $('tvItemX');
+    if (xInput) xInput.value = item.x;
+    const yInput = $('tvItemY');
+    if (yInput) yInput.value = item.y;
+    const rotSelect = $('tvItemRot');
+    if (rotSelect) rotSelect.value = String(item.rotation);
+    const sizeInput = $('tvItemSize');
+    if (sizeInput) sizeInput.value = `${parseCm(p.width, 10)} × ${parseCm(p.depth, 10)} cm`;
+  }
+
+  /** Apply X/Y typed into the inspector */
+  function applyInspectorPosition() {
+    const item = placedItems.find((x) => x.id === selectedItemId);
+    if (!item) return;
+    const p = products.find((q) => q.id === item.productId);
+    if (!p) return;
+
+    const { w, d } = itemFootprint(item, p);
+    const xCm = clamp(parseInt($('tvItemX').value) || 0, 0, areaSpec.width - w);
+    const yCm = clamp(parseInt($('tvItemY').value) || 0, 0, areaSpec.depth - d);
+
+    if (xCm === item.x && yCm === item.y) {
+      updateInspector(); // Re-sync displayed (clamped) values
+      return;
+    }
+
+    pushHistory();
+    item.x = xCm;
+    item.y = yCm;
+    saveState();
+    drawRoom();
+    refresh3D();
+  }
+
+  /** Apply rotation chosen in the inspector */
+  function applyInspectorRotation() {
+    const item = placedItems.find((x) => x.id === selectedItemId);
+    if (!item) return;
+    const p = products.find((q) => q.id === item.productId);
+    if (!p) return;
+
+    const rot = parseInt($('tvItemRot').value) || 0;
+    if (rot === item.rotation) return;
+
+    pushHistory();
+    item.rotation = rot;
+    const { w, d } = itemFootprint(item, p);
+    item.x = clamp(item.x, 0, areaSpec.width - w);
+    item.y = clamp(item.y, 0, areaSpec.depth - d);
+    saveState();
+    drawRoom();
+    refresh3D();
+  }
+
+  /** Duplicate the selected item, placed adjacent to the original */
+  function duplicateSelected() {
+    const item = placedItems.find((x) => x.id === selectedItemId);
+    if (!item) {
+      showToast('คลิกเลือกสิ่งของในแปลนก่อนทำซ้ำ');
+      return;
+    }
+    const p = products.find((q) => q.id === item.productId);
+    if (!p) return;
+
+    pushHistory();
+    const { w, d } = itemFootprint(item, p);
+    const copy = {
+      id: 'placed_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+      productId: item.productId,
+      x: clamp(item.x + w, 0, areaSpec.width - w),
+      y: clamp(item.y, 0, areaSpec.depth - d),
+      rotation: item.rotation
+    };
+    placedItems.push(copy);
+    selectedItemId = copy.id;
+    saveState();
+    drawRoom();
+    refresh3D();
+    showToast(`ทำซ้ำ ${p.name} แล้ว`);
+  }
+
+  /** Nudge selected item by grid step (or 1 cm when fine = true) */
+  function nudgeSelected(dx, dy, fine, isRepeat) {
+    const item = placedItems.find((x) => x.id === selectedItemId);
+    if (!item) return;
+    const p = products.find((q) => q.id === item.productId);
+    if (!p) return;
+
+    const step = fine ? 1 : areaSpec.gridSize;
+    const { w, d } = itemFootprint(item, p);
+    if (!isRepeat) pushHistory(); // Held key = one history entry
+    item.x = clamp(item.x + dx * step, 0, areaSpec.width - w);
+    item.y = clamp(item.y + dy * step, 0, areaSpec.depth - d);
+    saveState();
+    drawRoom();
+    refresh3D();
+  }
+
+  /** Keyboard shortcuts (active only on Top View tab, outside form fields) */
+  function handleKeydown(e) {
+    if (activeTab !== 'topview') return;
+    const tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (!selectedItemId) return;
+
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && (e.key === 'd' || e.key === 'D')) {
+      e.preventDefault();
+      duplicateSelected();
+      return;
+    }
+    if (mod) return; // Cmd+Z / Cmd+Shift+Z handled by app.js routing
+
+    switch (e.key) {
+      case 'ArrowLeft': e.preventDefault(); nudgeSelected(-1, 0, e.shiftKey, e.repeat); break;
+      case 'ArrowRight': e.preventDefault(); nudgeSelected(1, 0, e.shiftKey, e.repeat); break;
+      case 'ArrowUp': e.preventDefault(); nudgeSelected(0, -1, e.shiftKey, e.repeat); break;
+      case 'ArrowDown': e.preventDefault(); nudgeSelected(0, 1, e.shiftKey, e.repeat); break;
+      case 'r': case 'R': e.preventDefault(); rotateFurniture(selectedItemId); break;
+      case 'Delete': case 'Backspace': e.preventDefault(); removeFurniture(selectedItemId); break;
+      case 'Escape': deselectItem(); break;
+    }
   }
 
   /** Inject default furniture products if they don't exist */
@@ -171,13 +437,17 @@
     // 4. Inject furniture library presets
     injectPresets();
 
-    // 5. Render room
+    // 5. Show Item Inspector panel + sync undo/redo buttons to topview stacks
+    const tInspector = $('sectionTopviewInspector');
+    if (tInspector) tInspector.style.display = 'block';
+    updateTopviewUndoButtons();
+    updateInspector();
+
+    // 6. Render room
     drawRoom();
 
-    // 6. Refresh 3D if open
-    if (window.Planogram3D && Planogram3D.isOpen()) {
-      Planogram3D.refresh();
-    }
+    // 7. Refresh 3D if open
+    refresh3D();
   }
 
   /** Deactivate topview and restore planogram workspace */
@@ -185,10 +455,12 @@
     const pSettings = $('sectionSettings');
     const pTemplates = document.querySelector('.template-block')?.closest('.side-section') || $('sectionTemplates');
     const tSettings = $('sectionTopviewSettings');
+    const tInspector = $('sectionTopviewInspector');
 
     if (pSettings) pSettings.style.display = 'block';
     if (pTemplates) pTemplates.style.display = 'block';
     if (tSettings) tSettings.style.display = 'none';
+    if (tInspector) tInspector.style.display = 'none';
 
     const pArea = $('exportArea');
     const tArea = $('topviewArea');
@@ -202,9 +474,10 @@
     if (btnReport) btnReport.style.display = 'block';
     if (btnClearAll) btnClearAll.style.display = 'block';
 
-    if (window.Planogram3D && Planogram3D.isOpen()) {
-      Planogram3D.refresh();
-    }
+    // Hand undo/redo buttons back to the planogram stacks
+    if (typeof updateUndoButtons === 'function') updateUndoButtons();
+
+    refresh3D();
   }
 
   /** Update Room specifications from inputs */
@@ -214,9 +487,11 @@
     const gInput = $('roomGridSize');
 
     if (wInput && dInput) {
+      const before = snapshot();
       areaSpec.width = clamp(parseInt(wInput.value) || 600, 100, 2000);
       areaSpec.depth = clamp(parseInt(dInput.value) || 400, 100, 2000);
       areaSpec.gridSize = clamp(parseInt(gInput.value) || 20, 5, 100);
+      if (snapshot() !== before) pushHistory(before);
 
       wInput.value = areaSpec.width;
       dInput.value = areaSpec.depth;
@@ -226,23 +501,21 @@
       drawRoom();
       showToast('อัปเดตขนาดห้องแล้ว');
 
-      if (window.Planogram3D && Planogram3D.isOpen()) {
-        Planogram3D.refresh();
-      }
+      refresh3D();
     }
   }
 
   /** Clear all placed items inside the room */
   function clearRoom() {
     if (confirm('คุณต้องการลบสิ่งของทั้งหมดออกจากพื้นที่ห้องใช่หรือไม่?')) {
+      if (placedItems.length) pushHistory();
       placedItems = [];
+      selectedItemId = null;
       saveState();
       drawRoom();
       showToast('ล้างห้องเรียบร้อย');
 
-      if (window.Planogram3D && Planogram3D.isOpen()) {
-        Planogram3D.refresh();
-      }
+      refresh3D();
     }
   }
 
@@ -332,7 +605,13 @@
     board.addEventListener('click', (e) => {
       // Ignore click on placed items or buttons
       if (e.target.closest('.placed-furniture') || e.target.tagName === 'BUTTON') return;
-      
+
+      // Click on empty floor with an item selected = deselect (design-tool behavior)
+      if (selectedItemId) {
+        deselectItem();
+        return;
+      }
+
       if (typeof selectedProductId !== 'undefined' && selectedProductId) {
         const p = products.find((q) => q.id === selectedProductId);
         if (!p) return;
@@ -356,6 +635,7 @@
         xCm = clamp(xCm - Math.round((origW / 2) / snap) * snap, 0, areaSpec.width - origW);
         yCm = clamp(yCm - Math.round((origD / 2) / snap) * snap, 0, areaSpec.depth - origD);
 
+        pushHistory();
         placedItems.push({
           id: 'placed_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
           productId: p.id,
@@ -398,6 +678,8 @@
       // Furniture element
       const el = document.createElement('div');
       el.className = 'placed-furniture';
+      el.dataset.itemId = item.id;
+      if (item.id === selectedItemId) el.classList.add('tv-selected');
       el.style.width = `${wPx}px`;
       el.style.height = `${dPx}px`;
       el.style.left = `${xPx}px`;
@@ -519,11 +801,14 @@
       });
       el.appendChild(btnRot);
 
-      // Drag to reposition logic
+      // Select + drag to reposition logic
       el.addEventListener('mousedown', (e) => {
         if (e.target === btnDel || e.target === btnRot) return;
         e.preventDefault();
+        selectItem(item.id);
         isDragging = true;
+        dragMoved = false;
+        dragSnapshot = snapshot();
         dragTarget = item;
         const rect = board.getBoundingClientRect();
         dragOffset.x = e.clientX - rect.left - xPx;
@@ -533,11 +818,8 @@
       board.appendChild(el);
     });
 
-    // Handle global mouse events for dragging inside canvas
-    document.addEventListener('mousemove', handleDrag);
-    document.addEventListener('mouseup', endDrag);
-
     wrap.appendChild(board);
+    updateInspector();
   }
 
   /** Reposition furniture item on drag */
@@ -581,6 +863,7 @@
     if (dragTarget.x !== xCm || dragTarget.y !== yCm) {
       dragTarget.x = xCm;
       dragTarget.y = yCm;
+      dragMoved = true;
       drawRoom();
     }
   }
@@ -589,18 +872,21 @@
   function endDrag() {
     if (isDragging) {
       isDragging = false;
+      if (dragMoved && dragSnapshot) pushHistory(dragSnapshot);
+      dragSnapshot = null;
+      dragMoved = false;
       dragTarget = null;
       saveState();
 
-      if (window.Planogram3D && Planogram3D.isOpen()) {
-        Planogram3D.refresh();
-      }
+      refresh3D();
     }
   }
 
   /** Delete a placed item */
   function removeFurniture(id) {
+    pushHistory();
     placedItems = placedItems.filter((x) => x.id !== id);
+    if (selectedItemId === id) selectedItemId = null;
     saveState();
     drawRoom();
     showToast('ลบสิ่งของแล้ว');
@@ -614,6 +900,7 @@
   function rotateFurniture(id) {
     const item = placedItems.find((x) => x.id === id);
     if (item) {
+      pushHistory();
       item.rotation = (item.rotation + 90) % 360;
 
       // Adjust boundaries after rotation to prevent sticking outside
@@ -632,9 +919,7 @@
       saveState();
       drawRoom();
 
-      if (window.Planogram3D && Planogram3D.isOpen()) {
-        Planogram3D.refresh();
-      }
+      refresh3D();
     }
   }
 
@@ -655,6 +940,9 @@
       showToast('ไม่พบข้อมูลสินค้าเฟอร์นิเจอร์หลักสำหรับเทมเพลต');
       return;
     }
+
+    pushHistory();
+    selectedItemId = null;
 
     if (val === 'showroom') {
       areaSpec = { width: 1000, depth: 600, gridSize: 20 };
@@ -756,6 +1044,7 @@
     yCm = clamp(yCm, 0, areaSpec.depth - origD);
 
     // Create placed item
+    pushHistory();
     placedItems.push({
       id: 'placed_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
       productId: p.id,
@@ -808,6 +1097,8 @@
     getSpec: () => areaSpec,
     getPlacedItems: () => placedItems,
     isActive: () => activeTab === 'topview',
-    drawRoom: drawRoom
+    drawRoom: drawRoom,
+    undo: undoTopview,
+    redo: redoTopview
   };
 })();
