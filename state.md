@@ -7,19 +7,21 @@
 
 ## ⚡ NOW
 
-- **Status**: เพิ่มเมนูและพื้นที่ทำงาน "Top View Layout" สำหรับจัดวางแปลนห้อง (Floor Planning) รองรับสินค้าเฟอร์นิเจอร์หลัก (Fixture Shelf, Office Table, Office Chair, Comfort Bed) แบบ 2D drag & drop snap-to-grid และแสดงผล 3D ในมุมมองกล้องมุมสูงพร้อมโมเดลแบบ Procedural ที่มีรายละเอียด พร้อมเพิ่มอินพุต Depth (ความลึก) ในหน้าต่างเพิ่ม/แก้ไขสินค้า
+- **Status**: เพิ่มฟังก์ชันการย่อ/ขยาย (Zoom In / Zoom Out / Zoom Reset และ Mouse Scroll Wheel + Ctrl) สำหรับแปลนห้อง 2D ใน Top View Layout พร้อมแก้ไขปัญหาระบบ Drag & Drop เพื่อรองรับความเสถียรของเบราว์เซอร์ในการจับลากสินค้า (โดยเฉพาะการ์ดที่มีรูปภาพ) และการันตี dropEffect = 'move' ในทุกการจัดวางสินค้าลงในพื้นที่แปลนห้องเรียบร้อยแล้ว
 - **Branch**: main
 - **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh)
 - **Blocker**: None
 - **Next**: รอรับข้อเสนอแนะเพิ่มเติมจากผู้ใช้งาน
-- **Files**: `index.html`, `src/topview.js`, `src/products.js`, `src/planogram3d.js`, `state.md`
+- **Files**: `index.html`, `src/topview.js`, `src/products.js`, `state.md`
 
 ---
 
 ## 📜 LOG
 
 ### 🗓️ 2026-06-11
-- ✅ Previous NOW: เพิ่มเมนูและพื้นที่ทำงาน "Top View Layout" สำหรับจัดวางแปลนห้อง (Floor Planning) รองรับสินค้าเฟอร์นิเจอร์หลัก (Fixture Shelf, Office Table, Office Chair, Comfort Bed) แบบ 2D drag & drop snap-to-grid และแสดงผล 3D ในมุมมองกล้องมุมสูงพร้อมโมเดลแบบ Procedural ที่มีรายละเอียด พร้อมเพิ่มอินพุต Depth (ความลึก) ในหน้าต่างเพิ่ม/แก้ไขสินค้า
+- ✅ Previous NOW: เพิ่มฟังก์ชันการย่อ/ขยาย (Zoom In / Zoom Out / Zoom Reset และ Mouse Scroll Wheel + Ctrl) สำหรับแปลนห้อง 2D ใน Top View Layout พร้อมแก้ไขปัญหาระบบ Drag & Drop เพื่อรองรับความเสถียรของเบราว์เซอร์ในการจับลากสินค้า (โดยเฉพาะการ์ดที่มีรูปภาพ) และการันตี dropEffect = 'move' ในทุกการจัดวางสินค้าลงในพื้นที่แปลนห้องเรียบร้อยแล้ว
+- Files: `index.html`, `src/topview.js`, `src/products.js`, `state.md`
+- ✅ Previous NOW (2): เพิ่มเมนูและพื้นที่ทำงาน "Top View Layout" สำหรับจัดวางแปลนห้อง (Floor Planning) รองรับสินค้าเฟอร์นิเจอร์หลัก (Fixture Shelf, Office Table, Office Chair, Comfort Bed) แบบ 2D drag & drop snap-to-grid และแสดงผล 3D ในมุมมองกล้องมุมสูงพร้อมโมเดลแบบ Procedural ที่มีรายละเอียด พร้อมเพิ่มอินพุต Depth (ความลึก) ในหน้าต่างเพิ่ม/แก้ไขสินค้า
 - Files: `index.html`, `src/topview.js`, `src/products.js`, `src/planogram3d.js`, `state.md`
 - ✅ Previous NOW (2): แก้ไขปัญหาตู้ตรงกลาง (Segment 1) แสดงเป็นสีขาวทึบบดบังแผ่นหลังและชั้นวาง โดยการจำกัดความสูงสินค้าสูงสุดใน 3D View (Clamp height) ไม่ให้ทะลุออกนอกช่องชั้นวางขึ้นไปด้านบน พร้อมทั้ง deploy ขึ้น Surge อีกครั้ง
 - Files: `src/planogram3d.js`, `state.md`
