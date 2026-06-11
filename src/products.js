@@ -28,6 +28,7 @@ function addProduct() {
     facing: clamp(parseInt($('pFacing').value) || 1, 1, 12),
     width: $('pWidth').value.trim() || '',
     height: $('pHeight').value.trim() || '',
+    depth: $('pDepth').value.trim() || '',
     image: pendingImageBase64,
   };
 
@@ -35,6 +36,7 @@ function addProduct() {
 
   // Reset form
   $('pName').value = '';
+  if ($('pDepth')) $('pDepth').value = '';
   removeUploadedImage();
   renderProductList();
   updateLegend();
@@ -140,7 +142,7 @@ function renderProductList() {
       product.odoo,
       product.brand || product.category,
       `F:${product.facing}`,
-      product.width ? `${product.width}×${product.height || '-'}cm` : '',
+      product.width ? `${product.width}×${product.height || '-'}` + (product.depth ? `×${product.depth}` : '') + 'cm' : '',
     ].filter(Boolean).join(' · ');
 
     card.innerHTML = `
@@ -232,6 +234,7 @@ function openEditModal(id, event) {
   $('editFacing').value = product.facing;
   $('editWidth').value = product.width || '';
   $('editHeight').value = product.height || '';
+  if ($('editDepth')) $('editDepth').value = product.depth || '';
 
   // Show image preview if exists
   if (product.image) {
@@ -256,6 +259,7 @@ function closeEditModal() {
   editingProductId = null;
   editImageBase64 = null;
   resetEditImage();
+  if ($('editDepth')) $('editDepth').value = '';
 }
 
 /**
@@ -278,6 +282,7 @@ function saveEditProduct() {
   product.facing = clamp(parseInt($('editFacing').value) || 1, 1, 12);
   product.width = $('editWidth').value.trim() || '';
   product.height = $('editHeight').value.trim() || '';
+  product.depth = $('editDepth') ? $('editDepth').value.trim() : '';
   product.image = editImageBase64;
 
   closeEditModal();

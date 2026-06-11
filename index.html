@@ -27,6 +27,7 @@
 
       <nav class="topbar-nav" id="topbarNav">
         <button class="nav-tab" data-tab="planogram" aria-selected="true">Planogram</button>
+        <button class="nav-tab" data-tab="topview">Top View Layout</button>
         <button class="nav-tab" data-tab="library">Product Library</button>
       </nav>
 
@@ -146,6 +147,37 @@
               </div>
             </div>
           </section>
+
+          <!-- Top View Settings (Hidden by default) -->
+          <section class="side-section" id="sectionTopviewSettings" style="display: none;">
+            <div class="section-header" data-collapse="topviewSettings">
+              <h2>Area Specification</h2>
+              <span class="badge">cm</span>
+              <button class="collapse-btn" aria-label="Toggle section">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+            </div>
+            <div class="section-body" id="bodyTopviewSettings">
+              <div class="form-grid">
+                <div>
+                  <label for="roomWidth">Room Width (W)</label>
+                  <input id="roomWidth" type="number" value="600" min="100" max="2000">
+                </div>
+                <div>
+                  <label for="roomDepth">Room Depth (D)</label>
+                  <input id="roomDepth" type="number" value="400" min="100" max="2000">
+                </div>
+                <div class="span-2">
+                  <label for="roomGridSize">Grid Size (cm)</label>
+                  <input id="roomGridSize" type="number" value="20" min="5" max="100">
+                </div>
+              </div>
+              <button class="btn btn-build" id="btnUpdateRoom" style="margin-top: 12px; width: 100%;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                สร้าง / อัปเดตห้อง
+              </button>
+            </div>
+          </section>
         </div>
       </aside>
 
@@ -191,6 +223,22 @@
               </div>
             </div>
             <div class="legend" id="legendBox"></div>
+          </div>
+
+          <!-- Top View Area (Hidden by default) -->
+          <div class="topview-board" id="topviewArea" style="display: none; background: var(--surface-1); border-radius: 12px; border: 1px solid var(--line); padding: 24px; box-shadow: var(--shadow-sm); width: 100%;">
+            <div class="board-head" style="margin-bottom: 20px; border-bottom: 1px solid var(--line); padding-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text);">Top View Room Layout</h3>
+                <p id="topviewMeta" style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">600w × 400d cm</p>
+              </div>
+            </div>
+            <div class="topview-wrap" id="topviewWrap" style="position: relative; overflow: auto; min-height: 400px; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 8px; border: 1px dashed var(--line); padding: 20px;">
+              <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--muted);">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                <p>กด <strong>"สร้าง / อัปเดตห้อง"</strong> เพื่อเริ่มจัดวาง Layout ด้านบน</p>
+              </div>
+            </div>
           </div>
           <!-- SketchUp-style 3D view (Three.js renders here) -->
           <div class="stage-3d" id="stage3d" style="display:none">
@@ -256,6 +304,10 @@
                 <div>
                   <label for="pHeight">Height (cm)</label>
                   <input id="pHeight" type="text" inputmode="decimal" placeholder="22">
+                </div>
+                <div>
+                  <label for="pDepth">Depth (cm)</label>
+                  <input id="pDepth" type="text" inputmode="decimal" placeholder="10">
                 </div>
               </div>
               <button class="btn btn-build" id="btnAddProduct">
@@ -363,6 +415,10 @@
           <div>
             <label for="editHeight">Height (cm)</label>
             <input id="editHeight" type="text" inputmode="decimal">
+          </div>
+          <div>
+            <label for="editDepth">Depth (cm)</label>
+            <input id="editDepth" type="text" inputmode="decimal">
           </div>
         </div>
       </div>
@@ -483,6 +539,7 @@
   <script src="src/templates.js?v=shelf"></script>
   <script src="src/planogram3d.js?v=shelf"></script>
   <script src="src/export.js?v=shelf"></script>
+  <script src="src/topview.js?v=shelf"></script>
   <script src="src/app.js?v=shelf"></script>
 </body>
 </html>
