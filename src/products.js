@@ -163,6 +163,14 @@ function renderProductList() {
       e.dataTransfer.setData('text', product.id);
       e.dataTransfer.effectAllowed = 'move';
       selectProduct(product.id);
+
+      // Auto-close 3D view on drag start to reveal the 2D placement canvas
+      if (window.Planogram3D && Planogram3D.isOpen()) {
+        Planogram3D.close();
+        const btn = $('btnToggle3D');
+        if (btn) btn.classList.remove('active');
+        showToast('สลับเข้าสู่โหมด 2D อัตโนมัติเพื่อจัดวางสินค้า');
+      }
     });
     list.appendChild(card);
   });

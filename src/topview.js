@@ -123,6 +123,13 @@
         const target = tab.dataset.tab;
         activeTab = target;
         
+        // Auto-close 3D view when switching tabs to ensure 2D workspace is visible
+        if (window.Planogram3D && Planogram3D.isOpen()) {
+          Planogram3D.close();
+          const btn = $('btnToggle3D');
+          if (btn) btn.classList.remove('active');
+        }
+
         if (target === 'topview') {
           activateTopview();
         } else {
