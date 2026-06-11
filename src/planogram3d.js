@@ -44,10 +44,10 @@
     controls.maxDistance = 4000;
 
     // ── Lighting: soft SketchUp-like ambient + key directional ──
-    const hemi = new THREE.HemisphereLight(0xffffff, 0xb9bfc7, 0.85);
+    const hemi = new THREE.HemisphereLight(0xffffff, 0xb9bfc7, 0.62);
     scene.add(hemi);
 
-    const key = new THREE.DirectionalLight(0xffffff, 0.85);
+    const key = new THREE.DirectionalLight(0xffffff, 0.58);
     key.position.set(420, 620, 540);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
@@ -56,7 +56,7 @@
     scene.add(key);
     scene.userData.keyLight = key;
 
-    const fill = new THREE.DirectionalLight(0xffffff, 0.25);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.18);
     fill.position.set(-380, 300, -260);
     scene.add(fill);
 
@@ -105,7 +105,7 @@
     if (opts.edges !== false) {
       const edges = new THREE.LineSegments(
         new THREE.EdgesGeometry(geo, 30),
-        new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.16 })
+        new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: opts.edgeOpacity != null ? opts.edgeOpacity : 0.16 })
       );
       mesh.add(edges);
     }
@@ -161,7 +161,7 @@
       // 45 degree threshold prevents drawing edge lines on curved surfaces
       const edges = new THREE.LineSegments(
         new THREE.EdgesGeometry(geo, 45),
-        new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.10 })
+        new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: opts.edgeOpacity != null ? opts.edgeOpacity : 0.10 })
       );
       mesh.add(edges);
     }
@@ -196,6 +196,111 @@
     );
     mesh.add(edges);
     return mesh;
+  }
+
+  function product3DKind(p) {
+    const text = `${p.topviewAsset || ''} ${p.name || ''} ${p.category || ''}`.toLowerCase();
+    if (text.includes('nevi')) return 'nevi-desk';
+    if (text.includes('sayl')) return 'sayl-chair';
+    if (text.includes('office table') || text.includes('table') || text.includes('desk') || text.includes('โต๊ะ')) return 'table';
+    if (text.includes('office chair') || text.includes('chair') || text.includes('เก้าอี้') || text.includes('seat')) return 'chair';
+    if (text.includes('fixture shelf') || text.includes('shelf') || text.includes('ชั้นวาง')) return 'shelf';
+    if (text.includes('bed') || text.includes('เตียง')) return 'bed';
+    return 'box';
+  }
+
+  function addNeviDeskModel(group, origW, origH, origD) {
+    const tableH = origH || 75;
+    const topH = 3.2;
+    const frameColor = '#3e4248';
+    const metalColor = '#8d949c';
+    const topColor = '#d9ccb9';
+
+    const top = makeRoundedBox(origW, topH, origD, 2.2, topColor, { roughness: 0.72, edgeOpacity: 0.28 });
+    top.position.set(0, tableH - topH / 2, 0);
+    group.add(top);
+
+    const topLip = makeRoundedBox(origW, 1.2, 2.2, 0.5, '#8e877c', { roughness: 0.78, edgeOpacity: 0.24 });
+    topLip.position.set(0, tableH - topH - 1.4, -origD / 2 + 1.5);
+    group.add(topLip);
+
+    const screenH = Math.min(30, tableH * 0.45);
+    const screen = makeRoundedBox(origW * 0.86, screenH, 2.4, 1.0, '#b2aa9f', { roughness: 0.82, edgeOpacity: 0.30 });
+    screen.position.set(0, tableH + screenH / 2 - 2, -origD / 2 + 3.5);
+    group.add(screen);
+
+    const beam = makeRoundedBox(origW * 0.86, 3.2, 5.2, 1.4, metalColor, { roughness: 0.54, edgeOpacity: 0.28 });
+    beam.position.set(0, tableH * 0.5, 0);
+    group.add(beam);
+
+    const footW = 5;
+    const footD = origD * 0.82;
+    const legH = tableH - topH;
+    [-1, 1].forEach((side) => {
+      const x = side * (origW / 2 - 7);
+      const leg = makeRoundedBox(5.5, legH, 5.5, 1.2, frameColor, { roughness: 0.5, edgeOpacity: 0.32 });
+      leg.position.set(x, legH / 2, 0);
+      group.add(leg);
+
+      const foot = makeRoundedBox(footW, 3.2, footD, 1.4, metalColor, { roughness: 0.48, edgeOpacity: 0.30 });
+      foot.position.set(x, 1.6, 0);
+      group.add(foot);
+    });
+
+    const control = makeRoundedBox(Math.min(24, origW * 0.16), 2.4, 10, 1.0, '#20242a', { roughness: 0.5, edgeOpacity: 0.34 });
+    control.position.set(origW / 2 - 18, tableH - topH - 2.8, origD / 2 - 8);
+    group.add(control);
+  }
+
+  function addSaylChairModel(group, origW, origH, origD) {
+    const seatY = Math.min(46, Math.max(38, origH * 0.5));
+    const seatThick = 6;
+    const shellColor = '#9b9187';
+    const darkColor = '#22201f';
+    const metalColor = '#777c82';
+
+    const seat = makeRoundedBox(origW * 0.78, seatThick, origD * 0.72, 5, shellColor, { roughness: 0.78, edgeOpacity: 0.32 });
+    seat.position.set(0, seatY, 2);
+    group.add(seat);
+
+    const backH = Math.max(34, origH - seatY + 6);
+    const back = makeRoundedBox(origW * 0.72, backH, 4.2, 5, shellColor, { roughness: 0.8, edgeOpacity: 0.34 });
+    back.position.set(0, seatY + backH / 2 - 1, -origD * 0.34);
+    back.rotation.x = -0.16;
+    group.add(back);
+
+    const spine = makeRoundedBox(7, backH * 0.85, 5, 2, darkColor, { roughness: 0.58, edgeOpacity: 0.38 });
+    spine.position.set(0, seatY + backH * 0.42, -origD * 0.38);
+    spine.rotation.x = -0.12;
+    group.add(spine);
+
+    [-1, 1].forEach((side) => {
+      const support = makeRoundedBox(2.2, 20, 3.2, 0.9, darkColor, { roughness: 0.55, edgeOpacity: 0.38 });
+      support.position.set(side * origW * 0.42, seatY + 7, -origD * 0.03);
+      support.rotation.z = side * 0.12;
+      group.add(support);
+
+      const arm = makeRoundedBox(5, 2.2, origD * 0.48, 1.6, darkColor, { roughness: 0.5, edgeOpacity: 0.38 });
+      arm.position.set(side * origW * 0.42, seatY + 18, 0);
+      group.add(arm);
+    });
+
+    const column = makeRoundedBox(6, seatY - seatThick / 2, 6, 2.4, darkColor, { roughness: 0.48, edgeOpacity: 0.38 });
+    column.position.set(0, (seatY - seatThick / 2) / 2, 0);
+    group.add(column);
+
+    const baseRadius = origW * 0.42;
+    for (let angle = 0; angle < 360; angle += 72) {
+      const rad = angle * Math.PI / 180;
+      const prong = makeRoundedBox(4, 2.6, baseRadius, 1.1, metalColor, { roughness: 0.52, edgeOpacity: 0.34 });
+      prong.position.set(Math.sin(rad) * baseRadius / 2, 2.2, Math.cos(rad) * baseRadius / 2);
+      prong.rotation.y = rad;
+      group.add(prong);
+
+      const wheel = makeRoundedBox(6, 4, 4, 1.8, darkColor, { roughness: 0.44, edgeOpacity: 0.40 });
+      wheel.position.set(Math.sin(rad) * baseRadius, 2.5, Math.cos(rad) * baseRadius);
+      group.add(wheel);
+    }
   }
 
   /** Build the gondola structure + placed products from current state. */
@@ -377,6 +482,22 @@
   }
 
   function frameCamera(W, H) {
+    if (window.TopViewLayout && TopViewLayout.isActive()) {
+      const spec = TopViewLayout.getSpec();
+      const span = Math.max(spec.width, spec.depth);
+      controls.target.set(0, 28, 0);
+      camera.position.set(span * 0.62, span * 0.76, span * 0.92);
+      camera.updateProjectionMatrix();
+
+      const key = scene.userData.keyLight;
+      const cam = key.shadow.camera;
+      const r = span * 0.72;
+      cam.left = -r; cam.right = r; cam.top = r; cam.bottom = -r;
+      cam.near = 1; cam.far = 3000;
+      cam.updateProjectionMatrix();
+      return;
+    }
+
     const cx = 0, cy = H * 0.46, cz = 0;
     controls.target.set(cx, cy, cz);
     camera.position.set(W * 0.62, H * 0.95, (W * 0.5 + H * 0.9 + 200));
@@ -407,7 +528,7 @@
     // ── Floor: room plane ──
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(W, D),
-      new THREE.MeshStandardMaterial({ color: '#f2f1ec', roughness: 0.9 })
+      new THREE.MeshStandardMaterial({ color: '#dde3e8', roughness: 0.92 })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = 0;
@@ -415,7 +536,7 @@
     contentGroup.add(floor);
 
     // ── Grid helper ──
-    const grid = new THREE.GridHelper(Math.max(W, D), Math.round(Math.max(W, D) / spec.gridSize), 0x90949a, 0xd6dce3);
+    const grid = new THREE.GridHelper(Math.max(W, D), Math.round(Math.max(W, D) / spec.gridSize), 0x7f8790, 0xc6ced7);
     grid.position.y = 0.1;
     contentGroup.add(grid);
 
@@ -424,22 +545,22 @@
     const wallH = 15;
     
     // Back wall
-    const wallB = makeBox(W, wallH, wallThick, '#e2dfd5', { cast: false });
+    const wallB = makeBox(W, wallH, wallThick, '#c9c3b8', { cast: false, edgeOpacity: 0.22 });
     wallB.position.set(0, wallH/2, -D/2 - wallThick/2);
     contentGroup.add(wallB);
     
     // Left wall
-    const wallL = makeBox(wallThick, wallH, D, '#e2dfd5', { cast: false });
+    const wallL = makeBox(wallThick, wallH, D, '#c9c3b8', { cast: false, edgeOpacity: 0.22 });
     wallL.position.set(-W/2 - wallThick/2, wallH/2, 0);
     contentGroup.add(wallL);
 
     // Right wall
-    const wallR = makeBox(wallThick, wallH, D, '#e2dfd5', { cast: false });
+    const wallR = makeBox(wallThick, wallH, D, '#c9c3b8', { cast: false, edgeOpacity: 0.22 });
     wallR.position.set(W/2 + wallThick/2, wallH/2, 0);
     contentGroup.add(wallR);
 
     // Front wall
-    const wallF = makeBox(W, wallH, wallThick, '#e2dfd5', { cast: false });
+    const wallF = makeBox(W, wallH, wallThick, '#c9c3b8', { cast: false, edgeOpacity: 0.22 });
     wallF.position.set(0, wallH/2, D/2 + wallThick/2);
     contentGroup.add(wallF);
 
@@ -459,9 +580,16 @@
       // Create a 3D group to handle position and rotation
       const itemGroup = new THREE.Group();
       const color = p.color || '#cccccc';
+      const kind = product3DKind(p);
 
       // Procedural custom modeling based on category/name
-      if (p.name.includes('Office Table') || p.name.includes('โต๊ะ')) {
+      if (kind === 'nevi-desk') {
+        addNeviDeskModel(itemGroup, origW, origH, origD);
+      }
+      else if (kind === 'sayl-chair') {
+        addSaylChairModel(itemGroup, origW, origH, origD);
+      }
+      else if (kind === 'table') {
         // Table: top + modesty panel + drawers + 4 legs
         const topH = 3.5;
         const legW = 3.5;
@@ -536,7 +664,7 @@
           }
         });
       } 
-      else if (p.name.includes('Office Chair') || p.name.includes('เก้าอี้')) {
+      else if (kind === 'chair') {
         // Chair: seat + armrests + backrest frame + cylinder shaft + 5 prongs + wheels
         const seatH = 45;
         const seatThick = 6;
@@ -627,7 +755,7 @@
           itemGroup.add(wheel);
         }
       } 
-      else if (p.name.includes('Fixture Shelf') || p.name.includes('ชั้นวาง')) {
+      else if (kind === 'shelf') {
         // Fixture shelf: back + 2 sides + 4 shelves
         const shelfW = origW;
         const shelfH = origH || 180;
@@ -674,7 +802,7 @@
           itemGroup.add(board);
         }
       } 
-      else if (p.name.includes('Bed') || p.name.includes('เตียง')) {
+      else if (kind === 'bed') {
         // Bed: base block + headboard + pillows
         const bedH = origH || 45;
         const headH = 95;

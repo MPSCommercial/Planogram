@@ -12,6 +12,10 @@
   let isDragging = false;
   let dragTarget = null;
   let dragOffset = { x: 0, y: 0 };
+  let isRotating = false;
+  let rotateTarget = null;
+  let rotateSnapshot = null;
+  let rotateMoved = false;
   let activeTab = 'planogram'; // 'planogram' | 'topview' | 'library'
   let selectedItemId = null;   // Currently selected placed item
   let undoStack = [];          // Snapshots of { areaSpec, placedItems }
@@ -31,7 +35,13 @@
     { name: 'Fixture Shelf (ชั้นวาง)', cat: 'Fixtures', brand: 'Generic', color: '#b9bec5', w: 100, h: 180, d: 45 },
     { name: 'Office Table (โต๊ะทำงาน)', cat: 'Furniture', brand: 'Generic', color: '#a05a2c', w: 120, h: 75, d: 60 },
     { name: 'Office Chair (เก้าอี้)', cat: 'Furniture', brand: 'Generic', color: '#1a1a1a', w: 60, h: 90, d: 60 },
-    { name: 'Comfort Bed (เตียงนอน)', cat: 'Furniture', brand: 'Generic', color: '#3182ce', w: 150, h: 45, d: 200 }
+    { name: 'Comfort Bed (เตียงนอน)', cat: 'Furniture', brand: 'Generic', color: '#3182ce', w: 150, h: 45, d: 200 },
+    { name: 'Herman Miller Nevi Desk 1200', cat: 'Furniture', brand: 'Herman Miller', color: '#f8f8f4', w: 120, h: 75, d: 80, topviewAsset: 'nevi-desk' },
+    { name: 'Herman Miller Nevi Desk 1400', cat: 'Furniture', brand: 'Herman Miller', color: '#f8f8f4', w: 140, h: 75, d: 80, topviewAsset: 'nevi-desk' },
+    { name: 'Herman Miller Nevi Desk 1500', cat: 'Furniture', brand: 'Herman Miller', color: '#f8f8f4', w: 150, h: 75, d: 80, topviewAsset: 'nevi-desk' },
+    { name: 'Herman Miller Nevi Desk 1600', cat: 'Furniture', brand: 'Herman Miller', color: '#f8f8f4', w: 160, h: 75, d: 80, topviewAsset: 'nevi-desk' },
+    { name: 'Herman Miller Nevi Desk 1800', cat: 'Furniture', brand: 'Herman Miller', color: '#f8f8f4', w: 180, h: 75, d: 80, topviewAsset: 'nevi-desk' },
+    { name: 'Herman Miller Sayl Chair', cat: 'Furniture', brand: 'Herman Miller', color: '#e8e3de', w: 60, h: 90, d: 60, topviewAsset: 'sayl-chair' }
   ];
 
   /** Initialize Top View Layout module */
@@ -75,6 +85,8 @@
     if (btnZoomOut) btnZoomOut.addEventListener('click', () => adjustZoom(-0.1, wrapCenter()));
     const btnZoomReset = $('btnZoomReset');
     if (btnZoomReset) btnZoomReset.addEventListener('click', () => resetZoom());
+    const btnExportTopview = $('btnExportTopview');
+    if (btnExportTopview) btnExportTopview.addEventListener('click', exportTopviewPNG);
 
     // Room Layout Template apply binding
     const btnApplyRoomTemplate = $('btnApplyRoomTemplate');
@@ -219,12 +231,119 @@
 
   /* ─── Selection & Item Inspector ─── */
 
-  /** Footprint (w × d in cm) of a placed item accounting for rotation */
+  /** Footprint (w × d in cm) of a placed item accounting for 8-way rotation */
   function itemFootprint(item, p) {
     const origW = parseCm(p.width, 10);
     const origD = parseCm(p.depth, 10);
-    const isRotated = (item.rotation === 90 || item.rotation === 270);
-    return { w: isRotated ? origD : origW, d: isRotated ? origW : origD };
+    const rad = (normalizeRotation(item.rotation) * Math.PI) / 180;
+    const cos = Math.abs(Math.cos(rad));
+    const sin = Math.abs(Math.sin(rad));
+    return {
+      w: Math.round((origW * cos + origD * sin) * 10) / 10,
+      d: Math.round((origW * sin + origD * cos) * 10) / 10
+    };
+  }
+
+  function normalizeRotation(value) {
+    return ((Math.round((parseFloat(value) || 0) / 45) * 45) % 360 + 360) % 360;
+  }
+
+  /** Rotate around center so the item does not jump while snapping to 8 directions */
+  function setItemRotation(item, p, rotation) {
+    const before = itemFootprint(item, p);
+    const cx = item.x + before.w / 2;
+    const cy = item.y + before.d / 2;
+
+    item.rotation = normalizeRotation(rotation);
+    const after = itemFootprint(item, p);
+    item.x = clamp(Math.round((cx - after.w / 2) * 10) / 10, 0, Math.max(0, areaSpec.width - after.w));
+    item.y = clamp(Math.round((cy - after.d / 2) * 10) / 10, 0, Math.max(0, areaSpec.depth - after.d));
+  }
+
+  function topviewKind(p) {
+    if (p.topviewAsset === 'nevi-desk') return 'nevi-desk';
+    if (p.topviewAsset === 'sayl-chair') return 'sayl-chair';
+
+    const text = `${p.name || ''} ${p.category || ''}`.toLowerCase();
+    if (text.includes('nevi')) return 'nevi-desk';
+    if (text.includes('sayl')) return 'sayl-chair';
+    if (text.includes('bed') || text.includes('เตียง')) return 'bed';
+    if (text.includes('chair') || text.includes('เก้าอี้') || text.includes('seat')) return 'chair';
+    if (text.includes('table') || text.includes('desk') || text.includes('โต๊ะ')) return 'table';
+    if (text.includes('shelf') || text.includes('fixture') || text.includes('ชั้น')) return 'shelf';
+    if (text.includes('cabinet') || text.includes('ตู้')) return 'shelf';
+    return 'product';
+  }
+
+  function appendTopviewSymbol(visual, p, kind) {
+    visual.classList.add('tv-symbol', `tv-symbol-${kind}`);
+    visual.innerHTML = '';
+
+    const add = (cls) => {
+      const node = document.createElement('span');
+      node.className = cls;
+      visual.appendChild(node);
+      return node;
+    };
+
+    if (kind === 'bed') {
+      add('tv-bed-mattress');
+      add('tv-bed-pillow pillow-a');
+      add('tv-bed-pillow pillow-b');
+      add('tv-bed-throw');
+    } else if (kind === 'chair') {
+      add('tv-chair-back');
+      add('tv-chair-seat');
+      add('tv-chair-arm arm-l');
+      add('tv-chair-arm arm-r');
+      add('tv-chair-base');
+    } else if (kind === 'sayl-chair') {
+      add('tv-sayl-back');
+      add('tv-sayl-seat');
+      add('tv-sayl-arm arm-l');
+      add('tv-sayl-arm arm-r');
+      add('tv-sayl-spine');
+      add('tv-sayl-star spoke-a');
+      add('tv-sayl-star spoke-b');
+      add('tv-sayl-star spoke-c');
+      add('tv-sayl-star spoke-d');
+      add('tv-sayl-star spoke-e');
+      add('tv-sayl-caster caster-a');
+      add('tv-sayl-caster caster-b');
+      add('tv-sayl-caster caster-c');
+      add('tv-sayl-caster caster-d');
+      add('tv-sayl-caster caster-e');
+    } else if (kind === 'nevi-desk') {
+      add('tv-nevi-top');
+      add('tv-nevi-screen');
+      add('tv-nevi-beam');
+      add('tv-nevi-leg leg-a');
+      add('tv-nevi-leg leg-b');
+      add('tv-nevi-foot foot-a');
+      add('tv-nevi-foot foot-b');
+      add('tv-nevi-control');
+    } else if (kind === 'table') {
+      add('tv-table-top');
+      add('tv-table-edge edge-a');
+      add('tv-table-edge edge-b');
+    } else if (kind === 'shelf') {
+      add('tv-shelf-body');
+      add('tv-shelf-line line-a');
+      add('tv-shelf-line line-b');
+      add('tv-shelf-line line-c');
+    } else {
+      add('tv-product-face');
+    }
+
+    const label = document.createElement('span');
+    label.className = 'tv-symbol-label';
+    label.textContent = shortName(p.name);
+    visual.appendChild(label);
+
+    const size = document.createElement('span');
+    size.className = 'tv-symbol-size';
+    size.textContent = `${parseCm(p.width, 10)}x${parseCm(p.depth, 10)} · ${p.category || 'SKU'}`;
+    visual.appendChild(size);
   }
 
   /* ─── Collision detection ─── */
@@ -437,14 +556,11 @@
     const p = products.find((q) => q.id === item.productId);
     if (!p) return;
 
-    const rot = parseInt($('tvItemRot').value) || 0;
+    const rot = normalizeRotation($('tvItemRot').value);
     if (rot === item.rotation) return;
 
     pushHistory();
-    item.rotation = rot;
-    const { w, d } = itemFootprint(item, p);
-    item.x = clamp(item.x, 0, areaSpec.width - w);
-    item.y = clamp(item.y, 0, areaSpec.depth - d);
+    setItemRotation(item, p, rot);
     saveState();
     drawRoom();
     refresh3D();
@@ -559,7 +675,8 @@
           width: String(preset.w),
           height: String(preset.h),
           depth: String(preset.d),
-          image: null
+          image: null,
+          topviewAsset: preset.topviewAsset || null
         });
         changed = true;
       }
@@ -879,21 +996,17 @@
       const p = products.find((q) => q.id === item.productId);
       if (!p) return;
 
-      // Original dimensions
       const origW = parseCm(p.width, 10);
       const origD = parseCm(p.depth, 10);
-
-      // Account for rotation (swap width and depth if rotated 90 or 270 degrees)
-      const isRotated = (item.rotation === 90 || item.rotation === 270);
-      const w = isRotated ? origD : origW;
-      const d = isRotated ? origW : origD;
+      const { w, d } = itemFootprint(item, p);
 
       const wPx = Math.round(w * pxPerCm);
       const dPx = Math.round(d * pxPerCm);
+      const visualWPx = Math.round(origW * pxPerCm);
+      const visualDPx = Math.round(origD * pxPerCm);
       const xPx = Math.round(item.x * pxPerCm);
       const yPx = Math.round(item.y * pxPerCm);
 
-      // Furniture element
       const el = document.createElement('div');
       el.className = 'placed-furniture';
       el.dataset.itemId = item.id;
@@ -904,49 +1017,33 @@
       el.style.left = `${xPx}px`;
       el.style.top = `${yPx}px`;
       el.style.position = 'absolute';
-      el.style.background = p.color || '#cccccc';
-      el.style.border = '1.5px solid #20242a';
-      el.style.borderRadius = '3px';
       el.style.boxSizing = 'border-box';
       el.style.cursor = 'move';
-      el.style.display = 'flex';
-      el.style.flexDirection = 'column';
-      el.style.alignItems = 'center';
-      el.style.justifyContent = 'center';
-      el.style.padding = '4px';
       el.style.userSelect = 'none';
+
+      const visual = document.createElement('div');
+      visual.className = 'placed-furniture-visual';
+      visual.style.width = `${visualWPx}px`;
+      visual.style.height = `${visualDPx}px`;
+      visual.style.left = '50%';
+      visual.style.top = '50%';
+      visual.style.position = 'absolute';
+      visual.style.transform = `translate(-50%, -50%) rotate(${normalizeRotation(item.rotation)}deg)`;
+      visual.style.transformOrigin = 'center';
+      visual.style.boxSizing = 'border-box';
+      visual.style.pointerEvents = 'none';
+
+      appendTopviewSymbol(visual, p, topviewKind(p));
 
       // Render actual image if uploaded
       if (p.image) {
-        el.style.backgroundImage = `url(${p.image})`;
-        el.style.backgroundSize = 'contain';
-        el.style.backgroundPosition = 'center';
-        el.style.backgroundRepeat = 'no-repeat';
+        visual.style.backgroundImage = `url(${p.image})`;
+        visual.style.backgroundSize = 'contain';
+        visual.style.backgroundPosition = 'center';
+        visual.style.backgroundRepeat = 'no-repeat';
       }
 
-      // Outline edge effect
-      el.style.boxShadow = 'inset 0 0 0 1px rgba(255,255,255,0.15), 0 3px 6px rgba(0,0,0,0.08)';
-
-      // Label
-      const title = document.createElement('div');
-      title.textContent = shortName(p.name);
-      title.style.fontSize = '9px';
-      title.style.fontWeight = 'bold';
-      title.style.color = p.image ? '#ffffff' : contrast(p.color || '#cccccc');
-      if (p.image) title.style.textShadow = '0 1px 3px rgba(0,0,0,0.8), 0 1px 1px rgba(0,0,0,0.8)';
-      title.style.textAlign = 'center';
-      title.style.pointerEvents = 'none';
-      el.appendChild(title);
-
-      const sizeInfo = document.createElement('div');
-      sizeInfo.textContent = `${origW}x${origD} cm (${item.rotation}°)`;
-      sizeInfo.style.fontSize = '8px';
-      sizeInfo.style.color = p.image ? '#ffffff' : contrast(p.color || '#cccccc');
-      if (p.image) sizeInfo.style.textShadow = '0 1px 3px rgba(0,0,0,0.8), 0 1px 1px rgba(0,0,0,0.8)';
-      sizeInfo.style.opacity = '0.78';
-      sizeInfo.style.marginTop = '2px';
-      sizeInfo.style.pointerEvents = 'none';
-      el.appendChild(sizeInfo);
+      el.appendChild(visual);
 
       // Delete Button (x) - Large round overlay button with hover effect
       const btnDel = document.createElement('button');
@@ -984,7 +1081,7 @@
       });
       el.appendChild(btnDel);
 
-      // Rotate Button (↺) - Large round overlay button with hover effect
+      // Rotate handle: click = 45°, drag around center = snap to 8 directions
       const btnRot = document.createElement('button');
       btnRot.textContent = '↺';
       btnRot.style.position = 'absolute';
@@ -1014,9 +1111,10 @@
         btnRot.style.transform = 'scale(1.0)';
         btnRot.style.backgroundColor = '#2b6cb0';
       });
-      btnRot.addEventListener('click', (e) => {
+      btnRot.addEventListener('mousedown', (e) => {
         e.stopPropagation();
-        rotateFurniture(item.id);
+        e.preventDefault();
+        startRotate(item, e);
       });
       el.appendChild(btnRot);
 
@@ -1153,8 +1251,43 @@
     }
   }
 
+  function startRotate(item, e) {
+    selectItem(item.id);
+    isRotating = true;
+    rotateTarget = item;
+    rotateSnapshot = snapshot();
+    rotateMoved = false;
+  }
+
+  function updateRotationFromPointer(e) {
+    if (!rotateTarget) return;
+    const p = products.find((q) => q.id === rotateTarget.productId);
+    const wrap = $('topviewWrap');
+    const board = wrap ? wrap.querySelector('.room-board') : null;
+    if (!p || !board) return;
+
+    const f = itemFootprint(rotateTarget, p);
+    const rect = board.getBoundingClientRect();
+    const cx = (rotateTarget.x + f.w / 2) * pxPerCm;
+    const cy = (rotateTarget.y + f.d / 2) * pxPerCm;
+    const px = e.clientX - rect.left;
+    const py = e.clientY - rect.top;
+    const next = normalizeRotation((Math.atan2(py - cy, px - cx) * 180 / Math.PI) + 90);
+
+    if (next !== rotateTarget.rotation) {
+      setItemRotation(rotateTarget, p, next);
+      rotateMoved = true;
+      drawRoom();
+    }
+  }
+
   /** Handle pan and item-drag mouse movement */
   function handleDrag(e) {
+    if (isRotating) {
+      updateRotationFromPointer(e);
+      return;
+    }
+
     if (isPanning) {
       const wrap = $('topviewWrap');
       if (wrap) {
@@ -1213,11 +1346,28 @@
   }
 
   /** End dragging item / panning */
-  function endDrag() {
+  function endDrag(e) {
     if (isPanning) {
       isPanning = false;
       const wrap = $('topviewWrap');
       if (wrap) wrap.style.cursor = spaceHeld ? 'grab' : '';
+    }
+
+    if (isRotating) {
+      const target = rotateTarget;
+      isRotating = false;
+      rotateTarget = null;
+      if (target && !rotateMoved) {
+        rotateFurniture(target.id, rotateSnapshot);
+      } else if (target && rotateMoved) {
+        pushHistory(rotateSnapshot);
+        saveState();
+        refresh3D();
+      }
+      rotateSnapshot = null;
+      rotateMoved = false;
+      drawRoom();
+      return;
     }
 
     if (isDragging) {
@@ -1249,29 +1399,17 @@
     }
   }
 
-  /** Rotate item by 90 degrees */
-  function rotateFurniture(id) {
+  /** Rotate item by one 45-degree step */
+  function rotateFurniture(id, historySnap) {
     const item = placedItems.find((x) => x.id === id);
     if (item) {
-      pushHistory();
-      item.rotation = (item.rotation + 90) % 360;
-
-      // Adjust boundaries after rotation to prevent sticking outside
       const p = products.find((q) => q.id === item.productId);
-      if (p) {
-        const origW = parseCm(p.width, 10);
-        const origD = parseCm(p.depth, 10);
-        const isRotated = (item.rotation === 90 || item.rotation === 270);
-        const w = isRotated ? origD : origW;
-        const d = isRotated ? origW : origD;
+      if (!p) return;
 
-        item.x = clamp(item.x, 0, areaSpec.width - w);
-        item.y = clamp(item.y, 0, areaSpec.depth - d);
-      }
-
+      pushHistory(historySnap);
+      setItemRotation(item, p, item.rotation + 45);
       saveState();
       drawRoom();
-
       refresh3D();
     }
   }
@@ -1288,8 +1426,15 @@
     const fTable = products.find(p => p.name.includes('Office Table'));
     const fChair = products.find(p => p.name.includes('Office Chair'));
     const fBed = products.find(p => p.name.includes('Comfort Bed'));
+    const fNeviDesk = products.find(p => p.topviewAsset === 'nevi-desk' && p.name.includes('1200'))
+      || products.find(p => p.name.includes('Herman Miller Nevi Desk 1200'))
+      || products.find(p => p.name.includes('Herman Miller Nevi Desk'));
+    const fSaylChair = products.find(p => p.topviewAsset === 'sayl-chair')
+      || products.find(p => p.name.includes('Herman Miller Sayl Chair'));
+    const officeTable = fNeviDesk || fTable;
+    const officeChair = fSaylChair || fChair;
 
-    if (!fShelf || !fTable || !fChair || !fBed) {
+    if (!fShelf || !officeTable || !officeChair || !fBed) {
       showToast('ไม่พบข้อมูลสินค้าเฟอร์นิเจอร์หลักสำหรับเทมเพลต');
       return;
     }
@@ -1320,10 +1465,10 @@
     } else if (val === 'office') {
       areaSpec = { width: 600, depth: 500, gridSize: 20 };
       placedItems = [
-        { id: 't_o_1', productId: fTable.id, x: 240, y: 160, rotation: 0 },
-        { id: 't_o_2', productId: fChair.id, x: 270, y: 80, rotation: 0 },
-        { id: 't_o_3', productId: fTable.id, x: 240, y: 240, rotation: 180 },
-        { id: 't_o_4', productId: fChair.id, x: 270, y: 320, rotation: 180 },
+        { id: 't_o_1', productId: officeTable.id, x: 240, y: 160, rotation: 0 },
+        { id: 't_o_2', productId: officeChair.id, x: 270, y: 80, rotation: 0 },
+        { id: 't_o_3', productId: officeTable.id, x: 240, y: 260, rotation: 180 },
+        { id: 't_o_4', productId: officeChair.id, x: 270, y: 360, rotation: 180 },
         { id: 't_o_5', productId: fShelf.id, x: 0, y: 40, rotation: 90 },
         { id: 't_o_6', productId: fShelf.id, x: 0, y: 140, rotation: 90 },
         { id: 't_o_7', productId: fShelf.id, x: 500, y: 40, rotation: 270 },
@@ -1440,6 +1585,45 @@
     if (window.Planogram3D && Planogram3D.isOpen()) {
       Planogram3D.refresh();
     }
+  }
+
+  function exportTopviewPNG() {
+    const wrap = $('topviewWrap');
+    const target = wrap ? wrap.querySelector('.room-scale-shell') : null;
+    if (!target) {
+      showToast('ยังไม่มีแปลนสำหรับ Export');
+      return;
+    }
+
+    showToast('กำลัง export Top View...');
+    if (window.html2canvas) {
+      doExportTopview(target);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    script.onload = () => doExportTopview(target);
+    script.onerror = () => showToast('โหลดตัว export ไม่สำเร็จ');
+    document.head.appendChild(script);
+  }
+
+  function doExportTopview(target) {
+    const name = `topview_${areaSpec.width}x${areaSpec.depth}`;
+    html2canvas(target, {
+      scale: 2,
+      backgroundColor: '#f5f4f1',
+      useCORS: true,
+      allowTaint: true
+    }).then((canvas) => {
+      const link = document.createElement('a');
+      link.download = `${name}_${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('Export Top View สำเร็จ');
+    }).catch(() => {
+      showToast('Export Top View ไม่สำเร็จ');
+    });
   }
 
   /** Save state to localStorage */

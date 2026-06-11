@@ -7,18 +7,26 @@
 
 ## ⚡ NOW
 
-- **Status**: เพิ่มสเกลบอกความยาวและความลึกให้ Top View Layout โดยแสดง dimension ruler พร้อม tick ระยะ cm รอบบอร์ดห้อง ปรับให้สเกลคำนวณตามขนาดห้อง/zoom ปัจจุบัน และ deploy ขึ้น Surge แล้ว
+- **Status**: แก้ 3D Top View ให้ Herman Miller Nevi Desk และ Sayl Chair ไม่ตกไปเป็นกล่อง generic แล้ว โดยเพิ่มโมเดล procedural เฉพาะรุ่นและปรับ Office Workspace template ให้ใช้ Nevi/Sayl preset เมื่อมี
 - **Branch**: main
-- **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh)
+- **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh) — latest 3d preset change not deployed yet
 - **Blocker**: None
-- **Next**: รอรับข้อเสนอแนะเพิ่มเติมจากผู้ใช้งาน
-- **Files**: `index.html`, `src/topview.js`, `src/styles.css`, `state.md`
+- **Next**: ทดสอบ visual ใน 3D บน local/production แล้ว commit+push เมื่อผู้ใช้ยืนยัน scope
+- **Files**: `index.html`, `src/topview.js`, `src/styles.css`, `src/planogram3d.js`, `state.md`, `3d/`
 
 ---
 
 ## 📜 LOG
 
 ### 🗓️ 2026-06-11
+- ✅ Previous NOW: ตรวจไฟล์ในโฟลเดอร์ `3d/` แล้วพบ Nevi desk DWG 2D 5 ขนาด และ Sayl Chair SKP พร้อมเพิ่ม preset + top-view silhouette สำหรับ Herman Miller Nevi Desk และ Herman Miller Sayl Chair ในหน้า Top View Layout
+- Files: `index.html`, `src/topview.js`, `src/styles.css`, `state.md`, `3d/`
+- ✅ Previous NOW: ปรับการแสดงสินค้าใน Top View Layout ให้เป็นสัญลักษณ์ top-down แบบแปลนจริง แยกประเภท Bed / Chair / Table / Shelf / Product ได้จากรูปทรง พร้อมคงระบบ Export รูปและหมุน 8 ทิศ
+- Files: `index.html`, `src/topview.js`, `src/styles.css`, `state.md`
+- ✅ Previous NOW: เพิ่มปุ่ม Export รูปเฉพาะ Top View Layout และเพิ่มระบบหมุนสินค้าแบบลาก handle คล้าย SketchUp โดย snap ได้ 8 ทิศ (ทุก 45°) พร้อมปรับ inspector ให้เลือกองศา 0-315°
+- Files: `index.html`, `src/topview.js`, `src/styles.css`, `state.md`
+- ✅ Previous NOW: เพิ่มสเกลบอกความยาวและความลึกให้ Top View Layout โดยแสดง dimension ruler พร้อม tick ระยะ cm รอบบอร์ดห้อง ปรับให้สเกลคำนวณตามขนาดห้อง/zoom ปัจจุบัน และ deploy ขึ้น Surge แล้ว
+- Files: `index.html`, `src/topview.js`, `src/styles.css`, `state.md`
 - ✅ Previous NOW: พัฒนาระบบแสดงผลภาพสินค้าจริง (Real Product Mockup) พร้อมปรับปรุงโมเดล 3D ใน Top View Layout ให้มีความโค้งมนสวยงาม (Rounded Corners/Bevel) แทนทรงกล่องเหลี่ยมมุมคมเดิม และลดความเข้มของเส้น Edges ลงเพื่อรูปลักษณ์ที่นุ่มนวลสมจริงมากยิ่งขึ้น
 - Files: `src/planogram3d.js`, `state.md`
 - ✅ Previous NOW: ปรับปรุง UI ของปุ่มลบ (Delete Button) และปุ่มหมุนเฟอร์นิเจอร์ (Rotate Button) บนแคนวาส 2D ของพื้นที่ห้องให้มีขนาดใหญ่ขึ้นเป็นรูปทรงกลมสีสันชัดเจน (แดง/น้ำเงิน) ขอบสีขาวลอยเด่น และแสดงผลแบบทับเหลื่อมขอบมุมขวาบน/ล่าง (Overlapping badges) พร้อมเอฟเฟกต์ย่อขยายเมื่อวางเมาส์ (Hover scale) เพื่อการคลิกสั่งงานและลบสินค้าที่สะดวกขึ้นเรียบร้อยแล้ว
