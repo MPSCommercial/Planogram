@@ -20,21 +20,42 @@ function exportPNG() {
 
 function doExport() {
   const area = $('exportArea');
-  html2canvas(area, {
-    scale: 2,
-    backgroundColor: '#f5f4f1',
-    useCORS: true,
-    allowTaint: true,
-  }).then((canvas) => {
-    const link = document.createElement('a');
-    const name = (spec.name || 'planogram').replace(/\s+/g, '_');
-    link.download = `${name}_${new Date().toISOString().slice(0, 10)}.png`;
-    link.href = canvas.toDataURL('image/png');
-    link.click();
-    showToast('Export PNG สำเร็จ');
-  }).catch(() => {
-    showToast('Export ไม่สำเร็จ');
-  });
+
+  // Inline remote product images as data URLs first — html2canvas drops
+  // cross-origin images whose host doesn't send CORS headers.
+  const urls = [...new Set(
+    Array.from(area.querySelectorAll('img'))
+      .map((img) => img.getAttribute('src'))
+      .filter((src) => src && !src.startsWith('data:'))
+  )];
+
+  Promise.all(urls.map((src) => imageToDataURL(src).then((data) => [src, data])))
+    .then((pairs) => {
+      const inlined = new Map(pairs.filter(([, data]) => data));
+      return html2canvas(area, {
+        scale: 2,
+        backgroundColor: '#f5f4f1',
+        useCORS: true,
+        allowTaint: true,
+        onclone: (doc) => {
+          doc.querySelectorAll('#exportArea img').forEach((img) => {
+            const data = inlined.get(img.getAttribute('src'));
+            if (data) img.src = data;
+          });
+        },
+      });
+    })
+    .then((canvas) => {
+      const link = document.createElement('a');
+      const name = (spec.name || 'planogram').replace(/\s+/g, '_');
+      link.download = `${name}_${new Date().toISOString().slice(0, 10)}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('Export PNG สำเร็จ');
+    })
+    .catch(() => {
+      showToast('Export ไม่สำเร็จ');
+    });
 }
 
 /**

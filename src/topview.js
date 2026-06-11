@@ -1037,6 +1037,7 @@
 
       // Render actual image if uploaded
       if (p.image) {
+        visual.dataset.imgSrc = p.image;
         visual.style.backgroundImage = `url(${p.image})`;
         visual.style.backgroundSize = 'contain';
         visual.style.backgroundPosition = 'center';
@@ -1048,6 +1049,7 @@
       // Delete Button (x) - Large round overlay button with hover effect
       const btnDel = document.createElement('button');
       btnDel.textContent = '×';
+      btnDel.setAttribute('data-html2canvas-ignore', 'true');
       btnDel.style.position = 'absolute';
       btnDel.style.top = '-8px';
       btnDel.style.right = '-8px';
@@ -1084,6 +1086,7 @@
       // Rotate handle: click = 45°, drag around center = snap to 8 directions
       const btnRot = document.createElement('button');
       btnRot.textContent = '↺';
+      btnRot.setAttribute('data-html2canvas-ignore', 'true');
       btnRot.style.position = 'absolute';
       btnRot.style.bottom = '-8px';
       btnRot.style.right = '-8px';
@@ -1610,20 +1613,41 @@
 
   function doExportTopview(target) {
     const name = `topview_${areaSpec.width}x${areaSpec.depth}`;
-    html2canvas(target, {
-      scale: 2,
-      backgroundColor: '#f5f4f1',
-      useCORS: true,
-      allowTaint: true
-    }).then((canvas) => {
-      const link = document.createElement('a');
-      link.download = `${name}_${new Date().toISOString().slice(0, 10)}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      showToast('Export Top View สำเร็จ');
-    }).catch(() => {
-      showToast('Export Top View ไม่สำเร็จ');
-    });
+
+    // Inline remote product images as data URLs first — html2canvas drops
+    // cross-origin images whose host doesn't send CORS headers.
+    const urls = [...new Set(
+      placedItems
+        .map((it) => (products.find((q) => q.id === it.productId) || {}).image)
+        .filter((src) => src && !src.startsWith('data:'))
+    )];
+
+    Promise.all(urls.map((src) => imageToDataURL(src).then((data) => [src, data])))
+      .then((pairs) => {
+        const inlined = new Map(pairs.filter(([, data]) => data));
+        return html2canvas(target, {
+          scale: 2,
+          backgroundColor: '#f5f4f1',
+          useCORS: true,
+          allowTaint: true,
+          onclone: (doc) => {
+            doc.querySelectorAll('.placed-furniture-visual[data-img-src]').forEach((el) => {
+              const data = inlined.get(el.dataset.imgSrc);
+              if (data) el.style.backgroundImage = `url(${data})`;
+            });
+          }
+        });
+      })
+      .then((canvas) => {
+        const link = document.createElement('a');
+        link.download = `${name}_${new Date().toISOString().slice(0, 10)}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('Export Top View สำเร็จ');
+      })
+      .catch(() => {
+        showToast('Export Top View ไม่สำเร็จ');
+      });
   }
 
   /** Save state to localStorage */

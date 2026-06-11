@@ -52,6 +52,46 @@ function shortName(name) {
 }
 
 /**
+ * Convert a remote image URL into a base64 data URL so html2canvas can
+ * render it (export silently drops cross-origin images whose host does
+ * not send CORS headers). Tries a direct CORS load first, then falls
+ * back to the wsrv.nl image proxy. Resolves null when both fail.
+ */
+const imageDataURLCache = new Map();
+
+function imageToDataURL(url) {
+  if (!url || url.startsWith('data:')) return Promise.resolve(url);
+  if (imageDataURLCache.has(url)) return Promise.resolve(imageDataURLCache.get(url));
+
+  const load = (src) => new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        canvas.getContext('2d').drawImage(img, 0, 0);
+        resolve(canvas.toDataURL('image/png'));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    img.onerror = reject;
+    img.src = src;
+  });
+
+  const proxied = 'https://images.weserv.nl/?url=' + encodeURIComponent(url);
+  return load(url)
+    .catch(() => load(proxied))
+    .catch(() => null)
+    .then((dataUrl) => {
+      imageDataURLCache.set(url, dataUrl);
+      return dataUrl;
+    });
+}
+
+/**
  * Show toast notification
  */
 function showToast(message) {
