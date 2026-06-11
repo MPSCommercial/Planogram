@@ -788,14 +788,20 @@
     wrap.style.alignItems = 'flex-start';
     wrap.style.justifyContent = 'flex-start';
 
+    const scaleShell = document.createElement('div');
+    scaleShell.className = 'room-scale-shell';
+    scaleShell.style.width = `${canvasW + 82}px`;
+    scaleShell.style.height = `${canvasH + 58}px`;
+    scaleShell.style.setProperty('--room-board-w', `${canvasW}px`);
+    scaleShell.style.setProperty('--room-board-h', `${canvasH}px`);
+    scaleShell.style.flexShrink = '0';
+
     // Create Floor Board
     const board = document.createElement('div');
     board.className = 'room-board';
     board.style.width = `${canvasW}px`;
     board.style.height = `${canvasH}px`;
-    board.style.margin = 'auto';
-    board.style.flexShrink = '0';
-    board.style.position = 'relative';
+    board.style.position = 'absolute';
     board.style.background = '#fcfcf9';
     board.style.border = '2px solid #20242a';
     board.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)';
@@ -1033,12 +1039,59 @@
       board.appendChild(el);
     });
 
-    wrap.appendChild(board);
+    scaleShell.appendChild(board);
+    renderRoomScale(scaleShell, 'x', areaSpec.width, canvasW, `ความยาว ${areaSpec.width} cm`);
+    renderRoomScale(scaleShell, 'y', areaSpec.depth, canvasH, `ความลึก ${areaSpec.depth} cm`);
+    wrap.appendChild(scaleShell);
     wrap.scrollLeft = prevScrollLeft;
     wrap.scrollTop = prevScrollTop;
 
     if (measureMode) attachMeasureLayer();
     updateInspector();
+  }
+
+  /** Pick a readable ruler interval based on current zoom density */
+  function chooseScaleStep() {
+    const candidates = [20, 50, 100, 200, 500];
+    return candidates.find((cm) => cm * pxPerCm >= 58) || candidates[candidates.length - 1];
+  }
+
+  /** Render room dimension scales for width (x) and depth (y) */
+  function renderRoomScale(shell, axis, lengthCm, lengthPx, labelText) {
+    const scale = document.createElement('div');
+    scale.className = `tv-room-scale tv-room-scale-${axis}`;
+
+    const line = document.createElement('div');
+    line.className = 'tv-room-scale-line';
+    scale.appendChild(line);
+
+    const step = chooseScaleStep();
+    const marks = [];
+    for (let cm = 0; cm < lengthCm; cm += step) marks.push(cm);
+    if (marks[marks.length - 1] !== lengthCm) marks.push(lengthCm);
+
+    marks.forEach((cm) => {
+      const tick = document.createElement('div');
+      tick.className = `tv-room-scale-tick${cm === 0 || cm === lengthCm ? ' edge' : ''}`;
+      const pos = Math.round((cm / lengthCm) * lengthPx);
+      if (axis === 'x') {
+        tick.style.left = `${pos}px`;
+      } else {
+        tick.style.top = `${pos}px`;
+      }
+
+      const num = document.createElement('span');
+      num.textContent = `${cm}`;
+      tick.appendChild(num);
+      scale.appendChild(tick);
+    });
+
+    const label = document.createElement('div');
+    label.className = 'tv-room-scale-label';
+    label.textContent = labelText;
+    scale.appendChild(label);
+
+    shell.appendChild(scale);
   }
 
   /** Find guide-snap targets (edges/centers of other items + room) near the dragged footprint */

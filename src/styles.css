@@ -1935,6 +1935,130 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
   box-shadow: 0 0 0 6px rgba(201, 45, 32, 0.14), 0 3px 6px rgba(0, 0, 0, 0.12) !important;
 }
 
+/* ═══════════════ TOP VIEW: ROOM SCALES ═══════════════ */
+.room-scale-shell {
+  position: relative;
+  margin: auto;
+  flex-shrink: 0;
+}
+
+.room-scale-shell .room-board {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+.tv-room-scale {
+  position: absolute;
+  pointer-events: none;
+  color: var(--ink-2);
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.tv-room-scale-x {
+  left: 0;
+  top: calc(var(--room-board-h) + 15px);
+  width: var(--room-board-w);
+  height: 34px;
+}
+
+.tv-room-scale-y {
+  left: calc(var(--room-board-w) + 18px);
+  top: 0;
+  width: 52px;
+  height: var(--room-board-h);
+}
+
+.tv-room-scale-line {
+  position: absolute;
+  background: var(--accent);
+  box-shadow: 0 0 0 1px rgba(255, 108, 12, 0.1);
+}
+
+.tv-room-scale-x .tv-room-scale-line {
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+}
+
+.tv-room-scale-y .tv-room-scale-line {
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 2px;
+}
+
+.tv-room-scale-tick {
+  position: absolute;
+}
+
+.tv-room-scale-x .tv-room-scale-tick {
+  top: -4px;
+  width: 1px;
+  height: 10px;
+  background: var(--accent);
+}
+
+.tv-room-scale-y .tv-room-scale-tick {
+  left: -4px;
+  width: 10px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.tv-room-scale-tick.edge {
+  background: var(--ink);
+}
+
+.tv-room-scale-x .tv-room-scale-tick span {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+.tv-room-scale-y .tv-room-scale-tick span {
+  position: absolute;
+  top: 50%;
+  left: 13px;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+
+.tv-room-scale-label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--font);
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
+}
+
+.tv-room-scale-x .tv-room-scale-label {
+  left: 50%;
+  top: -9px;
+  transform: translateX(-50%);
+}
+
+.tv-room-scale-y .tv-room-scale-label {
+  left: -33px;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  transform-origin: center;
+}
+
 /* ═══════════════ TOP VIEW: TAPE MEASURE ═══════════════ */
 #btnMeasure.active {
   background: var(--accent);

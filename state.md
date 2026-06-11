@@ -7,18 +7,20 @@
 
 ## ⚡ NOW
 
-- **Status**: พัฒนาระบบแสดงผลภาพสินค้าจริง (Real Product Mockup) พร้อมปรับปรุงโมเดล 3D ใน Top View Layout ให้มีความโค้งมนสวยงาม (Rounded Corners/Bevel) แทนทรงกล่องเหลี่ยมมุมคมเดิม และลดความเข้มของเส้น Edges ลงเพื่อรูปลักษณ์ที่นุ่มนวลสมจริงมากยิ่งขึ้น
+- **Status**: เพิ่มสเกลบอกความยาวและความลึกให้ Top View Layout โดยแสดง dimension ruler พร้อม tick ระยะ cm รอบบอร์ดห้อง ปรับให้สเกลคำนวณตามขนาดห้อง/zoom ปัจจุบัน และ deploy ขึ้น Surge แล้ว
 - **Branch**: main
 - **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh)
 - **Blocker**: None
 - **Next**: รอรับข้อเสนอแนะเพิ่มเติมจากผู้ใช้งาน
-- **Files**: `src/planogram3d.js`, `state.md`
+- **Files**: `index.html`, `src/topview.js`, `src/styles.css`, `state.md`
 
 ---
 
 ## 📜 LOG
 
 ### 🗓️ 2026-06-11
+- ✅ Previous NOW: พัฒนาระบบแสดงผลภาพสินค้าจริง (Real Product Mockup) พร้อมปรับปรุงโมเดล 3D ใน Top View Layout ให้มีความโค้งมนสวยงาม (Rounded Corners/Bevel) แทนทรงกล่องเหลี่ยมมุมคมเดิม และลดความเข้มของเส้น Edges ลงเพื่อรูปลักษณ์ที่นุ่มนวลสมจริงมากยิ่งขึ้น
+- Files: `src/planogram3d.js`, `state.md`
 - ✅ Previous NOW: ปรับปรุง UI ของปุ่มลบ (Delete Button) และปุ่มหมุนเฟอร์นิเจอร์ (Rotate Button) บนแคนวาส 2D ของพื้นที่ห้องให้มีขนาดใหญ่ขึ้นเป็นรูปทรงกลมสีสันชัดเจน (แดง/น้ำเงิน) ขอบสีขาวลอยเด่น และแสดงผลแบบทับเหลื่อมขอบมุมขวาบน/ล่าง (Overlapping badges) พร้อมเอฟเฟกต์ย่อขยายเมื่อวางเมาส์ (Hover scale) เพื่อการคลิกสั่งงานและลบสินค้าที่สะดวกขึ้นเรียบร้อยแล้ว
 - Files: `src/topview.js`, `state.md`
 - ✅ Previous NOW (2): ปรับปรุงรูปทรงโมเดล 3D แบบสำนักงาน (Office-style) สำหรับโต๊ะทำงานและเก้าอี้สำนักงาน โดยเพิ่มแผงปิดบังขาส่วนหน้า (Modesty Panel), ตู้ลิ้นชักด้านข้าง (Drawer Unit) พร้อมหูจับโลหะ และออกแบบเก้าอี้ตามหลักการยศาสตร์ (Ergonomic armrests, Lumbar support) พร้อมโครงขา 5 แฉกและล้อเลื่อนเรียบร้อยแล้ว
