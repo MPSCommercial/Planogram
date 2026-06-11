@@ -7,12 +7,12 @@
 
 ## ⚡ NOW
 
-- **Status**: พัฒนาระบบแสดงผลภาพสินค้าจริง (Real Product Mockup) ทั้งบน 2D Canvas และ 3D View ของหน้าหลัก Planogram และพื้นที่ห้อง Top View Layout โดยรองรับการทำ Texture Mapping บนโมเดล 3D แบบเรียลไทม์ทันทีที่มีการอัปโหลดหรือแก้ไขภาพสินค้าจริง
+- **Status**: พัฒนาระบบแสดงผลภาพสินค้าจริง (Real Product Mockup) พร้อมปรับปรุงโมเดล 3D ใน Top View Layout ให้มีความโค้งมนสวยงาม (Rounded Corners/Bevel) แทนทรงกล่องเหลี่ยมมุมคมเดิม และลดความเข้มของเส้น Edges ลงเพื่อรูปลักษณ์ที่นุ่มนวลสมจริงมากยิ่งขึ้น
 - **Branch**: main
 - **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh)
 - **Blocker**: None
 - **Next**: รอรับข้อเสนอแนะเพิ่มเติมจากผู้ใช้งาน
-- **Files**: `src/planogram3d.js`, `src/products.js`, `state.md`
+- **Files**: `src/planogram3d.js`, `state.md`
 
 ---
 

@@ -105,7 +105,63 @@
     if (opts.edges !== false) {
       const edges = new THREE.LineSegments(
         new THREE.EdgesGeometry(geo, 30),
-        new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.28 })
+        new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.16 })
+      );
+      mesh.add(edges);
+    }
+    return mesh;
+  }
+
+  /** A rounded box mesh using ExtrudeGeometry for smooth corners and bevels. */
+  function makeRoundedBox(w, h, d, radius, color, opts = {}) {
+    const r = Math.min(radius || 2, w / 2 - 0.1, h / 2 - 0.1, d / 2 - 0.1);
+    if (r <= 0.2) {
+      return makeBox(w, h, d, color, opts);
+    }
+
+    const shape = new THREE.Shape();
+    const x = -w / 2;
+    const y = -h / 2;
+
+    shape.moveTo(x, y + r);
+    shape.lineTo(x, y + h - r);
+    shape.quadraticCurveTo(x, y + h, x + r, y + h);
+    shape.lineTo(x + w - r, y + h);
+    shape.quadraticCurveTo(x + w, y + h, x + w, y + h - r);
+    shape.lineTo(x + w, y + r);
+    shape.quadraticCurveTo(x + w, y, x + w - r, y);
+    shape.lineTo(x + r, y);
+    shape.quadraticCurveTo(x, y, x, y + r);
+
+    const bevelThickness = Math.min(r, d / 2 - 0.1);
+    const extrudeSettings = {
+      depth: d - bevelThickness * 2,
+      bevelEnabled: true,
+      bevelSegments: 4,
+      steps: 1,
+      bevelSize: bevelThickness,
+      bevelThickness: bevelThickness,
+      curveSegments: 8
+    };
+
+    const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    geo.center();
+
+    const mat = new THREE.MeshStandardMaterial({
+      color: new THREE.Color(color || '#cccccc'),
+      roughness: opts.roughness != null ? opts.roughness : 0.62,
+      metalness: 0.0,
+    });
+
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.castShadow = opts.cast !== false;
+    mesh.receiveShadow = opts.receive !== false;
+
+    if (opts.edges !== false) {
+      // 45 degree threshold prevents drawing edge lines on curved surfaces
+      const edges = new THREE.LineSegments(
+        new THREE.EdgesGeometry(geo, 45),
+        new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.10 })
       );
       mesh.add(edges);
     }
@@ -136,7 +192,7 @@
 
     const edges = new THREE.LineSegments(
       new THREE.EdgesGeometry(geo),
-      new THREE.LineBasicMaterial({ color: 0x20242a, transparent: true, opacity: 0.32 })
+      new THREE.LineBasicMaterial({ color: 0x20242a, transparent: true, opacity: prod.image ? 0.06 : 0.18 })
     );
     mesh.add(edges);
     return mesh;
@@ -425,11 +481,11 @@
           top.receiveShadow = true;
           const edges = new THREE.LineSegments(
             new THREE.EdgesGeometry(top.geometry),
-            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.28 })
+            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.08 })
           );
           top.add(edges);
         } else {
-          top = makeBox(origW, topH, origD, color);
+          top = makeRoundedBox(origW, topH, origD, 2.5, color);
         }
         top.position.set(0, tableH - topH/2, 0);
         itemGroup.add(top);
@@ -438,7 +494,7 @@
         const panelW = origW - 8;
         const panelH = legH * 0.55;
         const panelD = 1.2;
-        const modesty = makeBox(panelW, panelH, panelD, '#4a4d53');
+        const modesty = makeRoundedBox(panelW, panelH, panelD, 0.6, '#4a4d53');
         modesty.position.set(0, legH - panelH/2, -origD/2 + panelD/2 + 2);
         itemGroup.add(modesty);
 
@@ -446,14 +502,14 @@
         const drawerW = Math.min(32, origW * 0.35);
         const drawerH = legH - 6;
         const drawerD = origD - 6;
-        const drawer = makeBox(drawerW, drawerH, drawerD, color);
+        const drawer = makeRoundedBox(drawerW, drawerH, drawerD, 1.5, color);
         drawer.position.set(origW/2 - drawerW/2 - 4, drawerH/2 + 2, -1);
         itemGroup.add(drawer);
 
         // Drawer handles (metal lines)
         for (let j = 0; j < 3; j++) {
           const dy = (drawerH/3) * (j + 0.5) + 2;
-          const handle = makeBox(drawerW * 0.5, 1.2, 1.5, '#c1c6cd');
+          const handle = makeRoundedBox(drawerW * 0.5, 1.2, 1.5, 0.4, '#c1c6cd');
           handle.position.set(origW/2 - drawerW/2 - 4, dy, drawerD/2 - 0.5);
           itemGroup.add(handle);
         }
@@ -470,11 +526,11 @@
           if (inDrawerZone) {
             // Shorter support leg under drawers
             const shortLegH = 2;
-            const leg = makeBox(legW, shortLegH, legW, '#2a2f36');
+            const leg = makeRoundedBox(legW, shortLegH, legW, 0.8, '#2a2f36');
             leg.position.set(lx, shortLegH/2, lz);
             itemGroup.add(leg);
           } else {
-            const leg = makeBox(legW, legH, legW, '#3a3a3a');
+            const leg = makeRoundedBox(legW, legH, legW, 0.8, '#3a3a3a');
             leg.position.set(lx, legH/2, lz);
             itemGroup.add(leg);
           }
@@ -504,7 +560,7 @@
           seat.receiveShadow = true;
           const seatEdges = new THREE.LineSegments(
             new THREE.EdgesGeometry(seat.geometry),
-            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.28 })
+            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.08 })
           );
           seat.add(seatEdges);
           
@@ -515,12 +571,12 @@
           backrest.receiveShadow = true;
           const backEdges = new THREE.LineSegments(
             new THREE.EdgesGeometry(backrest.geometry),
-            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.28 })
+            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.08 })
           );
           backrest.add(backEdges);
         } else {
-          seat = makeBox(origW * 0.9, seatThick, origD * 0.9, color);
-          backrest = makeBox(backW, backH, backD, color);
+          seat = makeRoundedBox(origW * 0.9, seatThick, origD * 0.9, 3.0, color);
+          backrest = makeRoundedBox(backW, backH, backD, 3.0, color);
         }
 
         seat.position.set(0, seatH - seatThick/2, 0);
@@ -531,11 +587,11 @@
         const armH = 14;
         const armD = origD * 0.55;
         [-1, 1].forEach((side) => {
-          const support = makeBox(1.5, armH, 3, '#2a2a2a');
+          const support = makeRoundedBox(1.5, armH, 3, 0.5, '#2a2a2a');
           support.position.set(side * (origW * 0.45), seatH + armH/2 - seatThick, 0);
           itemGroup.add(support);
           
-          const pad = makeBox(armW, 2, armD, '#151515');
+          const pad = makeRoundedBox(armW, 2, armD, 1.0, '#151515');
           pad.position.set(side * (origW * 0.45), seatH + armH - 1, 0);
           itemGroup.add(pad);
         });
@@ -544,13 +600,13 @@
         itemGroup.add(backrest);
 
         // Lumbar support strap
-        const lumbar = makeBox(backW * 0.85, 4, backD + 1, '#111111', { cast: false });
+        const lumbar = makeRoundedBox(backW * 0.85, 4, backD + 1, 1.5, '#111111', { cast: false });
         lumbar.position.set(0, seatH + backH * 0.25, -origD/2 + backD/2 + 2);
         itemGroup.add(lumbar);
 
         // Center cylinder column
         const colH = seatH - seatThick;
-        const col = makeBox(6, colH, 6, '#222222');
+        const col = makeRoundedBox(6, colH, 6, 2.0, '#222222');
         col.position.set(0, colH/2, 0);
         itemGroup.add(col);
         
@@ -560,13 +616,13 @@
           const rad = angle * Math.PI / 180;
           
           // Base prongs
-          const prong = makeBox(4, 2.5, baseRadius);
+          const prong = makeRoundedBox(4, 2.5, baseRadius, 1.0, color);
           prong.position.set(Math.sin(rad) * baseRadius/2, 2.5/2, Math.cos(rad) * baseRadius/2);
           prong.rotation.y = rad;
           itemGroup.add(prong);
 
           // Caster wheels
-          const wheel = makeBox(4.5, 4.5, 4.5, '#111111');
+          const wheel = makeRoundedBox(4.5, 4.5, 4.5, 2.2, '#111111');
           wheel.position.set(Math.sin(rad) * baseRadius, 4.5/2, Math.cos(rad) * baseRadius);
           itemGroup.add(wheel);
         }
@@ -592,18 +648,18 @@
           back.receiveShadow = true;
           const edges = new THREE.LineSegments(
             new THREE.EdgesGeometry(back.geometry),
-            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.28 })
+            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.08 })
           );
           back.add(edges);
         } else {
-          back = makeBox(shelfW, shelfH, backT, '#3a3a3a');
+          back = makeRoundedBox(shelfW, shelfH, backT, 1.2, '#3a3a3a');
         }
         back.position.set(0, shelfH/2, -shelfD/2 + backT/2);
         itemGroup.add(back);
 
         // 2 Side panels
         [-1, 1].forEach((sign) => {
-          const side = makeBox(sideT, shelfH, shelfD, color);
+          const side = makeRoundedBox(sideT, shelfH, shelfD, 1.0, color);
           side.position.set(sign * (shelfW/2 - sideT/2), shelfH/2, 0);
           itemGroup.add(side);
         });
@@ -613,7 +669,7 @@
         const count = 4;
         for (let j = 0; j < count; j++) {
           const sy = (shelfH / count) * (j + 0.5);
-          const board = makeBox(shelfW - sideT * 2, boardThick, shelfD - 2, color);
+          const board = makeRoundedBox(shelfW - sideT * 2, boardThick, shelfD - 2, 0.8, color);
           board.position.set(0, sy, 0);
           itemGroup.add(board);
         }
@@ -637,22 +693,22 @@
           base.receiveShadow = true;
           const edges = new THREE.LineSegments(
             new THREE.EdgesGeometry(base.geometry),
-            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.28 })
+            new THREE.LineBasicMaterial({ color: 0x2a2f36, transparent: true, opacity: 0.08 })
           );
           base.add(edges);
         } else {
-          base = makeBox(origW, bedH, origD - headT, color);
+          base = makeRoundedBox(origW, bedH, origD - headT, 5.0, color);
         }
         base.position.set(0, bedH/2, headT/2);
         itemGroup.add(base);
 
         // Headboard
-        const head = makeBox(origW, headH, headT, '#20242a');
+        const head = makeRoundedBox(origW, headH, headT, 3.0, '#20242a');
         head.position.set(0, headH/2, -origD/2 + headT/2);
         itemGroup.add(head);
 
         // Pillow
-        const pillow = makeBox(origW * 0.72, 6, origD * 0.18, '#ffffff');
+        const pillow = makeRoundedBox(origW * 0.72, 6, origD * 0.18, 2.5, '#ffffff');
         pillow.position.set(0, bedH + 3, -origD/2 + headT + (origD * 0.18)/2 + 4);
         itemGroup.add(pillow);
       } 
@@ -670,11 +726,11 @@
           defaultBox.receiveShadow = true;
           const edges = new THREE.LineSegments(
             new THREE.EdgesGeometry(defaultBox.geometry),
-            new THREE.LineBasicMaterial({ color: 0x20242a, transparent: true, opacity: 0.32 })
+            new THREE.LineBasicMaterial({ color: 0x20242a, transparent: true, opacity: 0.08 })
           );
           defaultBox.add(edges);
         } else {
-          defaultBox = makeBox(origW, origH, origD, color);
+          defaultBox = makeRoundedBox(origW, origH, origD, 3.0, color);
         }
         defaultBox.position.set(0, origH/2, 0);
         itemGroup.add(defaultBox);
