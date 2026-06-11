@@ -58,6 +58,10 @@
     const btnZoomReset = $('btnZoomReset');
     if (btnZoomReset) btnZoomReset.addEventListener('click', () => resetZoom());
 
+    // Room Layout Template apply binding
+    const btnApplyRoomTemplate = $('btnApplyRoomTemplate');
+    if (btnApplyRoomTemplate) btnApplyRoomTemplate.addEventListener('click', applyRoomTemplate);
+
     // Set up drag & drop events on topview wrapper
     const wrap = $('topviewWrap');
     if (wrap) {
@@ -324,6 +328,54 @@
     `;
     board.style.backgroundSize = `${gridSizePx}px ${gridSizePx}px`;
 
+    // Click to place product on board
+    board.addEventListener('click', (e) => {
+      // Ignore click on placed items or buttons
+      if (e.target.closest('.placed-furniture') || e.target.tagName === 'BUTTON') return;
+      
+      if (typeof selectedProductId !== 'undefined' && selectedProductId) {
+        const p = products.find((q) => q.id === selectedProductId);
+        if (!p) return;
+
+        const rect = board.getBoundingClientRect();
+        const clickX = e.clientX - rect.left;
+        const clickY = e.clientY - rect.top;
+
+        let xCm = clickX / pxPerCm;
+        let yCm = clickY / pxPerCm;
+
+        // Snap to grid
+        const snap = areaSpec.gridSize;
+        xCm = Math.round(xCm / snap) * snap;
+        yCm = Math.round(yCm / snap) * snap;
+
+        const origW = parseCm(p.width, 10);
+        const origD = parseCm(p.depth, 10);
+
+        // Center on clicked coordinate, offset by half width/depth rounded to grid
+        xCm = clamp(xCm - Math.round((origW / 2) / snap) * snap, 0, areaSpec.width - origW);
+        yCm = clamp(yCm - Math.round((origD / 2) / snap) * snap, 0, areaSpec.depth - origD);
+
+        placedItems.push({
+          id: 'placed_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+          productId: p.id,
+          x: xCm,
+          y: yCm,
+          rotation: 0
+        });
+
+        saveState();
+        drawRoom();
+        showToast(`วาง ${p.name} บนแปลนแล้ว (คลิกเพื่อวาง)`);
+
+        if (window.Planogram3D && Planogram3D.isOpen()) {
+          Planogram3D.refresh();
+        }
+      } else {
+        showToast('กรุณาเลือกสินค้าจากคลังทางขวา เพื่อคลิกวางในแปลน');
+      }
+    });
+
     // Render placed furniture/fixtures
     placedItems.forEach((item) => {
       const p = products.find((q) => q.id === item.productId);
@@ -540,6 +592,75 @@
       if (window.Planogram3D && Planogram3D.isOpen()) {
         Planogram3D.refresh();
       }
+    }
+  }
+
+  /** Apply pre-defined room template with layout furniture items */
+  function applyRoomTemplate() {
+    const select = $('roomTemplateSelect');
+    if (!select) return;
+
+    const val = select.value;
+    injectPresets(); // Make sure presets exist
+
+    const fShelf = products.find(p => p.name.includes('Fixture Shelf'));
+    const fTable = products.find(p => p.name.includes('Office Table'));
+    const fChair = products.find(p => p.name.includes('Office Chair'));
+    const fBed = products.find(p => p.name.includes('Comfort Bed'));
+
+    if (!fShelf || !fTable || !fChair || !fBed) {
+      showToast('ไม่พบข้อมูลสินค้าเฟอร์นิเจอร์หลักสำหรับเทมเพลต');
+      return;
+    }
+
+    if (val === 'showroom') {
+      areaSpec = { width: 1000, depth: 600, gridSize: 20 };
+      placedItems = [
+        { id: 't_t_1', productId: fShelf.id, x: 200, y: 0, rotation: 0 },
+        { id: 't_t_2', productId: fShelf.id, x: 300, y: 0, rotation: 0 },
+        { id: 't_t_3', productId: fShelf.id, x: 400, y: 0, rotation: 0 },
+        { id: 't_t_4', productId: fShelf.id, x: 500, y: 0, rotation: 0 },
+        { id: 't_t_5', productId: fShelf.id, x: 600, y: 0, rotation: 0 },
+        { id: 't_t_6', productId: fShelf.id, x: 300, y: 300, rotation: 0 },
+        { id: 't_t_7', productId: fShelf.id, x: 400, y: 300, rotation: 0 },
+        { id: 't_t_8', productId: fShelf.id, x: 500, y: 300, rotation: 0 }
+      ];
+    } else if (val === 'bedroom') {
+      areaSpec = { width: 600, depth: 400, gridSize: 20 };
+      placedItems = [
+        { id: 't_b_1', productId: fBed.id, x: 40, y: 40, rotation: 0 },
+        { id: 't_b_2', productId: fTable.id, x: 440, y: 40, rotation: 0 },
+        { id: 't_b_3', productId: fChair.id, x: 470, y: 120, rotation: 180 },
+        { id: 't_b_4', productId: fShelf.id, x: 440, y: 340, rotation: 0 }
+      ];
+    } else if (val === 'office') {
+      areaSpec = { width: 600, depth: 500, gridSize: 20 };
+      placedItems = [
+        { id: 't_o_1', productId: fTable.id, x: 240, y: 160, rotation: 0 },
+        { id: 't_o_2', productId: fChair.id, x: 270, y: 80, rotation: 0 },
+        { id: 't_o_3', productId: fTable.id, x: 240, y: 240, rotation: 180 },
+        { id: 't_o_4', productId: fChair.id, x: 270, y: 320, rotation: 180 },
+        { id: 't_o_5', productId: fShelf.id, x: 0, y: 40, rotation: 90 },
+        { id: 't_o_6', productId: fShelf.id, x: 0, y: 140, rotation: 90 },
+        { id: 't_o_7', productId: fShelf.id, x: 500, y: 40, rotation: 270 },
+        { id: 't_o_8', productId: fShelf.id, x: 500, y: 140, rotation: 270 }
+      ];
+    }
+
+    const wInput = $('roomWidth');
+    const dInput = $('roomDepth');
+    const gInput = $('roomGridSize');
+
+    if (wInput) wInput.value = areaSpec.width;
+    if (dInput) dInput.value = areaSpec.depth;
+    if (gInput) gInput.value = areaSpec.gridSize;
+
+    saveState();
+    drawRoom();
+    showToast(`ใช้เทมเพลตห้อง ${select.options[select.selectedIndex].text} แล้ว`);
+
+    if (window.Planogram3D && Planogram3D.isOpen()) {
+      Planogram3D.refresh();
     }
   }
 

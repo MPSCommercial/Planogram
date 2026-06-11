@@ -176,6 +176,17 @@
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                 สร้าง / อัปเดตห้อง
               </button>
+              <div style="margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px;">
+                <label for="roomTemplateSelect" style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 0.85rem; color: var(--text);">Room Layout Templates</label>
+                <div style="display: flex; gap: 6px;">
+                  <select id="roomTemplateSelect" style="flex: 1; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-1); color: var(--text); font-size: 0.8rem; height: 32px;">
+                    <option value="showroom">Showroom (ชั้นวางสินค้าเรียงต่อกัน)</option>
+                    <option value="bedroom">Bedroom (เตียง + โต๊ะทำงาน + เก้าอี้ + ชั้นวาง)</option>
+                    <option value="office">Office Workspace (โต๊ะทำงานคู่ + ชั้นวางของริมผนัง)</option>
+                  </select>
+                  <button class="btn btn-mini" id="btnApplyRoomTemplate" type="button" style="padding: 0 12px; font-size: 0.8rem; height: 32px; border-radius: 6px;">ใช้</button>
+                </div>
+              </div>
             </div>
           </section>
         </div>
