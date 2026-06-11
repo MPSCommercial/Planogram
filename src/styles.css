@@ -1927,3 +1927,57 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
   height: 0;
   border-top: 1.5px dashed var(--accent-2);
 }
+
+/* ═══════════════ TOP VIEW: COLLISION WARNING ═══════════════ */
+.placed-furniture.tv-colliding {
+  outline: 2px solid var(--danger);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgba(201, 45, 32, 0.14), 0 3px 6px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* ═══════════════ TOP VIEW: TAPE MEASURE ═══════════════ */
+#btnMeasure.active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.tv-measure-layer {
+  position: absolute;
+  inset: 0;
+  cursor: crosshair;
+  z-index: 7;
+}
+
+.tv-measure-line {
+  position: absolute;
+  height: 0;
+  border-top: 1.5px dashed var(--ink);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+.tv-measure-dot {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink);
+  border: 1.5px solid #fff;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.tv-measure-label {
+  position: absolute;
+  transform: translate(-50%, -130%);
+  background: var(--ink);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--mono);
+  padding: 2px 8px;
+  border-radius: 10px;
+  white-space: nowrap;
+  pointer-events: none;
+}

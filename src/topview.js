@@ -23,6 +23,8 @@
   let spaceHeld = false;
   let justPanned = false;      // Suppress the click that ends a pan
   let panStart = { x: 0, y: 0, sl: 0, st: 0 };
+  let measureMode = false;     // Tape measure tool active
+  let measureStart = null;     // First measure point { x, y } in cm
 
   // Pre-configured furniture/fixture items
   const FURNITURE_PRESETS = [
@@ -77,6 +79,10 @@
     // Room Layout Template apply binding
     const btnApplyRoomTemplate = $('btnApplyRoomTemplate');
     if (btnApplyRoomTemplate) btnApplyRoomTemplate.addEventListener('click', applyRoomTemplate);
+
+    // Tape measure toggle binding
+    const btnMeasure = $('btnMeasure');
+    if (btnMeasure) btnMeasure.addEventListener('click', () => setMeasureMode(!measureMode));
 
     // Set up drag & drop events on topview wrapper
     const wrap = $('topviewWrap');
@@ -219,6 +225,132 @@
     const origD = parseCm(p.depth, 10);
     const isRotated = (item.rotation === 90 || item.rotation === 270);
     return { w: isRotated ? origD : origW, d: isRotated ? origW : origD };
+  }
+
+  /* ─── Collision detection ─── */
+
+  /** Footprint rects { id, x, y, w, d } of all placed items */
+  function getFootprints() {
+    return placedItems.map((it) => {
+      const p = products.find((q) => q.id === it.productId);
+      if (!p) return null;
+      const f = itemFootprint(it, p);
+      return { id: it.id, x: it.x, y: it.y, w: f.w, d: f.d };
+    }).filter(Boolean);
+  }
+
+  /** Strict AABB overlap — edge-touching (guide-snapped) items do NOT collide */
+  function rectsOverlap(a, b) {
+    return a.x + a.w > b.x && b.x + b.w > a.x && a.y + a.d > b.y && b.y + b.d > a.y;
+  }
+
+  /** Set of item ids that overlap at least one other item */
+  function findCollidingIds() {
+    const fps = getFootprints();
+    const ids = new Set();
+    for (let i = 0; i < fps.length; i++) {
+      for (let j = i + 1; j < fps.length; j++) {
+        if (rectsOverlap(fps[i], fps[j])) {
+          ids.add(fps[i].id);
+          ids.add(fps[j].id);
+        }
+      }
+    }
+    return ids;
+  }
+
+  /* ─── Tape measure tool ─── */
+
+  /** Toggle tape measure mode */
+  function setMeasureMode(on) {
+    measureMode = on;
+    measureStart = null;
+    const btn = $('btnMeasure');
+    if (btn) btn.classList.toggle('active', on);
+    drawRoom(); // Creates/removes the measure overlay
+    showToast(on ? 'โหมดวัดระยะ: คลิกจุดที่ 1 และจุดที่ 2 เพื่อวัด (Esc = ออก)' : 'ออกจากโหมดวัดระยะ');
+  }
+
+  /** Snap a measure point to nearby item corners, else to whole cm */
+  function snapMeasurePoint(x, y) {
+    const tol = 8 / pxPerCm;
+    let best = null;
+    let bestDist = tol;
+    getFootprints().forEach((f) => {
+      [[f.x, f.y], [f.x + f.w, f.y], [f.x, f.y + f.d], [f.x + f.w, f.y + f.d]].forEach(([cx, cy]) => {
+        const dist = Math.hypot(x - cx, y - cy);
+        if (dist < bestDist) { bestDist = dist; best = { x: cx, y: cy }; }
+      });
+    });
+    if (best) return best;
+    return { x: clamp(Math.round(x), 0, areaSpec.width), y: clamp(Math.round(y), 0, areaSpec.depth) };
+  }
+
+  /** Draw the measurement line, endpoint dots and distance label */
+  function renderMeasure(layer, a, b) {
+    layer.innerHTML = '';
+    const ax = a.x * pxPerCm, ay = a.y * pxPerCm;
+    const bx = b.x * pxPerCm, by = b.y * pxPerCm;
+
+    const line = document.createElement('div');
+    line.className = 'tv-measure-line';
+    line.style.left = `${ax}px`;
+    line.style.top = `${ay}px`;
+    line.style.width = `${Math.hypot(bx - ax, by - ay)}px`;
+    line.style.transform = `rotate(${Math.atan2(by - ay, bx - ax)}rad)`;
+    layer.appendChild(line);
+
+    [[ax, ay], [bx, by]].forEach(([px, py]) => {
+      const dot = document.createElement('div');
+      dot.className = 'tv-measure-dot';
+      dot.style.left = `${px}px`;
+      dot.style.top = `${py}px`;
+      layer.appendChild(dot);
+    });
+
+    const dist = Math.round(Math.hypot(b.x - a.x, b.y - a.y) * 10) / 10;
+    const label = document.createElement('div');
+    label.className = 'tv-measure-label';
+    label.style.left = `${(ax + bx) / 2}px`;
+    label.style.top = `${(ay + by) / 2}px`;
+    label.textContent = `${dist} cm`;
+    layer.appendChild(label);
+  }
+
+  /** Add the click-capturing measure overlay on top of the board */
+  function attachMeasureLayer() {
+    const wrap = $('topviewWrap');
+    const board = wrap ? wrap.querySelector('.room-board') : null;
+    if (!board || board.querySelector('.tv-measure-layer')) return;
+
+    const layer = document.createElement('div');
+    layer.className = 'tv-measure-layer';
+
+    layer.addEventListener('click', (e) => {
+      e.stopPropagation(); // Keep the board's place/deselect handler out of measure clicks
+      if (justPanned) {
+        justPanned = false;
+        return;
+      }
+      const rect = board.getBoundingClientRect();
+      const pt = snapMeasurePoint((e.clientX - rect.left) / pxPerCm, (e.clientY - rect.top) / pxPerCm);
+      if (!measureStart) {
+        measureStart = pt;
+        renderMeasure(layer, pt, pt);
+      } else {
+        renderMeasure(layer, measureStart, pt);
+        measureStart = null; // Done — next click starts a new measurement
+      }
+    });
+
+    layer.addEventListener('mousemove', (e) => {
+      if (!measureStart) return;
+      const rect = board.getBoundingClientRect();
+      const pt = snapMeasurePoint((e.clientX - rect.left) / pxPerCm, (e.clientY - rect.top) / pxPerCm);
+      renderMeasure(layer, measureStart, pt);
+    });
+
+    board.appendChild(layer);
   }
 
   function selectItem(id) {
@@ -379,6 +511,17 @@
       return;
     }
 
+    // M = toggle tape measure · Esc exits measure mode first
+    if ((e.key === 'm' || e.key === 'M') && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+      setMeasureMode(!measureMode);
+      return;
+    }
+    if (e.key === 'Escape' && measureMode) {
+      setMeasureMode(false);
+      return;
+    }
+
     if (!selectedItemId) return;
 
     const mod = e.ctrlKey || e.metaKey;
@@ -494,6 +637,14 @@
 
   /** Deactivate topview and restore planogram workspace */
   function deactivateTopview() {
+    // Quietly exit measure mode (no toast/redraw — workspace is being hidden)
+    if (measureMode) {
+      measureMode = false;
+      measureStart = null;
+      const btnMeasure = $('btnMeasure');
+      if (btnMeasure) btnMeasure.classList.remove('active');
+    }
+
     const pSettings = $('sectionSettings');
     const pTemplates = document.querySelector('.template-block')?.closest('.side-section') || $('sectionTemplates');
     const tSettings = $('sectionTopviewSettings');
@@ -602,12 +753,19 @@
     const wrap = $('topviewWrap');
     if (!wrap) return;
 
+    // Preserve scroll so redraws (rotate, undo, drag end) don't jump the view
+    const prevScrollLeft = wrap.scrollLeft;
+    const prevScrollTop = wrap.scrollTop;
+
     wrap.innerHTML = '';
     updateRoomStats();
 
+    const collidingIds = findCollidingIds();
+
     const topviewMeta = $('topviewMeta');
     if (topviewMeta) {
-      topviewMeta.textContent = `${areaSpec.width}w × ${areaSpec.depth}d cm · Grid: ${areaSpec.gridSize} cm · วางแล้ว ${placedItems.length} ชิ้น`;
+      const warn = collidingIds.size ? ` · ⚠️ ซ้อนทับ ${collidingIds.size} ชิ้น` : '';
+      topviewMeta.textContent = `${areaSpec.width}w × ${areaSpec.depth}d cm · Grid: ${areaSpec.gridSize} cm · วางแล้ว ${placedItems.length} ชิ้น${warn}`;
     }
 
     // Determine scale to fit wrapper client width/height
@@ -734,6 +892,7 @@
       el.className = 'placed-furniture';
       el.dataset.itemId = item.id;
       if (item.id === selectedItemId) el.classList.add('tv-selected');
+      if (collidingIds.has(item.id)) el.classList.add('tv-colliding');
       el.style.width = `${wPx}px`;
       el.style.height = `${dPx}px`;
       el.style.left = `${xPx}px`;
@@ -875,6 +1034,10 @@
     });
 
     wrap.appendChild(board);
+    wrap.scrollLeft = prevScrollLeft;
+    wrap.scrollTop = prevScrollTop;
+
+    if (measureMode) attachMeasureLayer();
     updateInspector();
   }
 
@@ -986,6 +1149,12 @@
         dragEl.style.left = `${Math.round(xCm * pxPerCm)}px`;
         dragEl.style.top = `${Math.round(yCm * pxPerCm)}px`;
       }
+
+      // Live collision feedback while dragging
+      const collidingIds = findCollidingIds();
+      board.querySelectorAll('.placed-furniture').forEach((n) => {
+        n.classList.toggle('tv-colliding', collidingIds.has(n.dataset.itemId));
+      });
     }
     updateGuides(board, sn);
   }
@@ -1007,12 +1176,8 @@
       dragEl = null;
       saveState();
 
-      // Hide guide lines and refresh inspector X/Y readout
-      const wrap = $('topviewWrap');
-      const board = wrap ? wrap.querySelector('.room-board') : null;
-      if (board) updateGuides(board, null);
-      updateInspector();
-
+      // Full redraw resyncs guides, collision marks and the meta warning
+      drawRoom();
       refresh3D();
     }
   }
