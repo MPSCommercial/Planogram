@@ -7,7 +7,7 @@
 
 ## ⚡ NOW
 
-- **Status**: อัปเดตข้อมูลการ Deploy ไปยัง Surge.sh ลงใน README.md เรียบร้อยแล้ว
+- **Status**: ปรับปรุงเนื้อหาใน README.md ให้ถูกต้องสอดคล้องกับฟีเจอร์และโครงสร้างของ Repository ในปัจจุบัน (ระบบ Free-Placement, 3D, Stacking, รายงาน BOM และไฟล์ใน src/)
 - **Branch**: main
 - **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh)
 - **Blocker**: None
@@ -19,6 +19,9 @@
 ## 📜 LOG
 
 ### 🗓️ 2026-06-11
+- ✅ Previous NOW: อัปเดตข้อมูลการ Deploy ไปยัง Surge.sh ลงใน README.md เรียบร้อยแล้ว
+- Files: `README.md`, `state.md`
+- ✅ Previous NOW (2): แก้ไขปัญหาสีกระพริบ (Shadow acne) ใน Three.js 3D View และแก้ไขการคำนวณตำแหน่งแผ่นชั้นวาง (shelf boards) ไม่ให้ทับซ้อนกับ divider/side panel พร้อมทั้ง deploy ขึ้น Surge อีกครั้ง
 - ✅ Previous NOW: แก้ไขปัญหาสีกระพริบ (Shadow acne) ใน Three.js 3D View และแก้ไขการคำนวณตำแหน่งแผ่นชั้นวาง (shelf boards) ไม่ให้ทับซ้อนกับ divider/side panel พร้อมทั้ง deploy ขึ้น Surge อีกครั้ง
 - Files: `src/planogram3d.js`, `state.md`
 - ✅ Previous NOW (2): Deploy โปรเจกต์ขึ้น Surge เรียบร้อยแล้วที่ URL: http://planogram-mpsynergy.surge.sh

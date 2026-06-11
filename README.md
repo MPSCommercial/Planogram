@@ -1,18 +1,22 @@
 # Planogram Builder
 
-A lightweight, browser-based planogram builder for visualizing retail shelf layouts. No frameworks, no build step — just open `index.html`.
+เครื่องมือเว็บแบบ Lightweight สำหรับออกแบบ shelf layout ของ Modern Trade ในรูปแบบ Multiple-Segment Planogram โดยไม่มีการใช้ framework และไม่มี build step — สามารถเปิดใช้งานผ่าน static file (`index.html`) ได้ทันที
 
 ![Planogram Builder](https://img.shields.io/badge/status-active-brightgreen) ![HTML/CSS/JS](https://img.shields.io/badge/stack-HTML%2FCSS%2FJS-blue)
 
 ## Features
 
-- **Multi-segment canvas** — configure segments, shelves per segment, and slots per shelf
-- **Product library** — syncs from Google Sheets via CSV export; supports manual add/edit/delete
-- **Drag & drop placement** — drag products from the library onto any shelf slot
-- **Facing support** — products with facing > 1 span multiple consecutive slots automatically
-- **Inline product editing** — edit name, category, dimensions, and image via modal
-- **Export** — save planogram as PNG or JSON; import JSON to restore state
-- **Auto-save** — layout and product data persist in `localStorage`
+- **Multi-Segment Planogram Canvas** — ออกแบบชั้นวางสินค้าแบบต่อกันหลายตู้ (Segment/Bay)
+- **Free-Placement Layout** — วางสินค้าได้อิสระโดยตรงบนชั้นวาง ขยับตำแหน่ง ย้ายสินค้า และจัดเรียงหน้ากว้าง (Facing) ได้อิสระ (ไม่จำกัดระบบ Slot)
+- **Independent Segment Widths** — ปรับตั้งค่าความกว้างของแต่ละ Segment (Bay) แยกกันได้อย่างอิสระ
+- **Independent Shelf Heights** — ปรับระดับความสูงของแผ่นชั้นวางแต่ละช่องแยกกันได้อย่างอิสระในแต่ละ Segment (รองรับการลากปรับความสูงบน Canvas หรือพิมพ์ cm ต่อชั้น)
+- **Three.js WebGL 3D View** — สลับดูมุมมอง 3D เสมือนจริง สามารถหมุน ซูม และแพนกล้องเพื่อทำ Visual QA ได้รอบทิศทาง
+- **Product Orientation & Rotation** — กำหนดทิศทางการหันด้านสินค้า (Front / Side / Top) และการหมุนภาพสินค้าได้ 90 องศา เพื่อความสมจริงในการจัดเรียง
+- **Stacking Support** — วางสินค้าซ้อนขึ้นไปในแนวตั้ง (Stack) ได้ตามความสูงช่องชั้น
+- **BOM & Placement Report** — ระบบแสดงตารางสรุปสินค้า (BOM) และตารางแสดงตำแหน่งจัดวางอย่างละเอียด พร้อมคำนวณอัตราใช้สอยพื้นที่ (Utilization %) และส่งออกข้อมูลเป็น CSV (Excel Thai encoding)
+- **Shelf Templates** — บันทึกและเรียกใช้งานเทมเพลตมาตรฐานของชั้นวาง (5 รูปแบบพื้นฐาน และสามารถบันทึกเทมเพลตใหม่เพิ่มเติมได้)
+- **Product Library** — ดึงข้อมูล SKU จาก Google Sheets หรือสร้าง แก้ไข ลบสินค้าได้เองบนเว็บ
+- **Persistence** — บันทึกข้อมูลการจัดวางโดยอัตโนมัติผ่าน `localStorage` พร้อมปุ่มสำหรับ Export/Import ไฟล์ข้อมูล `.json` เพื่อย้ายเครื่องหรือแชร์ไฟล์
 
 ## Getting Started
 
@@ -21,7 +25,7 @@ A lightweight, browser-based planogram builder for visualizing retail shelf layo
 git clone https://github.com/MPSCommercial/Planogram.git
 cd Planogram
 
-# Serve locally (any static server works)
+# Serve locally (any static server works, e.g. python, local web server, live server)
 python3 -m http.server 4174
 
 # Open in browser
@@ -31,61 +35,68 @@ open http://localhost:4174
 ## Project Structure
 
 ```
-index.html          # App shell & markup
+index.html          # Main Application UI & Markup (จุดเข้าใช้งานหลัก)
+planogram_tool.html # Static single-file Planogram Builder prototype (สำหรับทดสอบเดี่ยว)
 src/
-  app.js            # Init, event bindings, drag & drop
-  products.js       # Product CRUD, library render, search
-  planogram.js      # Shelf/canvas render engine
-  sheets.js         # Google Sheets → CSV sync
-  export.js         # PNG / JSON export & import
-  styles.css        # All styling
+  app.js            # ไฟล์เริ่มต้นระบบ จัดการ event binding และ logic การลากวาง
+  planogram.js      # เอนจิ้นการเรนเดอร์ Canvas 2D และการคำนวณตำแหน่งสินค้า
+  planogram3d.js    # เอนจิ้นเรนเดอร์ 3D WebGL (Three.js) และจัดการแสง/เงา
+  products.js       # จัดการ Product CRUD, คลังสินค้า และระบบค้นหา
+  sheets.js         # ส่วนเชื่อมต่อดึงข้อมูลสินค้าจาก Google Sheets CSV
+  templates.js      # เทมเพลตของแผ่นชั้นวางและตัวจัดการ localStorage
+  export.js         # ระบบจัดการ Export ภาพ PNG และจัดทำตาราง BOM / CSV / JSON
+  utils.js          # ฟังก์ชันช่วยเหลือ เช่น การคำนวณขนาดตาม Orientation
+  styles.css        # สไตล์ชีททั้งหมด ปรับแต่งหน้าจอ Figma-like UI
 ```
 
 ## Google Sheets Sync
 
-Products are synced from a Google Sheet exported as CSV. The sheet must be publicly accessible (view-only).
+ดึงข้อมูลสินค้าได้จาก Google Sheets ที่เปิดสิทธิ์แชร์ (View-Only) โดยระบบจะอ่านค่าผ่าน CSV export 
 
-Expected columns:
+คอลัมน์ใน Google Sheets ที่ระบบต้องการ:
 
-| Column | Maps to |
+| Column | Description |
 |---|---|
-| `ODOO` | stable product ID |
-| `Product Name` | name |
-| `Category` | category |
-| `Sub Category` | brand |
-| `Image URL` | image |
-| `Width_cm` | width (supports ranges like `2–26`) |
-| `Height_cm` | height |
-| `Depth_cm` | depth |
-| `Facing Default` | default facing count |
+| `ODOO` | รหัสสินค้า (Stable ID) |
+| `Product Name` | ชื่อสินค้า |
+| `Category` | หมวดหมู่สินค้า |
+| `Sub Category` | ยี่ห้อ / แบรนด์สินค้า |
+| `Image URL` | ลิงก์ภาพสินค้า (Pack Shot) |
+| `Width_cm` | ความกว้าง |
+| `Height_cm` | ความสูง |
+| `Depth_cm` | ความลึก |
+| `Facing Default` | จำนวน Facing เริ่มต้น |
 
-Only products with `Category = Accessories` are loaded (currently 80 SKUs).
+*หมายเหตุ: ในปัจจุบันระบบจะฟิลเตอร์โหลดเฉพาะสินค้าที่มีหมวดหมู่ `Category = Accessories` (ประมาณ 80 SKUs)*
 
-To update products, click **Sync Sheet** in the Product Library panel. Auto-sync runs once on first load when no cached data exists.
+อัปเดตข้อมูลได้ทุกเมื่อผ่านปุ่ม **Sync Sheet** ในแถบ Product Library
 
 ## Shelf Configuration
 
-| Setting | Default |
-|---|---|
-| Segments | 1 |
-| Shelves per segment | 4 |
-| Slots per shelf | 6 |
-| Width | 100 cm |
-| Height | 150 cm |
-| Depth | 30 cm |
+| Setting | Default | Description |
+|---|---|---|
+| Segments | 3 | จำนวนตู้ย่อย (Bay) |
+| Shelves per segment | 6 | จำนวนชั้นวางต่อหนึ่งตู้ |
+| Width | 360 cm | ความกว้างสะสมรวมของทุก Segment |
+| Height | 220 cm | ความสูงของโครงตู้ทั้งหมด |
+| Depth | 48 cm | ความลึกของฐานชั้นวาง |
+| Shelf Thickness | 3 cm | ความหนาของแผ่นชั้นวาง |
+| Side Panels | True | แสดงแผ่นปิดด้านซ้ายและขวาสุดของตู้ |
+| Back Panel | True | แสดงแผ่นหลังตู้ (สีตามที่ระบุในแผงควบคุม) |
+| Segment Dividers | True | แสดงแผ่นกั้นแนวตั้งกั้นระหว่าง Segment |
 
 ## Data Persistence
 
-State is saved automatically to `localStorage`. To back up or share a layout, use **Export JSON** / **Import JSON**.
+ข้อมูลจะเก็บใน `localStorage` อัตโนมัติ หากต้องการย้ายไปทำงานเครื่องอื่นหรือ Backup ข้อมูล ให้คลิกปุ่ม **Export JSON** เพื่อดาวน์โหลดไฟล์เก็บไว้ และใช้ **Import JSON** เพื่อนำข้อมูลกลับมาทำงานต่อ
 
 ## Deployment
 
-This project is deployed to Surge.sh at:
+โปรเจกต์นี้ได้รับการ Deploy ไว้บน Surge.sh ที่ลิงก์:
 [http://planogram-mpsynergy.surge.sh](http://planogram-mpsynergy.surge.sh)
 
-To redeploy the project to Surge:
-1. Make sure you are logged into your Surge account.
-2. Run the following command from the project root:
+หากต้องการ Deploy อัปเดตไปยัง Surge ใหม่อีกครั้ง:
+1. ล็อกอินเข้าใช้งานบัญชี Surge บน Terminal
+2. รันคำสั่งต่อไปนี้จาก root directory:
    ```bash
    npx surge . planogram-mpsynergy.surge.sh
    ```
@@ -93,4 +104,3 @@ To redeploy the project to Surge:
 ## License
 
 MIT
-
