@@ -406,18 +406,42 @@
 
       // Procedural custom modeling based on category/name
       if (p.name.includes('Office Table') || p.name.includes('โต๊ะ')) {
-        // Table: top + 4 legs
-        const topH = 4;
-        const legW = 4;
+        // Table: top + modesty panel + drawers + 4 legs
+        const topH = 3.5;
+        const legW = 3.5;
         const tableH = origH || 75;
+        const legH = tableH - topH;
         
         // Table top
         const top = makeBox(origW, topH, origD, color);
         top.position.set(0, tableH - topH/2, 0);
         itemGroup.add(top);
 
+        // Modesty Panel (privacy screen between legs)
+        const panelW = origW - 8;
+        const panelH = legH * 0.55;
+        const panelD = 1.2;
+        const modesty = makeBox(panelW, panelH, panelD, '#4a4d53');
+        modesty.position.set(0, legH - panelH/2, -origD/2 + panelD/2 + 2);
+        itemGroup.add(modesty);
+
+        // Drawer Unit (under desk)
+        const drawerW = Math.min(32, origW * 0.35);
+        const drawerH = legH - 6;
+        const drawerD = origD - 6;
+        const drawer = makeBox(drawerW, drawerH, drawerD, color);
+        drawer.position.set(origW/2 - drawerW/2 - 4, drawerH/2 + 2, -1);
+        itemGroup.add(drawer);
+
+        // Drawer handles (metal lines)
+        for (let j = 0; j < 3; j++) {
+          const dy = (drawerH/3) * (j + 0.5) + 2;
+          const handle = makeBox(drawerW * 0.5, 1.2, 1.5, '#c1c6cd');
+          handle.position.set(origW/2 - drawerW/2 - 4, dy, drawerD/2 - 0.5);
+          itemGroup.add(handle);
+        }
+
         // 4 Legs
-        const legH = tableH - topH;
         const legPositions = [
           [-origW/2 + legW/2, -origD/2 + legW/2],
           [origW/2 - legW/2, -origD/2 + legW/2],
@@ -425,36 +449,80 @@
           [origW/2 - legW/2, origD/2 - legW/2]
         ];
         legPositions.forEach(([lx, lz]) => {
-          const leg = makeBox(legW, legH, legW, '#3a3a3a');
-          leg.position.set(lx, legH/2, lz);
-          itemGroup.add(leg);
+          const inDrawerZone = (lx > origW/2 - drawerW - 8);
+          if (inDrawerZone) {
+            // Shorter support leg under drawers
+            const shortLegH = 2;
+            const leg = makeBox(legW, shortLegH, legW, '#2a2f36');
+            leg.position.set(lx, shortLegH/2, lz);
+            itemGroup.add(leg);
+          } else {
+            const leg = makeBox(legW, legH, legW, '#3a3a3a');
+            leg.position.set(lx, legH/2, lz);
+            itemGroup.add(leg);
+          }
         });
       } 
       else if (p.name.includes('Office Chair') || p.name.includes('เก้าอี้')) {
-        // Chair: seat + back + base leg
+        // Chair: seat + armrests + backrest frame + cylinder shaft + 5 prongs + wheels
         const seatH = 45;
-        const seatThick = 5;
+        const seatThick = 6;
         
         // Seat cushion
-        const seat = makeBox(origW, seatThick, origD, color);
+        const seat = makeBox(origW * 0.9, seatThick, origD * 0.9, color);
         seat.position.set(0, seatH - seatThick/2, 0);
         itemGroup.add(seat);
 
-        // Backrest
+        // Armrests (L-shaped supports + pads)
+        const armW = 4;
+        const armH = 14;
+        const armD = origD * 0.55;
+        [-1, 1].forEach((side) => {
+          const support = makeBox(1.5, armH, 3, '#2a2a2a');
+          support.position.set(side * (origW * 0.45), seatH + armH/2 - seatThick, 0);
+          itemGroup.add(support);
+          
+          const pad = makeBox(armW, 2, armD, '#151515');
+          pad.position.set(side * (origW * 0.45), seatH + armH - 1, 0);
+          itemGroup.add(pad);
+        });
+
+        // Ergonomic backrest mesh
         const backH = origH - seatH;
-        const backrest = makeBox(origW, backH, 5, color);
-        backrest.position.set(0, seatH + backH/2, -origD/2 + 2.5);
+        const backW = origW * 0.8;
+        const backD = 3;
+        
+        const backrest = makeBox(backW, backH, backD, color);
+        backrest.position.set(0, seatH + backH/2, -origD/2 + backD/2 + 2);
         itemGroup.add(backrest);
 
-        // Center column leg
-        const leg = makeBox(6, seatH - seatThick, 6, '#3a3a3a');
-        leg.position.set(0, (seatH - seatThick)/2, 0);
-        itemGroup.add(leg);
+        // Lumbar support strap
+        const lumbar = makeBox(backW * 0.85, 4, backD + 1, '#111111', { cast: false });
+        lumbar.position.set(0, seatH + backH * 0.25, -origD/2 + backD/2 + 2);
+        itemGroup.add(lumbar);
+
+        // Center cylinder column
+        const colH = seatH - seatThick;
+        const col = makeBox(6, colH, 6, '#222222');
+        col.position.set(0, colH/2, 0);
+        itemGroup.add(col);
         
-        // Base stars
-        const baseStar = makeBox(origW * 0.9, 2, origD * 0.9, '#222222', { cast: false });
-        baseStar.position.set(0, 1, 0);
-        itemGroup.add(baseStar);
+        // 5-Star wheeled base
+        const baseRadius = origW * 0.45;
+        for (let angle = 0; angle < 360; angle += 72) {
+          const rad = angle * Math.PI / 180;
+          
+          // Base prongs
+          const prong = makeBox(4, 2.5, baseRadius);
+          prong.position.set(Math.sin(rad) * baseRadius/2, 2.5/2, Math.cos(rad) * baseRadius/2);
+          prong.rotation.y = rad;
+          itemGroup.add(prong);
+
+          // Caster wheels
+          const wheel = makeBox(4.5, 4.5, 4.5, '#111111');
+          wheel.position.set(Math.sin(rad) * baseRadius, 4.5/2, Math.cos(rad) * baseRadius);
+          itemGroup.add(wheel);
+        }
       } 
       else if (p.name.includes('Fixture Shelf') || p.name.includes('ชั้นวาง')) {
         // Fixture shelf: back + 2 sides + 4 shelves
