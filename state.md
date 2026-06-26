@@ -9,7 +9,7 @@
 
 - **Status**: พัฒนาระบบวิเคราะห์ความจุแนวลึกสินค้าชิ้นใหญ่, ปรับปรุง UX ปุ่มลบ, และแก้ไขปัญหาข้อความทับซ้อนในรูปภาพส่งออก (Export PNG) ของแปลน Top View 2D โดยการปรับปรุงโครงสร้าง CSS ดั้งเดิมโดยตรง (Source-level styling) เพื่อแก้ไขข้อจำกัดทางเทคนิคของไลบรารี html2canvas ที่ไม่เข้าใจคำสั่ง CSS Override (top: auto) ทำให้ข้อความแยกมุมกัน 3 ทิศทางอย่างคมชัดและถูกต้อง 100% ในทุกช่องทางการแสดงผลเรียบร้อยแล้ว
 - **Branch**: main
-- **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh) — latest changes not deployed yet
+- **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh) — deployed
 - **Blocker**: None
 - **Next**: ทดสอบการจัดวางและการส่งออกรูปภาพ PNG ของแปลน Top View 2D หลังจากปรับปรุง CSS ดั้งเดิม และรายงานความสำเร็จแก่ผู้ใช้
 - **Files**: `index.html`, `src/products.js`, `src/planogram.js`, `src/export.js`, `src/topview.js`, `src/styles.css`, `state.md`
