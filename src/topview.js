@@ -16,6 +16,7 @@
   let rotateTarget = null;
   let rotateSnapshot = null;
   let rotateMoved = false;
+  let rotateStart = null;
   let activeTab = 'planogram'; // 'planogram' | 'topview' | 'library'
   let selectedItemId = null;   // Currently selected placed item
   let undoStack = [];          // Snapshots of { areaSpec, placedItems }
@@ -29,6 +30,7 @@
   let panStart = { x: 0, y: 0, sl: 0, st: 0 };
   let measureMode = false;     // Tape measure tool active
   let measureStart = null;     // First measure point { x, y } in cm
+  let copiedItem = null;
 
   // Pre-configured furniture/fixture items
   const FURNITURE_PRESETS = [
@@ -231,11 +233,11 @@
 
   /* ─── Selection & Item Inspector ─── */
 
-  /** Footprint (w × d in cm) of a placed item accounting for 8-way rotation */
+  /** Footprint (w × d in cm) of a placed item accounting for rotation */
   function itemFootprint(item, p) {
     const origW = parseCm(p.width, 10);
     const origD = parseCm(p.depth, 10);
-    const rad = (normalizeRotation(item.rotation) * Math.PI) / 180;
+    const rad = (rotationDegrees(item.rotation) * Math.PI) / 180;
     const cos = Math.abs(Math.cos(rad));
     const sin = Math.abs(Math.sin(rad));
     return {
@@ -248,13 +250,17 @@
     return ((Math.round((parseFloat(value) || 0) / 45) * 45) % 360 + 360) % 360;
   }
 
-  /** Rotate around center so the item does not jump while snapping to 8 directions */
-  function setItemRotation(item, p, rotation) {
+  function rotationDegrees(value) {
+    return (((parseFloat(value) || 0) % 360) + 360) % 360;
+  }
+
+  /** Rotate around center so the item does not jump */
+  function setItemRotation(item, p, rotation, snap = true) {
     const before = itemFootprint(item, p);
     const cx = item.x + before.w / 2;
     const cy = item.y + before.d / 2;
 
-    item.rotation = normalizeRotation(rotation);
+    item.rotation = snap ? normalizeRotation(rotation) : Math.round(rotationDegrees(rotation) * 10) / 10;
     const after = itemFootprint(item, p);
     item.x = clamp(Math.round((cx - after.w / 2) * 10) / 10, 0, Math.max(0, areaSpec.width - after.w));
     item.y = clamp(Math.round((cy - after.d / 2) * 10) / 10, 0, Math.max(0, areaSpec.depth - after.d));
@@ -520,7 +526,7 @@
     const yInput = $('tvItemY');
     if (yInput) yInput.value = item.y;
     const rotSelect = $('tvItemRot');
-    if (rotSelect) rotSelect.value = String(item.rotation);
+    if (rotSelect) rotSelect.value = String(normalizeRotation(item.rotation));
     const sizeInput = $('tvItemSize');
     if (sizeInput) sizeInput.value = `${parseCm(p.width, 10)} × ${parseCm(p.depth, 10)} cm`;
   }
@@ -593,6 +599,44 @@
     showToast(`ทำซ้ำ ${p.name} แล้ว`);
   }
 
+  function copySelected() {
+    const item = placedItems.find((x) => x.id === selectedItemId);
+    if (!item) {
+      showToast('คลิกเลือกสิ่งของในแปลนก่อน copy');
+      return;
+    }
+    copiedItem = { productId: item.productId, x: item.x, y: item.y, rotation: item.rotation };
+    showToast('Copy แล้ว');
+  }
+
+  function pasteCopied() {
+    if (!copiedItem) {
+      showToast('ยังไม่มีสิ่งของที่ copy');
+      return;
+    }
+    const p = products.find((q) => q.id === copiedItem.productId);
+    if (!p) return;
+
+    const { w, d } = itemFootprint(copiedItem, p);
+    const step = areaSpec.gridSize || 10;
+    const copy = {
+      id: 'placed_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+      productId: copiedItem.productId,
+      x: clamp(copiedItem.x + step, 0, areaSpec.width - w),
+      y: clamp(copiedItem.y + step, 0, areaSpec.depth - d),
+      rotation: copiedItem.rotation
+    };
+
+    pushHistory();
+    placedItems.push(copy);
+    selectedItemId = copy.id;
+    copiedItem = { productId: copy.productId, x: copy.x, y: copy.y, rotation: copy.rotation };
+    saveState();
+    drawRoom();
+    refresh3D();
+    showToast(`Paste ${p.name} แล้ว`);
+  }
+
   /** Nudge selected item by grid step (or 1 cm when fine = true) */
   function nudgeSelected(dx, dy, fine, isRepeat) {
     const item = placedItems.find((x) => x.id === selectedItemId);
@@ -638,9 +682,20 @@
       return;
     }
 
+    const mod = e.ctrlKey || e.metaKey;
+    if (mod && (e.key === 'c' || e.key === 'C')) {
+      e.preventDefault();
+      copySelected();
+      return;
+    }
+    if (mod && (e.key === 'v' || e.key === 'V')) {
+      e.preventDefault();
+      pasteCopied();
+      return;
+    }
+
     if (!selectedItemId) return;
 
-    const mod = e.ctrlKey || e.metaKey;
     if (mod && (e.key === 'd' || e.key === 'D')) {
       e.preventDefault();
       duplicateSelected();
@@ -1028,7 +1083,7 @@
       visual.style.left = '50%';
       visual.style.top = '50%';
       visual.style.position = 'absolute';
-      visual.style.transform = `translate(-50%, -50%) rotate(${normalizeRotation(item.rotation)}deg)`;
+      visual.style.transform = `translate(-50%, -50%) rotate(${rotationDegrees(item.rotation)}deg)`;
       visual.style.transformOrigin = 'center';
       visual.style.boxSizing = 'border-box';
       visual.style.pointerEvents = 'none';
@@ -1256,14 +1311,27 @@
 
   function startRotate(item, e) {
     selectItem(item.id);
+    const p = products.find((q) => q.id === item.productId);
+    const wrap = $('topviewWrap');
+    const board = wrap ? wrap.querySelector('.room-board') : null;
+    if (!p || !board) return;
+
+    const f = itemFootprint(item, p);
+    const rect = board.getBoundingClientRect();
+    const cx = (item.x + f.w / 2) * pxPerCm;
+    const cy = (item.y + f.d / 2) * pxPerCm;
     isRotating = true;
     rotateTarget = item;
     rotateSnapshot = snapshot();
     rotateMoved = false;
+    rotateStart = {
+      angle: Math.atan2(e.clientY - rect.top - cy, e.clientX - rect.left - cx) * 180 / Math.PI,
+      rotation: rotationDegrees(item.rotation)
+    };
   }
 
   function updateRotationFromPointer(e) {
-    if (!rotateTarget) return;
+    if (!rotateTarget || !rotateStart) return;
     const p = products.find((q) => q.id === rotateTarget.productId);
     const wrap = $('topviewWrap');
     const board = wrap ? wrap.querySelector('.room-board') : null;
@@ -1275,10 +1343,10 @@
     const cy = (rotateTarget.y + f.d / 2) * pxPerCm;
     const px = e.clientX - rect.left;
     const py = e.clientY - rect.top;
-    const next = normalizeRotation((Math.atan2(py - cy, px - cx) * 180 / Math.PI) + 90);
+    const next = rotateStart.rotation + (Math.atan2(py - cy, px - cx) * 180 / Math.PI) - rotateStart.angle;
 
-    if (next !== rotateTarget.rotation) {
-      setItemRotation(rotateTarget, p, next);
+    if (Math.abs(rotationDegrees(next) - rotationDegrees(rotateTarget.rotation)) > 0.2) {
+      setItemRotation(rotateTarget, p, next, false);
       rotateMoved = true;
       drawRoom();
     }
@@ -1369,6 +1437,7 @@
       }
       rotateSnapshot = null;
       rotateMoved = false;
+      rotateStart = null;
       drawRoom();
       return;
     }
@@ -1613,6 +1682,8 @@
 
   function doExportTopview(target) {
     const name = `topview_${areaSpec.width}x${areaSpec.depth}`;
+    const width = target.scrollWidth || target.offsetWidth;
+    const height = target.scrollHeight || target.offsetHeight;
 
     // Inline remote product images as data URLs first — html2canvas drops
     // cross-origin images whose host doesn't send CORS headers.
@@ -1629,7 +1700,13 @@
           scale: 2,
           backgroundColor: '#f5f4f1',
           useCORS: true,
-          allowTaint: true,
+          allowTaint: false,
+          width,
+          height,
+          windowWidth: Math.max(document.documentElement.clientWidth, width + 40),
+          windowHeight: Math.max(document.documentElement.clientHeight, height + 40),
+          scrollX: 0,
+          scrollY: 0,
           onclone: (doc) => {
             doc.querySelectorAll('.placed-furniture-visual[data-img-src]').forEach((el) => {
               const data = inlined.get(el.dataset.imgSrc);
@@ -1686,6 +1763,7 @@
     getPlacedItems: () => placedItems,
     isActive: () => activeTab === 'topview',
     drawRoom: drawRoom,
+    exportPNG: exportTopviewPNG,
     undo: undoTopview,
     redo: redoTopview
   };

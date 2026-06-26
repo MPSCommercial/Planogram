@@ -41,7 +41,10 @@
   $('btnRestoreTemplates').addEventListener('click', restoreBuiltinTemplates);
   $('templateSelect').addEventListener('change', () => renderTemplateOptions($('templateSelect').value));
   $('btnAddProduct').addEventListener('click', addProduct);
-  $('btnExportPNG').addEventListener('click', exportPNG);
+  $('btnExportPNG').addEventListener('click', () => {
+    if (window.TopViewLayout && TopViewLayout.isActive()) TopViewLayout.exportPNG();
+    else exportPNG();
+  });
   $('btnExportJSON').addEventListener('click', exportJSON);
   $('btnLoadDemo').addEventListener('click', loadDemo);
   $('btnClearAll').addEventListener('click', clearAll);

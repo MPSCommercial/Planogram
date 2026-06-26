@@ -36,7 +36,7 @@ function doExport() {
         scale: 2,
         backgroundColor: '#f5f4f1',
         useCORS: true,
-        allowTaint: true,
+        allowTaint: false,
         onclone: (doc) => {
           doc.querySelectorAll('#exportArea img').forEach((img) => {
             const data = inlined.get(img.getAttribute('src'));
