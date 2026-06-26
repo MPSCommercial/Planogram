@@ -269,8 +269,9 @@ function updateReportTable() {
       const pFacing = Math.max(1, parseInt(product.facing) || 1);
       const pStack = Math.max(1, parseInt(product.stack) || 1);
       const dims = getProductDimensions(product, spec.depth || 48);
+      const rows = Math.max(1, Math.floor((spec.depth || 48) / dims.depth));
       const itemWidth = dims.width;
-      const itemQty = pFacing * pStack;
+      const itemQty = pFacing * pStack * rows;
       
       totalQty += itemQty;
       totalSpaceUsedCm += (itemWidth * pFacing);
@@ -281,6 +282,7 @@ function updateReportTable() {
         shelf: shelfIdx + 1,
         facing: pFacing,
         stack: pStack,
+        rows: rows,
         qty: itemQty
       });
 
@@ -311,18 +313,22 @@ function updateReportTable() {
   if (activeReportTab === 'BOM') {
     // BOM Summary Headers
     tableHeader.innerHTML = `
-      <th style="padding: 12px; text-align: center; width: 60px;">No.</th>
-      <th style="padding: 12px; width: 80px; text-align: center;">รูปภาพ</th>
-      <th style="padding: 12px; width: 120px;">แบรนด์</th>
+      <th style="padding: 12px; text-align: center; width: 50px;">No.</th>
+      <th style="padding: 12px; width: 70px; text-align: center;">รูปภาพ</th>
+      <th style="padding: 12px; width: 100px;">แบรนด์</th>
       <th style="padding: 12px;">ชื่อสินค้า / SKU ID</th>
-      <th style="padding: 12px; width: 180px;">Category</th>
-      <th style="padding: 12px; text-align: center; width: 100px;">จำนวนจุดวาง</th>
-      <th style="padding: 12px; text-align: center; width: 100px;">Facing รวม</th>
-      <th style="padding: 12px; text-align: center; width: 100px;">จำนวนรวม (ชิ้น)</th>
+      <th style="padding: 12px; width: 120px;">Category</th>
+      <th style="padding: 12px; text-align: center; width: 90px;">จำนวนจุดวาง</th>
+      <th style="padding: 12px; text-align: center; width: 80px;">Facing รวม</th>
+      <th style="padding: 12px; text-align: center; width: 90px;">ความจุรวม (ชิ้น)</th>
+      <th style="padding: 12px; text-align: right; width: 90px;">ราคา (฿)</th>
+      <th style="padding: 12px; text-align: right; width: 100px;">มูลค่ารวม (฿)</th>
+      <th style="padding: 12px; text-align: center; width: 80px;">ขาย/วัน</th>
+      <th style="padding: 12px; text-align: center; width: 100px;">Days of Supply</th>
     `;
 
     if (totalSKUsMap.size === 0) {
-      tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 24px; color: var(--muted);">ไม่มีสินค้าจัดวางอยู่บนชั้นวางในขณะนี้</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="12" style="text-align: center; padding: 24px; color: var(--muted);">ไม่มีสินค้าจัดวางอยู่บนชั้นวางในขณะนี้</td></tr>`;
       return;
     }
 
@@ -333,6 +339,20 @@ function updateReportTable() {
         ? `<img src="${p.image}" class="report-img" alt="${p.name}">` 
         : `<div class="report-img" style="background:${p.color || '#ccc'}; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #fff; font-weight: 700;">No Pic</div>`;
       
+      // Calculate DOS
+      const salesRate = parseFloat(p.salesRate) || 0;
+      const dosVal = (salesRate > 0) ? agg.totalQty / salesRate : null;
+      let dosHtml = '<span style="color: var(--muted);">-</span>';
+      if (dosVal !== null) {
+        let dosColor = '#10b981'; // green/default
+        if (dosVal < 3) dosColor = '#ef4444'; // red
+        else if (dosVal < 7) dosColor = '#f59e0b'; // orange
+        dosHtml = `<span style="color: ${dosColor}; font-weight: 700;">${dosVal.toFixed(1)} วัน</span>`;
+      }
+
+      const priceVal = parseFloat(p.price) || 0;
+      const totalVal = agg.totalQty * priceVal;
+
       const row = document.createElement('tr');
       row.innerHTML = `
         <td style="text-align: center; font-weight: 600;">${no++}</td>
@@ -345,25 +365,32 @@ function updateReportTable() {
         <td><span class="badge" style="background: var(--surface-2); color: var(--ink); font-weight: 500;">${escapeHtml(p.category)}</span></td>
         <td style="text-align: center; font-weight: 600; color: var(--ink);">${agg.placementsCount}</td>
         <td style="text-align: center; font-weight: 600; color: var(--ink);">${agg.totalFacing}</td>
-        <td style="text-align: center; font-weight: 700; color: var(--accent); font-size: 0.9rem;">${agg.totalQty}</td>
+        <td style="text-align: center; font-weight: 700; color: var(--ink); font-size: 0.9rem;">${agg.totalQty}</td>
+        <td style="text-align: right; font-weight: 600; color: var(--ink);">${priceVal ? priceVal.toLocaleString() : '-'}</td>
+        <td style="text-align: right; font-weight: 700; color: var(--ink);">${totalVal ? totalVal.toLocaleString() : '-'}</td>
+        <td style="text-align: center; font-weight: 600; color: var(--ink);">${salesRate || '-'}</td>
+        <td style="text-align: center;">${dosHtml}</td>
       `;
       tableBody.appendChild(row);
     });
   } else {
     // Placement Details Headers
     tableHeader.innerHTML = `
-      <th style="padding: 12px; text-align: center; width: 60px;">No.</th>
-      <th style="padding: 12px; width: 80px; text-align: center;">รูปภาพ</th>
-      <th style="padding: 12px; width: 140px;">ตำแหน่ง</th>
+      <th style="padding: 12px; text-align: center; width: 50px;">No.</th>
+      <th style="padding: 12px; width: 70px; text-align: center;">รูปภาพ</th>
+      <th style="padding: 12px; width: 120px;">ตำแหน่ง</th>
       <th style="padding: 12px;">ชื่อสินค้า / SKU ID</th>
-      <th style="padding: 12px; width: 160px;">Category</th>
-      <th style="padding: 12px; text-align: center; width: 90px;">Facing</th>
-      <th style="padding: 12px; text-align: center; width: 90px;">Stack</th>
-      <th style="padding: 12px; text-align: center; width: 100px;">จำนวนรวม (ชิ้น)</th>
+      <th style="padding: 12px; width: 120px;">Category</th>
+      <th style="padding: 12px; text-align: center; width: 70px;">Facing</th>
+      <th style="padding: 12px; text-align: center; width: 70px;">สูง (Stack)</th>
+      <th style="padding: 12px; text-align: center; width: 70px;">ลึก (Rows)</th>
+      <th style="padding: 12px; text-align: center; width: 90px;">จำนวนรวม (ชิ้น)</th>
+      <th style="padding: 12px; text-align: right; width: 90px;">ราคา (฿)</th>
+      <th style="padding: 12px; text-align: right; width: 100px;">มูลค่ารวม (฿)</th>
     `;
 
     if (placedProductsList.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="8" style="text-align: center; padding: 24px; color: var(--muted);">ไม่มีสินค้าจัดวางอยู่บนชั้นวางในขณะนี้</td></tr>`;
+      tableBody.innerHTML = `<tr><td colspan="11" style="text-align: center; padding: 24px; color: var(--muted);">ไม่มีสินค้าจัดวางอยู่บนชั้นวางในขณะนี้</td></tr>`;
       return;
     }
 
@@ -378,6 +405,9 @@ function updateReportTable() {
       const imgHtml = p.image 
         ? `<img src="${p.image}" class="report-img" alt="${p.name}">` 
         : `<div class="report-img" style="background:${p.color || '#ccc'}; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #fff; font-weight: 700;">No Pic</div>`;
+
+      const priceVal = parseFloat(p.price) || 0;
+      const totalVal = item.qty * priceVal;
 
       const row = document.createElement('tr');
       row.innerHTML = `
@@ -394,7 +424,10 @@ function updateReportTable() {
         <td><span class="badge" style="background: var(--surface-2); color: var(--ink); font-weight: 500;">${escapeHtml(p.category)}</span></td>
         <td style="text-align: center; font-weight: 600; color: var(--ink);">${item.facing}</td>
         <td style="text-align: center; font-weight: 600; color: var(--ink);">${item.stack}</td>
-        <td style="text-align: center; font-weight: 700; color: var(--accent); font-size: 0.9rem;">${item.qty}</td>
+        <td style="text-align: center; font-weight: 600; color: var(--ink);">${item.rows || 1}</td>
+        <td style="text-align: center; font-weight: 700; color: var(--ink); font-size: 0.9rem;">${item.qty}</td>
+        <td style="text-align: right; font-weight: 600; color: var(--ink);">${priceVal ? priceVal.toLocaleString() : '-'}</td>
+        <td style="text-align: right; font-weight: 700; color: var(--ink);">${totalVal ? totalVal.toLocaleString() : '-'}</td>
       `;
       tableBody.appendChild(row);
     });
@@ -409,7 +442,7 @@ function exportReportCSV() {
 
   if (activeReportTab === 'BOM') {
     fileName = `${name}_BOM_Report_${dateStr}.csv`;
-    csvContent += "No.,Brand,Product Name/SKU,Category,Placements Count,Total Facing,Total Quantity\n";
+    csvContent += "No.,Brand,Product Name/SKU,Category,Placements Count,Total Facing,Total Capacity (Qty),Unit Price (THB),Total Value (THB),Sales Rate/Day,Days of Supply (DOS)\n";
 
     let no = 1;
     let totalSKUsMap = new Map();
@@ -420,7 +453,9 @@ function exportReportCSV() {
         if (!product) return;
         const pFacing = Math.max(1, parseInt(product.facing) || 1);
         const pStack = Math.max(1, parseInt(product.stack) || 1);
-        const itemQty = pFacing * pStack;
+        const dims = getProductDimensions(product, spec.depth || 48);
+        const rows = Math.max(1, Math.floor((spec.depth || 48) / dims.depth));
+        const itemQty = pFacing * pStack * rows;
 
         if (!totalSKUsMap.has(pid)) {
           totalSKUsMap.set(pid, { product, placementsCount: 0, totalFacing: 0, totalQty: 0 });
@@ -437,11 +472,15 @@ function exportReportCSV() {
       const brand = csvEscape(p.brand || '');
       const nameStr = csvEscape(p.name || '');
       const cat = csvEscape(p.category || '');
-      csvContent += `${no++},${brand},${nameStr},${cat},${agg.placementsCount},${agg.totalFacing},${agg.totalQty}\n`;
+      const priceVal = parseFloat(p.price) || 0;
+      const totalVal = agg.totalQty * priceVal;
+      const salesRate = parseFloat(p.salesRate) || 0;
+      const dosVal = salesRate > 0 ? (agg.totalQty / salesRate).toFixed(1) : '-';
+      csvContent += `${no++},${brand},${nameStr},${cat},${agg.placementsCount},${agg.totalFacing},${agg.totalQty},${priceVal},${totalVal},${salesRate},${dosVal}\n`;
     });
   } else {
     fileName = `${name}_Placements_Report_${dateStr}.csv`;
-    csvContent += "No.,Location,Product Name/SKU,Category,Facing,Stack,Total Quantity\n";
+    csvContent += "No.,Location,Product Name/SKU,Category,Facing,Stack (Height),Rows (Depth),Total Capacity,Price (THB),Total Value (THB)\n";
 
     let placedProductsList = [];
     Object.entries(shelfData || {}).forEach(([key, productIds]) => {
@@ -454,7 +493,9 @@ function exportReportCSV() {
 
         const pFacing = Math.max(1, parseInt(product.facing) || 1);
         const pStack = Math.max(1, parseInt(product.stack) || 1);
-        const itemQty = pFacing * pStack;
+        const dims = getProductDimensions(product, spec.depth || 48);
+        const rows = Math.max(1, Math.floor((spec.depth || 48) / dims.depth));
+        const itemQty = pFacing * pStack * rows;
 
         placedProductsList.push({
           product,
@@ -463,6 +504,7 @@ function exportReportCSV() {
           shelf: shelfIdx + 1,
           facing: pFacing,
           stack: pStack,
+          rows: rows,
           qty: itemQty
         });
       });
@@ -478,7 +520,9 @@ function exportReportCSV() {
       const loc = csvEscape(item.location);
       const nameStr = csvEscape(p.name || '');
       const cat = csvEscape(p.category || '');
-      csvContent += `${idx + 1},${loc},${nameStr},${cat},${item.facing},${item.stack},${item.qty}\n`;
+      const priceVal = parseFloat(p.price) || 0;
+      const totalVal = item.qty * priceVal;
+      csvContent += `${idx + 1},${loc},${nameStr},${cat},${item.facing},${item.stack},${item.rows},${item.qty},${priceVal},${totalVal}\n`;
     });
   }
 

@@ -1106,28 +1106,74 @@ input[type="checkbox"] {
     0 8px 14px rgba(0,0,0,.3);
 }
 
+/* Product Space & DOS badges */
+.product-dos-badge, .product-cap-badge {
+  position: absolute;
+  bottom: 3px;
+  left: 3px;
+  top: auto;
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 3px;
+  z-index: 4;
+  pointer-events: none;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  max-width: calc(100% - 6px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.product-dos-badge.dos-badge-danger {
+  background: #ef4444;
+  color: #fff;
+}
+.product-dos-badge.dos-badge-warning {
+  background: #f59e0b;
+  color: #fff;
+}
+.product-dos-badge.dos-badge-ok {
+  background: #10b981;
+  color: #fff;
+}
+.product-cap-badge {
+  background: rgba(0,0,0,0.65);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
 .slot-name {
   display: none;
 }
 
 .slot-remove {
   position: absolute;
-  top: 3px;
-  right: 3px;
-  width: 20px;
-  height: 20px;
+  top: -4px;           /* Offset slightly outwards for easier hover and click (larger hitbox) */
+  right: -4px;         /* Offset slightly outwards */
+  width: 22px;         /* Increased size for easier clicking */
+  height: 22px;
   border-radius: 50%;
   color: white;
-  background: rgba(0,0,0,.68);
-  font-size: .72rem;
+  background: #ef4444; /* Solid red background for high contrast */
+  border: 1.5px solid #fff; /* High-contrast white border to stand out on dark products */
+  font-size: .8rem;    /* Larger 'x' icon */
+  font-weight: 800;
   display: none;
   place-items: center;
-  z-index: 5;
-  transition: background var(--transition);
+  z-index: 10;         /* Ensure it sits on top of everything */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.45);
+  cursor: pointer;
+  transition: transform 0.1s ease, background 0.1s ease;
 }
 
-.slot-remove:hover { background: var(--danger); }
-.shelf-product:hover .slot-remove { display: grid; }
+.slot-remove:hover {
+  background: #dc2626;
+  transform: scale(1.15); /* Soft pop effect on hover */
+}
+
+.shelf-product:hover .slot-remove {
+  display: grid;
+}
 
 /* ─── Empty State ─── */
 .empty-state {
@@ -1924,12 +1970,12 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
   position: absolute;
   left: 6px;
   top: 5px;
-  max-width: calc(100% - 12px);
+  max-width: calc(100% - 48px); /* Constrain width to prevent overlapping with the category tag on the right */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   color: #111;
-  font-size: 9px;
+  font-size: 8.5px;
   font-weight: 800;
   line-height: 1;
   z-index: 4;
@@ -1938,7 +1984,7 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
 .tv-symbol-size {
   position: absolute;
   left: 6px;
-  top: 17px;
+  bottom: 5px;                 /* Repositioned to bottom-left at the source level to separate from name label */
   max-width: calc(100% - 12px);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1949,6 +1995,13 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
   font-weight: 700;
   line-height: 1;
   z-index: 4;
+}
+
+/* Hide size labels on small/compact furniture shapes to keep the floor plan clean */
+.tv-symbol-chair .tv-symbol-size,
+.tv-symbol-sayl-chair .tv-symbol-size,
+.tv-symbol-product .tv-symbol-size {
+  display: none;
 }
 
 .tv-symbol-bed {
@@ -2475,4 +2528,135 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
   border-radius: 10px;
   white-space: nowrap;
   pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Top View Layout - Color Coding & Category Badges (UX Style Update)
+   ═══════════════════════════════════════════════════════ */
+
+/* Category Badge Tags for 2D Top View Layout */
+.tv-category-tag {
+  position: absolute;
+  right: 6px;
+  top: 5px;
+  font-size: 7.5px;
+  font-weight: 900;
+  padding: 2px 5px;
+  border-radius: 3px;
+  color: #ffffff !important;
+  line-height: 1;
+  z-index: 4;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+.tv-category-tag.tag-bed { background: #319795 !important; }
+.tv-category-tag.tag-chair, .tv-category-tag.tag-sayl-chair { background: #3182ce !important; }
+.tv-category-tag.tag-table, .tv-category-tag.tag-nevi-desk { background: #dd6b20 !important; }
+.tv-category-tag.tag-shelf { background: #4a5568 !important; }
+.tv-category-tag.tag-product { background: #718096 !important; }
+
+
+
+/* 🛌 1. BED (เตียง) - Mint Pastel Theme */
+.tv-symbol-bed {
+  background: #e6fffa !important;
+  border-color: #319795 !important;
+}
+.tv-bed-mattress {
+  background: #ffffff !important;
+  border-color: rgba(49, 151, 149, 0.4) !important;
+}
+.tv-bed-pillow {
+  background: #e2fbf5 !important;
+  border-color: rgba(49, 151, 149, 0.45) !important;
+}
+
+/* 🪑 2. CHAIR (เก้าอี้) - Work Blue Theme */
+.tv-symbol-chair {
+  background: #ebf8ff !important;
+  border: 1.2px solid #3182ce !important;
+  border-radius: 6px !important;
+}
+.tv-chair-seat {
+  background: #cbd5e0 !important;
+  border-color: #718096 !important;
+}
+.tv-chair-back {
+  background: #718096 !important;
+  border-color: #4a5568 !important;
+}
+.tv-chair-arm {
+  background: #a0aec0 !important;
+  border-color: #718096 !important;
+}
+
+/* 💺 3. SAYL CHAIR (Ergonomic Office Chair) - Tech Midnight Theme */
+.tv-symbol-sayl-chair {
+  background: #ebf8ff !important;
+  border: 1.2px solid #2b6cb0 !important;
+  border-radius: 50% !important;
+}
+.tv-sayl-seat {
+  background: #cbd5e0 !important;
+  border-color: #718096 !important;
+}
+.tv-sayl-back {
+  background: #4a5568 !important;
+  border-color: #2d3748 !important;
+}
+.tv-sayl-arm {
+  background: #a0aec0 !important;
+}
+.tv-sayl-spine {
+  background: #2d3748 !important;
+}
+
+/* 🪵 4. TABLE (โต๊ะทั่วไป) - Warm Wood Theme */
+.tv-symbol-table {
+  background: #fffaf0 !important;
+  border-color: #d69e2e !important;
+}
+.tv-table-top {
+  background: #fffdfa !important;
+  border-color: #b7791f !important;
+}
+
+/* 💻 5. NEVI DESK (โต๊ะทำงานแบรนด์) - Pro Oak Theme */
+.tv-symbol-nevi-desk {
+  background: #fffaf0 !important;
+  border: 1.5px solid #dd6b20 !important;
+  border-radius: 6px !important;
+}
+.tv-nevi-top {
+  background: #fffdfa !important;
+  border-color: #dd6b20 !important;
+}
+.tv-nevi-screen {
+  background: #dd6b20 !important; /* สีกั้นส้มสดใส */
+  border-color: #b7791f !important;
+}
+.tv-nevi-control {
+  background: #2d3748 !important;
+}
+
+/* 🪜 6. SHELF (ชั้นวาง/เชลฟ์/ตู้) - Industrial Steel Theme */
+.tv-symbol-shelf {
+  background: #edf2f7 !important;
+  border-color: #4a5568 !important;
+}
+.tv-shelf-body {
+  background: #e2e8f0 !important;
+  border-color: #4a5568 !important;
+}
+.tv-shelf-line {
+  background: #a0aec0 !important;
+}
+
+/* 📦 7. PRODUCT (สินค้าทั่วไป) - Neutral Gray */
+.tv-symbol-product {
+  background: #f7fafc !important;
+  border-color: #a0aec0 !important;
+}
+.tv-product-face {
+  border-color: #cbd5e0 !important;
 }

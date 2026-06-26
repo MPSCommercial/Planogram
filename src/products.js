@@ -29,6 +29,8 @@ function addProduct() {
     width: $('pWidth').value.trim() || '',
     height: $('pHeight').value.trim() || '',
     depth: $('pDepth').value.trim() || '',
+    price: parseFloat($('pPrice').value) || 0,
+    salesRate: parseFloat($('pSalesRate').value) || 0,
     image: pendingImageBase64,
   };
 
@@ -37,6 +39,8 @@ function addProduct() {
   // Reset form
   $('pName').value = '';
   if ($('pDepth')) $('pDepth').value = '';
+  if ($('pPrice')) $('pPrice').value = '';
+  if ($('pSalesRate')) $('pSalesRate').value = '';
   removeUploadedImage();
   renderProductList();
   updateLegend();
@@ -140,9 +144,13 @@ function renderProductList() {
       ? `<div class="thumb"><img src="${product.image}" alt="" draggable="false"></div>`
       : `<div class="thumb" style="background:${product.color};color:${contrast(product.color)}" draggable="false">${esc(initials(product.name))}</div>`;
 
+    const priceText = product.price ? `฿${product.price}` : '';
+    const salesText = product.salesRate ? `${product.salesRate}/วัน` : '';
     const meta = [
       product.odoo,
       product.brand || product.category,
+      priceText,
+      salesText,
       `F:${product.facing}`,
       product.width ? `${product.width}×${product.height || '-'}` + (product.depth ? `×${product.depth}` : '') + 'cm' : '',
     ].filter(Boolean).join(' · ');
@@ -247,6 +255,8 @@ function openEditModal(id, event) {
   $('editWidth').value = product.width || '';
   $('editHeight').value = product.height || '';
   if ($('editDepth')) $('editDepth').value = product.depth || '';
+  if ($('editPrice')) $('editPrice').value = product.price || '';
+  if ($('editSalesRate')) $('editSalesRate').value = product.salesRate || '';
 
   // Show image preview if exists
   if (product.image) {
@@ -272,6 +282,8 @@ function closeEditModal() {
   editImageBase64 = null;
   resetEditImage();
   if ($('editDepth')) $('editDepth').value = '';
+  if ($('editPrice')) $('editPrice').value = '';
+  if ($('editSalesRate')) $('editSalesRate').value = '';
 }
 
 /**
@@ -295,6 +307,8 @@ function saveEditProduct() {
   product.width = $('editWidth').value.trim() || '';
   product.height = $('editHeight').value.trim() || '';
   product.depth = $('editDepth') ? $('editDepth').value.trim() : '';
+  product.price = $('editPrice') ? parseFloat($('editPrice').value) || 0 : 0;
+  product.salesRate = $('editSalesRate') ? parseFloat($('editSalesRate').value) || 0 : 0;
   product.image = editImageBase64;
 
   closeEditModal();

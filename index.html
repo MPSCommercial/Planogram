@@ -379,6 +379,14 @@
                   <label for="pDepth">Depth (cm)</label>
                   <input id="pDepth" type="text" inputmode="decimal" placeholder="10">
                 </div>
+                <div>
+                  <label for="pPrice">Price (฿)</label>
+                  <input id="pPrice" type="text" inputmode="numeric" placeholder="990">
+                </div>
+                <div>
+                  <label for="pSalesRate">Sales Rate (/Day)</label>
+                  <input id="pSalesRate" type="text" inputmode="decimal" placeholder="1.5">
+                </div>
               </div>
               <button class="btn btn-build" id="btnAddProduct">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -490,6 +498,14 @@
             <label for="editDepth">Depth (cm)</label>
             <input id="editDepth" type="text" inputmode="decimal">
           </div>
+          <div>
+            <label for="editPrice">Price (฿)</label>
+            <input id="editPrice" type="text" inputmode="numeric">
+          </div>
+          <div>
+            <label for="editSalesRate">Sales Rate (/Day)</label>
+            <input id="editSalesRate" type="text" inputmode="decimal">
+          </div>
         </div>
       </div>
       <div class="modal-footer">
@@ -590,6 +606,26 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
         </button>
         <span class="inspector-facing-val" id="inspectorRotateVal" style="font-size:0.75rem; min-width:30px;">0°</span>
+      </div>
+      
+      <!-- Space & Capacity Analytics -->
+      <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.15); font-size: 0.72rem; color: #ccc;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+          <span>ความจุแนวลึก:</span>
+          <strong id="inspectorRowsVal" style="color:#fff;">1 แถว</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+          <span>ความจุรวมจุดนี้:</span>
+          <strong id="inspectorCapacityVal" style="color:#fff; font-weight:700;">1 ชิ้น</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
+          <span>อัตราการขาย:</span>
+          <strong id="inspectorSalesRateVal" style="color:#fff;">- /วัน</strong>
+        </div>
+        <div style="display:flex; justify-content:space-between;">
+          <span>Days of Supply:</span>
+          <strong id="inspectorDosVal" style="color:#10b981; font-weight:700;">- วัน</strong>
+        </div>
       </div>
     </div>
   </div>

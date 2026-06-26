@@ -292,6 +292,17 @@
       return node;
     };
 
+    // เพิ่มป้ายระบุประเภทเด่นชัดที่มุมขวาบนเพื่อการจำแนกที่ง่ายขึ้น (ทั้งบนจอและรูปที่ Export)
+    const tag = document.createElement('span');
+    tag.className = `tv-category-tag tag-${kind}`;
+    let tagText = 'สินค้า';
+    if (kind === 'bed') tagText = 'เตียง';
+    else if (kind === 'chair' || kind === 'sayl-chair') tagText = 'เก้าอี้';
+    else if (kind === 'table' || kind === 'nevi-desk') tagText = 'โต๊ะ';
+    else if (kind === 'shelf') tagText = 'เชลฟ์';
+    tag.textContent = tagText;
+    visual.appendChild(tag);
+
     if (kind === 'bed') {
       add('tv-bed-mattress');
       add('tv-bed-pillow pillow-a');

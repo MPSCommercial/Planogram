@@ -617,6 +617,35 @@ function moveProductOnBoard(sourceSeg, sourceShelf, sourceIdx, targetSeg, target
 /**
  * Re-render all shelves from shelfData
  */
+/**
+ * Calculate the total capacity and Days of Supply (DOS) for a product
+ */
+function calculateProductDOS(product) {
+  if (!product) return { dos: null, capacity: 0 };
+  
+  let totalCapacity = 0;
+  Object.entries(shelfData || {}).forEach(([key, productIds]) => {
+    if (!Array.isArray(productIds)) return;
+    const [segIdx, shelfIdx] = key.split('-').map(Number);
+    // Find the shelf board element to read its height/depth if possible, or fallback to spec.depth
+    const shelfDepth = spec.depth || 48;
+    
+    productIds.forEach((pid) => {
+      if (pid === product.id) {
+        const dims = getProductDimensions(product, shelfDepth);
+        const rows = Math.max(1, Math.floor(shelfDepth / dims.depth));
+        const stack = Math.max(1, product.stack || 1);
+        const facing = product.facing || 1;
+        totalCapacity += facing * stack * rows;
+      }
+    });
+  });
+
+  const salesRate = parseFloat(product.salesRate) || 0;
+  const dos = (salesRate > 0 && totalCapacity > 0) ? totalCapacity / salesRate : null;
+  return { dos, capacity: totalCapacity };
+}
+
 function renderShelfFill() {
   if (!spec.segments) return;
   for (let seg = 0; seg < spec.segments; seg++) {
@@ -684,7 +713,24 @@ function renderShelfRow(el, seg, shelf) {
 
     const units = Array.from({ length: stack }, () => `<div class="stack-unit">${visual}</div>`).join('');
 
+    // Calculate DOS & Capacity Badges
+    const dosInfo = calculateProductDOS(product);
+    let badgeHTML = '';
+    const shelfDepth = spec.depth || 48;
+    const singleRows = Math.max(1, Math.floor(shelfDepth / dims.depth));
+    const localCap = (product.facing || 1) * stack * singleRows;
+
+    if (dosInfo.dos !== null) {
+      let badgeClass = 'dos-badge-ok';
+      if (dosInfo.dos < 3) badgeClass = 'dos-badge-danger';
+      else if (dosInfo.dos < 7) badgeClass = 'dos-badge-warning';
+      badgeHTML = `<span class="product-dos-badge ${badgeClass}" title="Days of Supply: ${dosInfo.dos.toFixed(1)} วัน (ความจุรวมแผง ${dosInfo.capacity} ชิ้น)">${dosInfo.dos.toFixed(1)}d</span>`;
+    } else {
+      badgeHTML = `<span class="product-cap-badge" title="ความจุจุดนี้: ${localCap} ชิ้น (ลึก ${singleRows} แถว)">cap:${localCap}</span>`;
+    }
+
     item.innerHTML = `
+      ${badgeHTML}
       ${units}
       <button class="slot-remove" onclick="removeFromShelf(${seg},${shelf},${idx},event)" title="ลบ">×</button>
     `;
@@ -801,31 +847,32 @@ function updateSummary() {
  */
 function loadDemo() {
   products = [
-    { id: 'p_a', name: 'BOSS Bottled EDP', category: 'Fragrance', brand: 'BOSS', color: '#1f252b', facing: 2, width: '7', height: '18', image: null },
-    { id: 'p_b', name: 'HUGO Red Edition', category: 'Fragrance', brand: 'HUGO', color: '#b52a25', facing: 2, width: '8', height: '20', image: null },
-    { id: 'p_c', name: 'Travel Spray Silver', category: 'Travel', brand: 'BOSS', color: '#b8b8b8', facing: 3, width: '5', height: '16', image: null },
-    { id: 'p_d', name: 'Gift Set Premium', category: 'Gift Set', brand: 'BOSS', color: '#f2f0eb', facing: 1, width: '22', height: '14', image: null },
-    { id: 'p_e', name: 'Orange Vitality', category: 'Skincare', brand: 'HUGO', color: '#d86e31', facing: 2, width: '9', height: '18', image: null },
-    { id: 'p_f', name: 'Pink Edition', category: 'Seasonal', brand: 'BOSS', color: '#e5a5bd', facing: 2, width: '8', height: '18', image: null },
-    { id: 'p_g', name: 'Black Premium', category: 'Premium', brand: 'BOSS', color: '#1a1a1a', facing: 2, width: '9', height: '20', image: null },
-    { id: 'p_h', name: 'Alive Intense', category: 'Fragrance', brand: 'BOSS', color: '#5c3d7a', facing: 2, width: '7', height: '19', image: null },
-    { id: 'p_i', name: 'Summer Breeze', category: 'Seasonal', brand: 'HUGO', color: '#4aa8d8', facing: 3, width: '6', height: '17', image: null },
+    { id: 'p_a', name: 'Laptop Riser Pro', category: 'Office', brand: 'ErgoLife', color: '#4a5568', facing: 2, width: '28', height: '22', depth: '24', price: 1290, salesRate: 1.2, image: null },
+    { id: 'p_b', name: 'Memory Foam Cushion', category: 'Ergonomics', brand: 'ComfortCo', color: '#2b6cb0', facing: 1, width: '45', height: '40', depth: '12', price: 890, salesRate: 2.5, image: null },
+    { id: 'p_c', name: 'Orthopedic Pillow', category: 'Bedding', brand: 'DeepSleep', color: '#4cbdc9', facing: 1, width: '60', height: '35', depth: '15', price: 1590, salesRate: 1.8, image: null },
+    { id: 'p_d', name: 'Wooden Monitor Stand', category: 'Office', brand: 'ErgoLife', color: '#d69e2e', facing: 1, width: '50', height: '10', depth: '22', price: 790, salesRate: 0.8, image: null },
+    { id: 'p_e', name: 'Therapeutic Backrest', category: 'Ergonomics', brand: 'ComfortCo', color: '#718096', facing: 1, width: '38', height: '43', depth: '15', price: 990, salesRate: 1.5, image: null }
   ];
 
   renderProductList();
   updateLegend();
+  
+  // Set larger depth for large products by default
+  spec.depth = 50;
+  if ($('shelfDepth')) $('shelfDepth').value = 50;
+  
   buildShelf();
 
-  placeProduct('p_a', 0, 0); placeProduct('p_b', 0, 0); placeProduct('p_e', 0, 0);
+  placeProduct('p_a', 0, 0); placeProduct('p_b', 0, 0);
   placeProduct('p_c', 0, 1); placeProduct('p_d', 0, 1);
-  placeProduct('p_h', 0, 2); placeProduct('p_g', 0, 2);
-  placeProduct('p_f', 1, 0); placeProduct('p_i', 1, 0);
-  placeProduct('p_a', 1, 1); placeProduct('p_b', 1, 1);
-  placeProduct('p_g', 2, 0); placeProduct('p_h', 2, 0); placeProduct('p_c', 2, 0);
-  placeProduct('p_e', 2, 2);
+  placeProduct('p_e', 0, 2); placeProduct('p_a', 0, 2);
+  placeProduct('p_b', 1, 0); placeProduct('p_c', 1, 0);
+  placeProduct('p_d', 1, 1); placeProduct('p_e', 1, 1);
+  placeProduct('p_a', 2, 0); placeProduct('p_b', 2, 0);
+  placeProduct('p_c', 2, 1); placeProduct('p_d', 2, 2);
 
   selectProduct('p_a');
-  showToast('โหลดตัวอย่างแล้ว');
+  showToast('โหลดตัวอย่างสินค้าขนาดใหญ่แล้ว');
 }
 
 /**
@@ -845,6 +892,31 @@ function openMiniInspector(seg, shelf, idx, event, el) {
   $('inspectorSku').textContent = `${product.name}`;
   $('inspectorFacingVal').textContent = product.facing || 1;
   $('inspectorStackVal').textContent = product.stack || 1;
+
+  // Space & Capacity Analytics
+  const dims = getProductDimensions(product, spec.depth || 48);
+  const rows = Math.max(1, Math.floor((spec.depth || 48) / dims.depth));
+  const stack = Math.max(1, product.stack || 1);
+  const facing = product.facing || 1;
+  const localCap = facing * stack * rows;
+  const dosInfo = calculateProductDOS(product);
+
+  if ($('inspectorRowsVal')) $('inspectorRowsVal').textContent = `${rows} แถว (ลึก ${Math.round(dims.depth)}cm)`;
+  if ($('inspectorCapacityVal')) $('inspectorCapacityVal').textContent = `${localCap} ชิ้น`;
+  if ($('inspectorSalesRateVal')) $('inspectorSalesRateVal').textContent = product.salesRate ? `${product.salesRate} /วัน` : '- /วัน';
+
+  const dosValSpan = $('inspectorDosVal');
+  if (dosValSpan) {
+    if (dosInfo.dos !== null) {
+      dosValSpan.textContent = `${dosInfo.dos.toFixed(1)} วัน`;
+      if (dosInfo.dos < 3) dosValSpan.style.color = '#ef4444';
+      else if (dosInfo.dos < 7) dosValSpan.style.color = '#f59e0b';
+      else dosValSpan.style.color = '#10b981';
+    } else {
+      dosValSpan.textContent = '- วัน';
+      dosValSpan.style.color = '#ccc';
+    }
+  }
 
   // Set orientation and rotation in UI
   const orientationSelect = $('inspectorOrientation');
