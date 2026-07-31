@@ -40,6 +40,14 @@
   $('btnDeleteTemplate').addEventListener('click', deleteSelectedTemplate);
   $('btnRestoreTemplates').addEventListener('click', restoreBuiltinTemplates);
   $('templateSelect').addEventListener('change', () => renderTemplateOptions($('templateSelect').value));
+
+  // ─── Branch bindings ───
+  renderBranchOptions();
+  $('btnSwitchBranch').addEventListener('click', switchToSelectedBranch);
+  $('btnSaveBranch').addEventListener('click', saveCurrentAsBranch);
+  $('btnDeleteBranch').addEventListener('click', deleteSelectedBranch);
+  $('branchSelect').addEventListener('change', () => renderBranchOptions($('branchSelect').value));
+
   $('btnAddProduct').addEventListener('click', addProduct);
   $('btnExportPNG').addEventListener('click', () => {
     if (window.TopViewLayout && TopViewLayout.isActive()) TopViewLayout.exportPNG();

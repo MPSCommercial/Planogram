@@ -145,6 +145,21 @@
                 </div>
                 <button class="template-restore" id="btnRestoreTemplates" type="button" style="display:none">คืนค่าเทมเพลตพื้นฐาน</button>
               </div>
+
+              <div class="template-block">
+                <div class="template-block-label">สาขา (Branch)</div>
+                <div class="template-row">
+                  <select id="branchSelect" class="template-select" aria-label="เลือกสาขา">
+                    <option value="">เลือกสาขา…</option>
+                  </select>
+                  <button class="btn btn-mini" id="btnSwitchBranch" type="button">เปิด</button>
+                </div>
+                <div class="template-row">
+                  <button class="btn btn-mini btn-ghost" id="btnSaveBranch" type="button">บันทึกบอร์ดปัจจุบันเป็นสาขา</button>
+                  <button class="btn btn-mini btn-danger" id="btnDeleteBranch" type="button" disabled aria-label="ลบสาขา">ลบ</button>
+                </div>
+                <div id="branchViewPanel"></div>
+              </div>
             </div>
           </section>
 
@@ -636,6 +651,7 @@
   <!-- 3D engine (SketchUp-style view) -->
   <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
   <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <!-- Application Scripts (modular) -->
   <script src="src/utils.js?v=export-fix"></script>
@@ -643,6 +659,9 @@
   <script src="src/products.js?v=shelf"></script>
   <script src="src/planogram.js?v=shelf"></script>
   <script src="src/templates.js?v=shelf"></script>
+  <script src="src/branches.js?v=1.0"></script>
+  <script src="src/salesData.js?v=1.0"></script>
+  <script src="src/branchView.js?v=1.0"></script>
   <script src="src/planogram3d.js?v=topview-model-assets-2"></script>
   <script src="src/export.js?v=topview-export-2"></script>
   <script src="src/topview.js?v=topview-smooth-rotate"></script>

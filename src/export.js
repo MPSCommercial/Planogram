@@ -140,19 +140,73 @@ function importJSON(file) {
 }
 
 /**
+ * Snapshot the current board (spec + products + placements) as a plain object
+ */
+function buildBoardSnapshot() {
+  return {
+    planogram: spec,
+    products: products,
+    placements: shelfData,
+  };
+}
+
+/**
  * Save state to localStorage
  */
 function saveState() {
   try {
-    const data = {
-      planogram: spec,
-      products: products,
-      placements: shelfData,
-    };
-    localStorage.setItem('planogram_studio_state', JSON.stringify(data));
+    localStorage.setItem('planogram_studio_state', JSON.stringify(buildBoardSnapshot()));
   } catch (e) {
     // localStorage might be full — silently fail
   }
+}
+
+/**
+ * Apply a board snapshot (as built by buildBoardSnapshot) to the form + canvas.
+ * Shared by loadState() and branches.js's loadBranch().
+ */
+function applyBoardData(data) {
+  if (!data || !data.planogram || !data.planogram.segments) return false;
+
+  const s = data.planogram;
+  $('planogramName').value = s.name || '';
+  $('numSegments').value = s.segments || 3;
+  $('shelvesPerSegment').value = s.shelves || 6;
+  $('overallWidth').value = s.width || 360;
+  $('overallHeight').value = s.height || 220;
+  $('shelfDepth').value = s.depth || 48;
+  $('gapSize').value = s.gap || 28;
+  $('shelfThickness').value = s.shelfThickness || 3;
+  $('backColor').value = s.backColor || '#3a3a3a';
+  $('shelfColor').value = s.shelfColor || '#f4f4f0';
+  $('hasBackPanel').checked = s.hasBackPanel !== false;
+  $('hasSidePanel').checked = s.hasSidePanel !== false;
+  $('hasSegmentDivider').checked = s.hasDivider !== false;
+
+  // Restore custom shelf board positions for the next buildShelf
+  pendingShelfHeights = Array.isArray(s.shelfHeights) ? s.shelfHeights : null;
+  pendingSegmentShelfHeights = Array.isArray(s.segmentShelfHeights) ? s.segmentShelfHeights : null;
+
+  if (typeof renderSegmentWidthInputs === 'function') {
+    renderSegmentWidthInputs(s.segmentWidths);
+  }
+
+  if (data.products) {
+    products = data.products;
+    applyProductLibraryFilter();
+  }
+
+  buildShelf();
+
+  if (data.placements) {
+    shelfData = normalizePlacements(data.placements);
+    renderShelfFill();
+  }
+
+  renderProductList();
+  updateLegend();
+  updateSummary();
+  return true;
 }
 
 /**
@@ -162,49 +216,7 @@ function loadState() {
   try {
     const raw = localStorage.getItem('planogram_studio_state');
     if (!raw) return false;
-    const data = JSON.parse(raw);
-
-    if (data.planogram && data.planogram.segments) {
-      const s = data.planogram;
-      $('planogramName').value = s.name || '';
-      $('numSegments').value = s.segments || 3;
-      $('shelvesPerSegment').value = s.shelves || 6;
-      $('overallWidth').value = s.width || 360;
-      $('overallHeight').value = s.height || 220;
-      $('shelfDepth').value = s.depth || 48;
-      $('gapSize').value = s.gap || 28;
-      $('shelfThickness').value = s.shelfThickness || 3;
-      $('backColor').value = s.backColor || '#3a3a3a';
-      $('shelfColor').value = s.shelfColor || '#f4f4f0';
-      $('hasBackPanel').checked = s.hasBackPanel !== false;
-      $('hasSidePanel').checked = s.hasSidePanel !== false;
-      $('hasSegmentDivider').checked = s.hasDivider !== false;
-
-      // Restore custom shelf board positions for the next buildShelf
-      pendingShelfHeights = Array.isArray(s.shelfHeights) ? s.shelfHeights : null;
-      pendingSegmentShelfHeights = Array.isArray(s.segmentShelfHeights) ? s.segmentShelfHeights : null;
-
-      if (typeof renderSegmentWidthInputs === 'function') {
-        renderSegmentWidthInputs(s.segmentWidths);
-      }
-
-      if (data.products) {
-        products = data.products;
-        applyProductLibraryFilter();
-      }
-
-      buildShelf();
-
-      if (data.placements) {
-        shelfData = normalizePlacements(data.placements);
-        renderShelfFill();
-      }
-
-      renderProductList();
-      updateLegend();
-      updateSummary();
-      return true;
-    }
+    return applyBoardData(JSON.parse(raw));
   } catch (e) {
     // Corrupted state — ignore
   }
