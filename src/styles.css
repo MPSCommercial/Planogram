@@ -998,6 +998,13 @@ input[type="checkbox"] {
   animation: boardIn .22s ease both;
 }
 
+/* Keep html2canvas from capturing the first, transparent animation frame. */
+.planogram-board.export-capture,
+.planogram-board.export-capture * {
+  animation: none !important;
+  transition: none !important;
+}
+
 /* Flat artwork for empty-template PNG export. */
 .planogram-board.export-flat,
 .planogram-board.export-flat * {

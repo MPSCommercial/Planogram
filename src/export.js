@@ -42,6 +42,7 @@ function doExport(options = {}) {
         allowTaint: false,
         onclone: (doc) => {
           const clonedArea = doc.querySelector('#exportArea');
+          if (clonedArea) clonedArea.classList.add('export-capture');
           if (options.flat && clonedArea) clonedArea.classList.add('export-flat');
           if (!clonedArea) return;
           clonedArea.querySelectorAll('img').forEach((img) => {
