@@ -153,6 +153,9 @@ function renderTemplateOptions(selectedId = '') {
   const delBtn = $('btnDeleteTemplate');
   if (delBtn) delBtn.disabled = !select.value;
 
+  const exportBtn = $('btnExportTemplate');
+  if (exportBtn) exportBtn.disabled = !select.value;
+
   const restoreBtn = $('btnRestoreTemplates');
   if (restoreBtn) restoreBtn.style.display = loadHiddenBuiltins().length ? '' : 'none';
 }

@@ -36,6 +36,7 @@
   // ─── Shelf template bindings ───
   renderTemplateOptions();
   $('btnApplyTemplate').addEventListener('click', applySelectedTemplate);
+  $('btnExportTemplate').addEventListener('click', exportSelectedTemplatePNG);
   $('btnSaveTemplate').addEventListener('click', saveCurrentAsTemplate);
   $('btnDeleteTemplate').addEventListener('click', deleteSelectedTemplate);
   $('btnRestoreTemplates').addEventListener('click', restoreBuiltinTemplates);

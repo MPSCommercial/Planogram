@@ -7,18 +7,21 @@
  */
 function exportPNG() {
   showToast('กำลัง export...');
-  if (window.html2canvas) {
-    doExport();
-    return;
-  }
-  const script = document.createElement('script');
-  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-  script.onload = doExport;
-  script.onerror = () => showToast('โหลดตัว export ไม่สำเร็จ');
-  document.head.appendChild(script);
+  loadHtml2Canvas().then(() => doExport()).catch(() => showToast('โหลดตัว export ไม่สำเร็จ'));
 }
 
-function doExport() {
+function loadHtml2Canvas() {
+  if (window.html2canvas) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    script.onload = resolve;
+    script.onerror = reject;
+    document.head.appendChild(script);
+  });
+}
+
+function doExport(options = {}) {
   const area = $('exportArea');
 
   // Inline remote product images as data URLs first — html2canvas drops
@@ -29,7 +32,7 @@ function doExport() {
       .filter((src) => src && !src.startsWith('data:'))
   )];
 
-  Promise.all(urls.map((src) => imageToDataURL(src).then((data) => [src, data])))
+  return Promise.all(urls.map((src) => imageToDataURL(src).then((data) => [src, data])))
     .then((pairs) => {
       const inlined = new Map(pairs.filter(([, data]) => data));
       return html2canvas(area, {
@@ -38,7 +41,10 @@ function doExport() {
         useCORS: true,
         allowTaint: false,
         onclone: (doc) => {
-          doc.querySelectorAll('#exportArea img').forEach((img) => {
+          const clonedArea = doc.querySelector('#exportArea');
+          if (options.flat && clonedArea) clonedArea.classList.add('export-flat');
+          if (!clonedArea) return;
+          clonedArea.querySelectorAll('img').forEach((img) => {
             const data = inlined.get(img.getAttribute('src'));
             if (data) img.src = data;
           });
@@ -46,16 +52,59 @@ function doExport() {
       });
     })
     .then((canvas) => {
-      const link = document.createElement('a');
-      const name = (spec.name || 'planogram').replace(/\s+/g, '_');
-      link.download = `${name}_${new Date().toISOString().slice(0, 10)}.png`;
-      link.href = canvas.toDataURL('image/png');
-      link.click();
-      showToast('Export PNG สำเร็จ');
+      const name = (options.name || spec.name || 'planogram').replace(/\s+/g, '_');
+      return new Promise((resolve, reject) => {
+        canvas.toBlob((blob) => {
+          if (!blob || !blob.size) {
+            reject(new Error('Empty PNG'));
+            return;
+          }
+          const link = document.createElement('a');
+          const url = URL.createObjectURL(blob);
+          link.download = `${name}_${new Date().toISOString().slice(0, 10)}.png`;
+          link.href = url;
+          link.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          showToast('Export PNG สำเร็จ');
+          resolve(true);
+        }, 'image/png');
+      });
     })
     .catch(() => {
       showToast('Export ไม่สำเร็จ');
+      return false;
     });
+}
+
+/**
+ * Export the selected shelf template as an empty, flat PNG without changing
+ * the user's current board after the export finishes.
+ */
+function exportSelectedTemplatePNG() {
+  const tpl = findTemplate($('templateSelect').value);
+  if (!tpl) {
+    showToast('เลือกเทมเพลตก่อน');
+    return;
+  }
+
+  showToast('กำลัง export เชลฟ์เปล่า...');
+  loadHtml2Canvas().then(() => {
+    const currentBoard = JSON.parse(JSON.stringify(buildBoardSnapshot()));
+    const savedState = localStorage.getItem('planogram_studio_state');
+
+    applyBoardData({ planogram: { ...tpl.spec, name: tpl.name }, products, placements: {} });
+    shelfData = {};
+    renderShelfFill();
+    updateSummary();
+
+    return doExport({ flat: true, name: `${tpl.name}_empty` })
+      .then((success) => {
+        applyBoardData(currentBoard);
+        if (savedState === null) localStorage.removeItem('planogram_studio_state');
+        else localStorage.setItem('planogram_studio_state', savedState);
+        showToast(success ? 'Export เชลฟ์เปล่าสำเร็จ' : 'Export ไม่สำเร็จ');
+      });
+  }).catch(() => showToast('โหลดตัว export ไม่สำเร็จ'));
 }
 
 /**

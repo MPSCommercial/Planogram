@@ -7,16 +7,20 @@
 
 ## ⚡ NOW
 
-- **Status**: พัฒนาระบบวิเคราะห์ความจุแนวลึกสินค้าชิ้นใหญ่, ปรับปรุง UX ปุ่มลบ, และแก้ไขปัญหาข้อความทับซ้อนในรูปภาพส่งออก (Export PNG) ของแปลน Top View 2D โดยการปรับปรุงโครงสร้าง CSS ดั้งเดิมโดยตรง (Source-level styling) เพื่อแก้ไขข้อจำกัดทางเทคนิคของไลบรารี html2canvas ที่ไม่เข้าใจคำสั่ง CSS Override (top: auto) ทำให้ข้อความแยกมุมกัน 3 ทิศทางอย่างคมชัดและถูกต้อง 100% ในทุกช่องทางการแสดงผลเรียบร้อยแล้ว
+- **Status**: เพิ่มปุ่ม `Export เชลฟ์เปล่า PNG` ใน Shelf Templates และแก้ exporter ให้สร้างไฟล์ PNG binary ผ่าน `canvas.toBlob()` พร้อมตรวจไฟล์ไม่ว่างก่อนดาวน์โหลด; ส่งออกแบบ flat ไม่มีเงาและคืน canvas/localStorage เดิม
 - **Branch**: main
-- **Deploy**: Cloudflare Pages & Surge (http://planogram-mpsynergy.surge.sh) — deployed
+- **Deploy**: ยังไม่ได้ deploy งานรอบนี้
 - **Blocker**: None
-- **Next**: ทดสอบการจัดวางและการส่งออกรูปภาพ PNG ของแปลน Top View 2D หลังจากปรับปรุง CSS ดั้งเดิม และรายงานความสำเร็จแก่ผู้ใช้
-- **Files**: `index.html`, `src/products.js`, `src/planogram.js`, `src/export.js`, `src/topview.js`, `src/styles.css`, `state.md`
+- **Next**: ผู้ใช้ refresh localhost แล้วลอง `Export เชลฟ์เปล่า PNG` อีกครั้ง
+- **Files**: `index.html`, `src/app.js`, `src/templates.js`, `src/export.js`, `src/styles.css`, `state.md`
 
 ---
 
 ## 📜 LOG
+
+### 🗓️ 2026-08-05
+- ✅ Previous NOW: พัฒนาระบบวิเคราะห์ความจุแนวลึกสินค้าชิ้นใหญ่, ปรับปรุง UX ปุ่มลบ และแก้ข้อความทับซ้อนใน Export PNG ของ Top View 2D
+- Files: `index.html`, `src/products.js`, `src/planogram.js`, `src/export.js`, `src/topview.js`, `src/styles.css`, `state.md`
 
 ### 🗓️ 2026-06-26
 - ✅ Previous NOW: แก้ 3D Top View ให้ Herman Miller Nevi Desk และ Sayl Chair ไม่ตกไปเป็นกล่อง generic แล้ว โดยเพิ่มโมเดล procedural เฉพาะรุ่นและปรับ Office Workspace template ให้ใช้ Nevi/Sayl preset เมื่อมี

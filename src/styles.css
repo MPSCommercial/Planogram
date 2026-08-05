@@ -998,6 +998,31 @@ input[type="checkbox"] {
   animation: boardIn .22s ease both;
 }
 
+/* Flat artwork for empty-template PNG export. */
+.planogram-board.export-flat,
+.planogram-board.export-flat * {
+  box-shadow: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+.planogram-board.export-flat {
+  background: #fff;
+  border-color: #d8d8d8;
+  border-radius: 0;
+}
+.planogram-board.export-flat .shelf-row::after {
+  background: var(--shelf-surface);
+  box-shadow: none;
+}
+.planogram-board.export-flat .gondola-outer.with-sides::before,
+.planogram-board.export-flat .gondola-outer.with-sides::after,
+.planogram-board.export-flat .segment-divider {
+  background: #8e877c;
+}
+.planogram-board.export-flat .gondola-outer.no-back .segment-inner {
+  background: #efe8dc;
+}
+
 .board-head {
   display: flex;
   align-items: flex-end;
