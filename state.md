@@ -7,18 +7,20 @@
 
 ## ⚡ NOW
 
-- **Status**: เพิ่มปุ่ม `Export เชลฟ์เปล่า PNG` ใน Shelf Templates และแก้ exporter ให้สร้างไฟล์ PNG binary ผ่าน `canvas.toBlob()` พร้อมตรวจไฟล์ไม่ว่างก่อนดาวน์โหลด; ส่งออกแบบ flat ไม่มีเงาและคืน canvas/localStorage เดิม
+- **Status**: แก้ PNG export สีซีด โดยปิด animation/transition ใน DOM clone ก่อน `html2canvas` จับภาพ เพื่อไม่ให้ติดเฟรมเริ่มต้นที่ `opacity: 0`
 - **Branch**: main
-- **Deploy**: ยังไม่ได้ deploy งานรอบนี้
+- **Deploy**: Surge production สำเร็จที่ `https://planogram-mpsynergy.surge.sh` และตรวจ live asset `export-contrast` / `export-capture` แล้ว
 - **Blocker**: None
-- **Next**: ผู้ใช้ refresh localhost แล้วลอง `Export เชลฟ์เปล่า PNG` อีกครั้ง
-- **Files**: `index.html`, `src/app.js`, `src/templates.js`, `src/export.js`, `src/styles.css`, `state.md`
+- **Next**: ผู้ใช้ลอง export PNG จาก production เพื่อตรวจสีภาพตามงานจริง
+- **Files**: `index.html`, `src/export.js`, `src/styles.css`, `state.md`
 
 ---
 
 ## 📜 LOG
 
 ### 🗓️ 2026-08-05
+- ✅ Previous NOW: เพิ่มปุ่ม `Export เชลฟ์เปล่า PNG` ใน Shelf Templates และแก้ exporter ให้สร้างไฟล์ PNG binary ผ่าน `canvas.toBlob()` พร้อมตรวจไฟล์ไม่ว่างก่อนดาวน์โหลด; ส่งออกแบบ flat ไม่มีเงาและคืน canvas/localStorage เดิม
+- Files: `index.html`, `src/app.js`, `src/templates.js`, `src/export.js`, `src/styles.css`, `state.md`
 - ✅ Previous NOW: พัฒนาระบบวิเคราะห์ความจุแนวลึกสินค้าชิ้นใหญ่, ปรับปรุง UX ปุ่มลบ และแก้ข้อความทับซ้อนใน Export PNG ของ Top View 2D
 - Files: `index.html`, `src/products.js`, `src/planogram.js`, `src/export.js`, `src/topview.js`, `src/styles.css`, `state.md`
 
