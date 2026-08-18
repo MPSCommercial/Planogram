@@ -141,7 +141,7 @@ function renderProductList() {
     card.draggable = true;
 
     const thumb = product.image
-      ? `<div class="thumb"><img src="${product.image}" alt="" draggable="false"></div>`
+      ? `<div class="thumb"><img src="${esc(product.image)}" alt="" draggable="false"></div>`
       : `<div class="thumb" style="background:${product.color};color:${contrast(product.color)}" draggable="false">${esc(initials(product.name))}</div>`;
 
     const priceText = product.price ? `฿${product.price}` : '';
@@ -162,11 +162,13 @@ function renderProductList() {
         <div class="product-meta">${esc(meta)}</div>
       </div>
       <div class="card-actions">
-        <button class="btn btn-edit" onclick="openEditModal('${product.id}', event)">แก้ไข</button>
-        <button class="btn btn-danger" onclick="deleteProduct('${product.id}', event)">ลบ</button>
+        <button class="btn btn-edit">แก้ไข</button>
+        <button class="btn btn-danger">ลบ</button>
       </div>
     `;
 
+    card.querySelector('.btn-edit').addEventListener('click', (e) => openEditModal(product.id, e));
+    card.querySelector('.btn-danger').addEventListener('click', (e) => deleteProduct(product.id, e));
     card.addEventListener('click', () => selectProduct(product.id));
     card.addEventListener('dragstart', (e) => {
       e.dataTransfer.setData('text/plain', product.id);

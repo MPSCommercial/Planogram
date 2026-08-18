@@ -397,10 +397,10 @@ function updateReportTable() {
     let no = 1;
     totalSKUsMap.forEach((agg) => {
       const p = agg.product;
-      const imgHtml = p.image 
-        ? `<img src="${p.image}" class="report-img" alt="${p.name}">` 
+      const imgHtml = p.image
+        ? `<img src="${escapeHtml(p.image)}" class="report-img" alt="${escapeHtml(p.name)}">`
         : `<div class="report-img" style="background:${p.color || '#ccc'}; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #fff; font-weight: 700;">No Pic</div>`;
-      
+
       // Calculate DOS
       const salesRate = parseFloat(p.salesRate) || 0;
       const dosVal = (salesRate > 0) ? agg.totalQty / salesRate : null;
@@ -422,7 +422,7 @@ function updateReportTable() {
         <td style="font-weight: 500; color: var(--ink);">${escapeHtml(p.brand || '-')}</td>
         <td>
           <div style="font-weight: 600; color: var(--ink);">${escapeHtml(p.name)}</div>
-          <div style="font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); margin-top: 2px;">ID: ${p.id}</div>
+          <div style="font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); margin-top: 2px;">ID: ${escapeHtml(String(p.id))}</div>
         </td>
         <td><span class="badge" style="background: var(--surface-2); color: var(--ink); font-weight: 500;">${escapeHtml(p.category)}</span></td>
         <td style="text-align: center; font-weight: 600; color: var(--ink);">${agg.placementsCount}</td>
@@ -464,8 +464,8 @@ function updateReportTable() {
 
     placedProductsList.forEach((item, idx) => {
       const p = item.product;
-      const imgHtml = p.image 
-        ? `<img src="${p.image}" class="report-img" alt="${p.name}">` 
+      const imgHtml = p.image
+        ? `<img src="${escapeHtml(p.image)}" class="report-img" alt="${escapeHtml(p.name)}">`
         : `<div class="report-img" style="background:${p.color || '#ccc'}; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #fff; font-weight: 700;">No Pic</div>`;
 
       const priceVal = parseFloat(p.price) || 0;
@@ -481,7 +481,7 @@ function updateReportTable() {
         </td>
         <td>
           <div style="font-weight: 600; color: var(--ink);">${escapeHtml(p.name)}</div>
-          <div style="font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); margin-top: 2px;">ID: ${p.id}</div>
+          <div style="font-size: 0.72rem; color: var(--muted); font-family: var(--font-mono); margin-top: 2px;">ID: ${escapeHtml(String(p.id))}</div>
         </td>
         <td><span class="badge" style="background: var(--surface-2); color: var(--ink); font-weight: 500;">${escapeHtml(p.category)}</span></td>
         <td style="text-align: center; font-weight: 600; color: var(--ink);">${item.facing}</td>
