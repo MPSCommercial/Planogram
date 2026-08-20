@@ -25,6 +25,9 @@ import tempfile
 import numpy as np
 from PIL import Image
 
+# 50MP phone photos are ordinary here, and these are the user's own files
+Image.MAX_IMAGE_PIXELS = 300_000_000
+
 ALPHA_CUTOFF = 128
 # A quad that the subject does not fill is not a flat product face (chair mats,
 # monitor arms, cables) — straightening those would bend them, so we only trim.
@@ -32,6 +35,21 @@ MIN_QUAD_FILL = 0.86
 MAX_QUAD_FILL = 1.15  # real boxes overshoot a little; a circle sits at 1.57
 MAX_STRETCH = 1.7
 TOOLS = pathlib.Path(__file__).resolve().parent
+
+
+def already_cut(path):
+    """True when the file arrives with its background already erased.
+
+    A camera photo saved as RGBA still has every alpha at 255, so any pixel
+    below that means someone has cut the background out already.
+    """
+    try:
+        image = Image.open(path)
+    except OSError:
+        return False
+    if image.mode not in ('RGBA', 'LA'):
+        return False
+    return image.getchannel('A').getextrema()[0] < 250
 
 
 def cutout(photos, workdir):
@@ -110,12 +128,24 @@ def straighten(image, mask, aspect=None):
         return image, f'trim only (skew {stretch:.1f}x — reshoot straight on)'
 
     if aspect:
-        height = max(8, round(width / aspect))
+        # Trust the sheet only when it roughly agrees with the photo: a box shot
+        # lying on its long edge does not match the upright width:height and
+        # forcing it would squash the picture into a sliver.
+        natural = width / height
+        if 0.5 <= aspect / natural <= 2:
+            height = max(8, round(width / aspect))
+        else:
+            note_aspect = ' (sheet ratio ignored, does not match the photo)'
+            return _finish(image, quad, width, height, stretch, note_aspect)
 
+    return _finish(image, quad, width, height, stretch, '')
+
+
+def _finish(image, quad, width, height, stretch, extra):
     target = np.array([[0, 0], [width, 0], [width, height], [0, height]], dtype=float)
     coeffs = perspective_coeffs(target, quad)
     warped = image.transform((width, height), Image.PERSPECTIVE, coeffs, Image.BICUBIC)
-    return warped, f'straightened ({stretch:.2f}x skew removed)'
+    return warped, f'straightened ({stretch:.2f}x skew removed){extra}'
 
 
 def trim(image):
@@ -203,9 +233,16 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
     names = load_map(args.name_map)
 
+    ready = [p for p in args.photos if already_cut(p)]
+    raw = [p for p in args.photos if p not in ready]
+
     with tempfile.TemporaryDirectory() as workdir:
-        print(f'cutting out {len(args.photos)} photo(s)...')
-        produced = cutout(args.photos, workdir)
+        produced = {p.name: p for p in ready}
+        if ready:
+            print(f'{len(ready)} photo(s) already cut out — straightening only')
+        if raw:
+            print(f'cutting out {len(raw)} photo(s)...')
+            produced.update(cutout(raw, workdir))
         for photo in args.photos:
             cut_path = produced.get(photo.name)
             if not cut_path:
