@@ -43,6 +43,7 @@ function syncProductsFromSheet() {
       products = importedProducts;
       selectedProductId = products[0].id;
       pruneMissingPlacements();
+      attachLocalPackShots(products);
       renderProductList();
       renderShelfFill();
       updateLegend();
@@ -237,6 +238,9 @@ function refreshDimensionsFromSheet() {
     .then((rows) => {
       rememberSheetDimensions(rows.map(mapSheetRowToProduct).filter(Boolean));
       const changed = applySheetDimensions(products);
+
+      if (changed) showToast(`อัปเดตขนาดสินค้าใหม่ ${changed} SKU จาก Google Sheet`);
+      attachLocalPackShots(products);
       if (!changed) return;
 
       renderProductList();
@@ -245,11 +249,54 @@ function refreshDimensionsFromSheet() {
       updateSummary();
       saveState();
       if (window.Planogram3D && Planogram3D.isOpen()) Planogram3D.refresh();
-      showToast(`อัปเดตขนาดสินค้าใหม่ ${changed} SKU จาก Google Sheet`);
     })
     .catch((error) => {
       console.warn('Dimension refresh skipped:', error);
     });
+}
+
+/* ═══ Local pack shots: assets/products/<ODOO>.png ═══ */
+
+const PACK_SHOT_DIR = 'assets/products';
+
+/**
+ * Products with no Image URL in the sheet fall back to a local pack shot named
+ * after the ODOO code. The file is probed first so a missing one keeps the
+ * coloured placeholder instead of showing a broken-image icon.
+ */
+function attachLocalPackShots(list) {
+  const pending = (list || [])
+    .filter((product) => !product.image && product.odoo)
+    .map((product) =>
+      probeImage(`${PACK_SHOT_DIR}/${encodeURIComponent(product.odoo)}.png`).then((url) => {
+        if (url) product.image = url;
+        return url;
+      })
+    );
+
+  if (!pending.length) return Promise.resolve(0);
+
+  return Promise.all(pending).then((results) => {
+    const found = results.filter(Boolean).length;
+    if (found) {
+      renderProductList();
+      renderShelfFill();
+      saveState();
+      if (window.Planogram3D && Planogram3D.isOpen()) Planogram3D.refresh();
+    }
+    return found;
+  });
+}
+
+// ponytail: one probe per SKU per sync; if the folder grows past a few hundred
+// files, ship a generated manifest.json instead of probing.
+function probeImage(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(url);
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
 }
 
 function applyProductLibraryFilter() {

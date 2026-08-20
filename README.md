@@ -49,6 +49,25 @@ src/
   styles.css        # สไตล์ชีททั้งหมด ปรับแต่งหน้าจอ Figma-like UI
 ```
 
+## Product Pack Shots
+
+รูปสินค้าใช้ไฟล์ในโฟลเดอร์ `assets/products/` ตั้งชื่อตามรหัส ODOO (`A10018.png`)
+เว็บจะหยิบมาใช้เองเมื่อคอลัมน์ `Image URL` ใน Sheet ว่าง — ไม่มีไฟล์ก็ตกกลับเป็นบล็อกสีตามเดิม
+
+แปลงรูปถ่ายมือถือเป็นแพ็คช็อต (ลบพื้นหลัง + ดัดมุมที่ก้ม/เงยให้ตรง + ย่อขนาด):
+
+```bash
+swiftc -O tools/cutout.swift -o tools/cutout        # ครั้งแรกครั้งเดียว (เร็วขึ้นมาก)
+python3 tools/packshot.py -o assets/products --map names.csv ~/Photos/*.jpg
+python3 tools/packshot.py --selftest                # ตรวจว่าตัวดัดมุมยังทำงานถูก
+```
+
+`names.csv` = `ชื่อไฟล์รูป,ODOO[,Width_cm,Height_cm]` เช่น `IMG_7340.jpeg,A10018,12.5,8`
+ถ้าใส่ขนาดจาก Sheet มาด้วย ภาพที่ดัดแล้วจะได้สัดส่วนกว้าง:สูงตรงตามของจริง
+
+สินค้าที่ไม่ใช่ผิวหน้าแบน (แผ่นรองเก้าอี้ ขาแขวนจอ ล้อ) ตัวดัดมุมจะข้ามให้อัตโนมัติ
+แล้วรายงานว่า `trim only` — ตัวนั้นครอปกับลบพื้นหลังอย่างเดียว
+
 ## Google Sheets Sync
 
 ดึงข้อมูลสินค้าได้จาก Google Sheets ที่เปิดสิทธิ์แชร์ (View-Only) โดยระบบจะอ่านค่าผ่าน CSV export 
