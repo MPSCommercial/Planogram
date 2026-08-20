@@ -6,17 +6,22 @@
 ---
 
 ## ⚡ NOW
-- **Status**: ตั้งค่า default shelf spec ในหน้าเปิดแอปให้เป็น "เชลฟ์ส้ม" (อ้างอิงสเปค ERGOTREND 950×350×1420mm) — 1 segment, 3 shelves, สีส้ม `#c1571f` ทั้ง back panel และ shelf; ที่ปรับได้หลังจากนี้ยังเหมือนเดิมคือจำนวนชั้นวาง (`shelvesPerSegment`) และความสูงต่อชั้น (drag บน canvas หรือพิมพ์ cm)
-- **Branch**: main
-- **Deploy**: Surge production สำเร็จที่ `https://planogram-mpsynergy.surge.sh` ตรวจ live แล้วทั้ง `src/sheets.js?v=dims-sync` และ `assets/products/*.png` (`photos-raw/` ถูก `.surgeignore` กันไว้ 404) — ยังไม่ได้ deploy default shelf spec ใหม่นี้
+- **Status**: ย้าย production hosting จาก Surge ไป **GitHub Pages** เพราะ Surge deploy fail ซ้ำ ๆ ทุกครั้ง (`Aborted`/crash) ทั้งจากเครื่อง user เองและ session นี้ ลองทุกทาง (เปลี่ยน Node version, `surge@latest`, รอ 1 ชม. เผื่อ rate-limit) ก็ยังไม่ผ่าน — สรุปว่าเป็นปัญหาฝั่ง Surge/บัญชี ไม่ใช่โค้ด จึงเปลี่ยน repo เป็น **public** แล้วเปิด GitHub Pages (จำเป็นเพราะ private repo ใช้ Pages ไม่ได้บน Free plan) auto-deploy จาก branch `main` ทุกครั้งที่ push
+- **Live URL ใหม่**: `https://mpscommercial.github.io/Planogram/` (ตรวจแล้ว live, โหลดรูป/สคริปต์ครบ)
+- **Surge เดิม**: `https://planogram-mpsynergy.surge.sh` ปล่อยไว้เฉย ๆ ไม่ลบ (ยังพังอยู่ ไม่ได้ debug เพิ่ม)
+- **ฟีเจอร์ที่เพิ่มรอบนี้**: default shelf spec เปลี่ยนเป็น "เชลฟ์ส้ม" (สเปค ERGOTREND 950×350×1420mm, 1 segment, 3 shelves, สีส้ม `#c1571f`) + built-in template เลือกได้จาก dropdown โดยไม่ทับ localStorage เดิมของ user; แก้เงาทแยงบนแผ่นหลังเชลฟ์แคบ/ลึกใน 3D view และทำฐาน kick plate ให้เป็นสีเดียวกับเชลฟ์; เพิ่ม summary card ประมาณจำนวนสินค้าที่เชลฟ์รับได้เต็ม; เพิ่มปุ่ม Export "ตัวโชว์-สต็อก.xlsx" ตามฟอร์แมต `assets/Template/Template.xlsx` ของ Ergotrend; Add Product panel และ Shelf Specification panel หุบเป็น default
+- **Branch**: main (commit `cbd3c79`, pushed)
 - **Blocker**: รอผู้ใช้ยืนยันสีของ Curble Grand (IMG_7302 → A10217), LAPTOP PRO (IMG_7309 → A10228) และรุ่น FOOT REST (IMG_7305 → A10020)
-- **Next**: ถ่ายรูปเพิ่มอีก 30 SKU หมวด Accessories ที่ยังไม่มีรูป แล้วรัน `python3 tools/packshot.py -o assets/products --map names.csv photos-raw/*.jpeg`
-- **Files**: `index.html`, `src/sheets.js`, `src/utils.js`, `src/products.js`, `src/planogram.js`, `src/export.js`, `src/app.js`, `tools/packshot.py`, `tools/cutout.swift`, `assets/products/`, `state.md`
+- **Next**: ถามผู้ใช้ว่าจะตั้ง custom domain (เช่น `planogram.mpsynergy.co.th`) ชี้มาที่ GitHub Pages ไหม; ถ่ายรูปเพิ่มอีก 30 SKU หมวด Accessories ที่ยังไม่มีรูป แล้วรัน `python3 tools/packshot.py -o assets/products --map names.csv photos-raw/*.jpeg`
+- **Files**: `index.html`, `src/app.js`, `src/export.js`, `src/planogram.js`, `src/planogram3d.js`, `src/templates.js`, `assets/Template/Template.xlsx`, `state.md`
 
 ---
 
 ## 📜 LOG
 
+### 🗓️ 2026-08-20
+- ✅ Previous NOW: ตั้งค่า default shelf spec ในหน้าเปิดแอปให้เป็น "เชลฟ์ส้ม" (อ้างอิงสเปค ERGOTREND 950×350×1420mm) — 1 segment, 3 shelves, สีส้ม `#c1571f` ทั้ง back panel และ shelf; ที่ปรับได้หลังจากนี้ยังเหมือนเดิมคือจำนวนชั้นวาง (`shelvesPerSegment`) และความสูงต่อชั้น (drag บน canvas หรือพิมพ์ cm)
+- Files: `index.html`, `src/sheets.js`, `src/utils.js`, `src/products.js`, `src/planogram.js`, `src/export.js`, `src/app.js`, `tools/packshot.py`, `tools/cutout.swift`, `assets/products/`, `state.md`
 - ✅ Previous NOW: แก้ PNG export สีซีด โดยปิด animation/transition ใน DOM clone ก่อน `html2canvas` จับภาพ พร้อม deploy Surge แล้ว
 
 ### 🗓️ 2026-08-05
