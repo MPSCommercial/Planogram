@@ -39,7 +39,6 @@
   $('btnExportTemplate').addEventListener('click', exportSelectedTemplatePNG);
   $('btnSaveTemplate').addEventListener('click', saveCurrentAsTemplate);
   $('btnDeleteTemplate').addEventListener('click', deleteSelectedTemplate);
-  $('btnRestoreTemplates').addEventListener('click', restoreBuiltinTemplates);
   $('templateSelect').addEventListener('change', () => renderTemplateOptions($('templateSelect').value));
 
   // ─── Branch bindings ───

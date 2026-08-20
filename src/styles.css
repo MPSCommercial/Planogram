@@ -279,16 +279,6 @@ body.app-ready .app-shell {
   cursor: not-allowed;
   transform: none;
 }
-.template-restore {
-  align-self: flex-start;
-  font-size: .72rem;
-  font-weight: 600;
-  color: var(--ink-2);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-  padding: 2px 0;
-}
-.template-restore:hover { color: var(--accent); }
 
 /* ─── Branch view panel ─── */
 .branch-view-loading,
