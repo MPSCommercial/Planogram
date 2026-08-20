@@ -331,9 +331,8 @@ function updateReportTable() {
 
       const pFacing = Math.max(1, parseInt(product.facing) || 1);
       const pStack = Math.max(1, parseInt(product.stack) || 1);
-      const dims = getProductDimensions(product, spec.depth || 48);
-      const rows = Math.max(1, Math.floor((spec.depth || 48) / dims.depth));
-      const itemWidth = dims.width;
+      const rows = depthRows(product, spec.depth || 48).used;
+      const itemWidth = getProductDimensions(product, spec.depth || 48).width;
       const itemQty = pFacing * pStack * rows;
       
       totalQty += itemQty;
@@ -516,8 +515,7 @@ function exportReportCSV() {
         if (!product) return;
         const pFacing = Math.max(1, parseInt(product.facing) || 1);
         const pStack = Math.max(1, parseInt(product.stack) || 1);
-        const dims = getProductDimensions(product, spec.depth || 48);
-        const rows = Math.max(1, Math.floor((spec.depth || 48) / dims.depth));
+        const rows = depthRows(product, spec.depth || 48).used;
         const itemQty = pFacing * pStack * rows;
 
         if (!totalSKUsMap.has(pid)) {
@@ -556,8 +554,7 @@ function exportReportCSV() {
 
         const pFacing = Math.max(1, parseInt(product.facing) || 1);
         const pStack = Math.max(1, parseInt(product.stack) || 1);
-        const dims = getProductDimensions(product, spec.depth || 48);
-        const rows = Math.max(1, Math.floor((spec.depth || 48) / dims.depth));
+        const rows = depthRows(product, spec.depth || 48).used;
         const itemQty = pFacing * pStack * rows;
 
         placedProductsList.push({

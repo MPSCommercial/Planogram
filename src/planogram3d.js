@@ -463,15 +463,18 @@
           const d = dims.depth;
 
           const stack = Math.max(1, p.stack || 1);
+          const rows = depthRows(p, D).used;
           const base = makeProduct(p, w, h, d);
           for (let k = 0; k < stack; k++) {
-            const mesh = k === 0 ? base : base.clone();
-            mesh.position.set(
-              cursorX + w / 2,
-              surfaceY + thick + h / 2 + k * h,
-              D / 2 - d / 2 - frontPad
-            );
-            contentGroup.add(mesh);
+            for (let r = 0; r < rows; r++) {
+              const mesh = (k === 0 && r === 0) ? base : base.clone();
+              mesh.position.set(
+                cursorX + w / 2,
+                surfaceY + thick + h / 2 + k * h,
+                D / 2 - d / 2 - frontPad - r * d
+              );
+              contentGroup.add(mesh);
+            }
           }
           cursorX += w + 0.6; // tiny gap between SKUs
         });

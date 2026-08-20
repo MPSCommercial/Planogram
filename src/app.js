@@ -107,6 +107,8 @@
   // ─── Mini Inspector bindings ───
   $('btnInspectDec').addEventListener('click', () => adjustInspectFacing(-1));
   $('btnInspectInc').addEventListener('click', () => adjustInspectFacing(1));
+  $('btnInspectRowsDec').addEventListener('click', () => adjustInspectRows(-1));
+  $('btnInspectRowsInc').addEventListener('click', () => adjustInspectRows(1));
   $('btnInspectStackDec').addEventListener('click', () => adjustInspectStack(-1));
   $('btnInspectStackInc').addEventListener('click', () => adjustInspectStack(1));
   $('btnInspectDel').addEventListener('click', deleteInspectPlacement);

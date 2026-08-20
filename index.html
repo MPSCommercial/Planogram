@@ -598,6 +598,12 @@
         <button class="btn-inspect-action" id="btnInspectInc" type="button" title="เพิ่ม Facing">+</button>
       </div>
       <div class="inspector-controls">
+        <span class="inspector-ctl-label">แถวลึก</span>
+        <button class="btn-inspect-action" id="btnInspectRowsDec" type="button" title="ลดจำนวนชิ้นที่วางเรียงเข้าไปในแนวลึก">-</button>
+        <span class="inspector-facing-val" id="inspectorRowsCtlVal">1</span>
+        <button class="btn-inspect-action" id="btnInspectRowsInc" type="button" title="เพิ่มจำนวนชิ้นที่วางเรียงเข้าไปในแนวลึก">+</button>
+      </div>
+      <div class="inspector-controls">
         <span class="inspector-ctl-label">Stack</span>
         <button class="btn-inspect-action" id="btnInspectStackDec" type="button" title="ลดชั้นวางซ้อน">-</button>
         <span class="inspector-facing-val" id="inspectorStackVal">1</span>
@@ -626,8 +632,8 @@
       <!-- Space & Capacity Analytics -->
       <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.15); font-size: 0.72rem; color: #ccc;">
         <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
-          <span>ความจุแนวลึก:</span>
-          <strong id="inspectorRowsVal" style="color:#fff;">1 แถว</strong>
+          <span>แถวลึกที่ใช้:</span>
+          <strong id="inspectorRowsVal" style="color:#fff;">1 / 1 แถว</strong>
         </div>
         <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
           <span>ความจุรวมจุดนี้:</span>
@@ -654,17 +660,17 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <!-- Application Scripts (modular) -->
-  <script src="src/utils.js?v=export-fix"></script>
+  <script src="src/utils.js?v=depth-rows"></script>
   <script src="src/sheets.js?v=dims-sync"></script>
   <script src="src/products.js?v=shelf"></script>
-  <script src="src/planogram.js?v=shelf"></script>
+  <script src="src/planogram.js?v=depth-rows"></script>
   <script src="src/templates.js?v=no-builtin"></script>
   <script src="src/branches.js?v=1.0"></script>
   <script src="src/salesData.js?v=1.0"></script>
   <script src="src/branchView.js?v=1.0"></script>
-  <script src="src/planogram3d.js?v=topview-model-assets-2"></script>
-  <script src="src/export.js?v=dims-sync"></script>
+  <script src="src/planogram3d.js?v=depth-rows"></script>
+  <script src="src/export.js?v=depth-rows"></script>
   <script src="src/topview.js?v=topview-smooth-rotate"></script>
-  <script src="src/app.js?v=no-builtin"></script>
+  <script src="src/app.js?v=depth-rows"></script>
 </body>
 </html>

@@ -129,6 +129,18 @@ function parseCm(val, fallback) {
 }
 
 /**
+ * How many units of a product fit one behind the other on the shelf (max), and
+ * how many are actually placed there (used). `product.rows` holds the user's
+ * choice; without one the row is filled to the back of the shelf as before.
+ */
+function depthRows(product, shelfDepth = 48) {
+  const dims = getProductDimensions(product, shelfDepth);
+  const max = Math.max(1, Math.floor(shelfDepth / dims.depth));
+  const wanted = parseInt(product.rows, 10);
+  return { max, used: clamp(wanted > 0 ? wanted : max, 1, max), depth: dims.depth };
+}
+
+/**
  * Get product dimensions (width, height, depth) based on its orientation and rotation.
  * orientation: 'front' | 'side' | 'top'
  * rotation: 0 | 90

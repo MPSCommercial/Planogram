@@ -632,11 +632,9 @@ function calculateProductDOS(product) {
     
     productIds.forEach((pid) => {
       if (pid === product.id) {
-        const dims = getProductDimensions(product, shelfDepth);
-        const rows = Math.max(1, Math.floor(shelfDepth / dims.depth));
         const stack = Math.max(1, product.stack || 1);
         const facing = product.facing || 1;
-        totalCapacity += facing * stack * rows;
+        totalCapacity += facing * stack * depthRows(product, shelfDepth).used;
       }
     });
   });
@@ -718,7 +716,7 @@ function renderShelfRow(el, seg, shelf) {
     const dosInfo = calculateProductDOS(product);
     let badgeHTML = '';
     const shelfDepth = spec.depth || 48;
-    const singleRows = Math.max(1, Math.floor(shelfDepth / dims.depth));
+    const singleRows = depthRows(product, shelfDepth).used;
     const localCap = (product.facing || 1) * stack * singleRows;
 
     if (dosInfo.dos !== null) {
@@ -890,40 +888,7 @@ function openMiniInspector(seg, shelf, idx, event, el) {
   if (!product) return;
 
   const popup = $('miniInspector');
-  $('inspectorSku').textContent = `${product.name}`;
-  $('inspectorFacingVal').textContent = product.facing || 1;
-  $('inspectorStackVal').textContent = product.stack || 1;
-
-  // Space & Capacity Analytics
-  const dims = getProductDimensions(product, spec.depth || 48);
-  const rows = Math.max(1, Math.floor((spec.depth || 48) / dims.depth));
-  const stack = Math.max(1, product.stack || 1);
-  const facing = product.facing || 1;
-  const localCap = facing * stack * rows;
-  const dosInfo = calculateProductDOS(product);
-
-  if ($('inspectorRowsVal')) $('inspectorRowsVal').textContent = `${rows} แถว (ลึก ${Math.round(dims.depth)}cm)`;
-  if ($('inspectorCapacityVal')) $('inspectorCapacityVal').textContent = `${localCap} ชิ้น`;
-  if ($('inspectorSalesRateVal')) $('inspectorSalesRateVal').textContent = product.salesRate ? `${product.salesRate} /วัน` : '- /วัน';
-
-  const dosValSpan = $('inspectorDosVal');
-  if (dosValSpan) {
-    if (dosInfo.dos !== null) {
-      dosValSpan.textContent = `${dosInfo.dos.toFixed(1)} วัน`;
-      if (dosInfo.dos < 3) dosValSpan.style.color = '#ef4444';
-      else if (dosInfo.dos < 7) dosValSpan.style.color = '#f59e0b';
-      else dosValSpan.style.color = '#10b981';
-    } else {
-      dosValSpan.textContent = '- วัน';
-      dosValSpan.style.color = '#ccc';
-    }
-  }
-
-  // Set orientation and rotation in UI
-  const orientationSelect = $('inspectorOrientation');
-  if (orientationSelect) orientationSelect.value = product.orientation || 'front';
-  const rotateValSpan = $('inspectorRotateVal');
-  if (rotateValSpan) rotateValSpan.textContent = `${product.rotation || 0}°`;
+  renderInspectorValues(product);
 
   const rect = el.getBoundingClientRect();
   const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
@@ -939,6 +904,48 @@ function openMiniInspector(seg, shelf, idx, event, el) {
 }
 
 /**
+ * Fill in every readout in the inspector for the given product.
+ */
+function renderInspectorValues(product) {
+  const shelfDepth = spec.depth || 48;
+  const { max, used, depth } = depthRows(product, shelfDepth);
+  const facing = product.facing || 1;
+  const stack = Math.max(1, product.stack || 1);
+
+  $('inspectorSku').textContent = `${product.name}`;
+  $('inspectorFacingVal').textContent = facing;
+  $('inspectorStackVal').textContent = stack;
+  if ($('inspectorRowsCtlVal')) $('inspectorRowsCtlVal').textContent = used;
+  if ($('inspectorRowsVal')) $('inspectorRowsVal').textContent = `${used} / ${max} แถว (ลึกชิ้นละ ${Math.round(depth)}cm)`;
+  if ($('inspectorCapacityVal')) $('inspectorCapacityVal').textContent = `${facing * stack * used} ชิ้น`;
+  if ($('inspectorSalesRateVal')) $('inspectorSalesRateVal').textContent = product.salesRate ? `${product.salesRate} /วัน` : '- /วัน';
+
+  const dosValSpan = $('inspectorDosVal');
+  if (dosValSpan) {
+    const dosInfo = calculateProductDOS(product);
+    if (dosInfo.dos !== null) {
+      dosValSpan.textContent = `${dosInfo.dos.toFixed(1)} วัน`;
+      if (dosInfo.dos < 3) dosValSpan.style.color = '#ef4444';
+      else if (dosInfo.dos < 7) dosValSpan.style.color = '#f59e0b';
+      else dosValSpan.style.color = '#10b981';
+    } else {
+      dosValSpan.textContent = '- วัน';
+      dosValSpan.style.color = '#ccc';
+    }
+  }
+
+  const orientationSelect = $('inspectorOrientation');
+  if (orientationSelect) orientationSelect.value = product.orientation || 'front';
+  const rotateValSpan = $('inspectorRotateVal');
+  if (rotateValSpan) rotateValSpan.textContent = `${product.rotation || 0}°`;
+
+  const rowsDecBtn = $('btnInspectRowsDec');
+  const rowsIncBtn = $('btnInspectRowsInc');
+  if (rowsDecBtn) rowsDecBtn.disabled = used <= 1;
+  if (rowsIncBtn) rowsIncBtn.disabled = used >= max;
+}
+
+/**
  * Close the mini-inspector popup
  */
 function closeMiniInspector() {
@@ -948,81 +955,64 @@ function closeMiniInspector() {
 }
 
 /**
- * Adjust the facing value of the currently inspected product
+ * Apply a change to the product under the inspector, then redraw and keep the
+ * popup pinned to the item it belongs to.
  */
-function adjustInspectFacing(diff) {
+function updateInspectedProduct(mutate) {
   if (!activeInspectorTarget) return;
   const { seg, shelf, idx } = activeInspectorTarget;
-  const key = `${seg}-${shelf}`;
-  const productId = shelfData[key] ? shelfData[key][idx] : null;
-  if (!productId) return;
-
+  const productId = (shelfData[`${seg}-${shelf}`] || [])[idx];
   const product = products.find((p) => p.id === productId);
   if (!product) return;
 
   pushHistory();
-  product.facing = Math.max(1, (product.facing || 1) + diff);
-  
-  $('inspectorFacingVal').textContent = product.facing;
+  mutate(product);
 
+  renderInspectorValues(product);
   renderShelfFill();
   renderProductList();
   updateSummary();
   saveState();
+  if (window.Planogram3D && Planogram3D.isOpen()) Planogram3D.refresh();
+  repositionMiniInspector(seg, shelf, idx);
+}
 
-  setTimeout(() => {
-    const rowEl = $(`shelf-${seg}-${shelf}`);
-    if (rowEl) {
-      const prodEls = rowEl.querySelectorAll('.shelf-product');
-      if (prodEls[idx]) {
-        const rect = prodEls[idx].getBoundingClientRect();
-        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const popup = $('miniInspector');
-        popup.style.left = `${rect.left + rect.width / 2 + scrollLeft}px`;
-        popup.style.top = `${rect.top + scrollTop}px`;
-      }
-    }
-  }, 50);
+/**
+ * Adjust the facing value of the currently inspected product
+ */
+function adjustInspectFacing(diff) {
+  updateInspectedProduct((p) => { p.facing = Math.max(1, (p.facing || 1) + diff); });
 }
 
 /**
  * Adjust how many units are stacked on top of each other for the inspected product
  */
 function adjustInspectStack(diff) {
-  if (!activeInspectorTarget) return;
-  const { seg, shelf, idx } = activeInspectorTarget;
-  const key = `${seg}-${shelf}`;
-  const productId = shelfData[key] ? shelfData[key][idx] : null;
-  if (!productId) return;
+  updateInspectedProduct((p) => { p.stack = Math.max(1, (p.stack || 1) + diff); });
+}
 
-  const product = products.find((p) => p.id === productId);
-  if (!product) return;
+/**
+ * Adjust how many units sit one behind the other, up to what the shelf depth allows
+ */
+function adjustInspectRows(diff) {
+  updateInspectedProduct((p) => {
+    const { max, used } = depthRows(p, spec.depth || 48);
+    p.rows = clamp(used + diff, 1, max);
+  });
+}
 
-  pushHistory();
-  product.stack = Math.max(1, (product.stack || 1) + diff);
+/**
+ * Change the orientation value of the inspected product
+ */
+function changeInspectOrientation(newVal) {
+  updateInspectedProduct((p) => { p.orientation = newVal; });
+}
 
-  $('inspectorStackVal').textContent = product.stack;
-
-  renderShelfFill();
-  renderProductList();
-  updateSummary();
-  saveState();
-
-  setTimeout(() => {
-    const rowEl = $(`shelf-${seg}-${shelf}`);
-    if (rowEl) {
-      const prodEls = rowEl.querySelectorAll('.shelf-product');
-      if (prodEls[idx]) {
-        const rect = prodEls[idx].getBoundingClientRect();
-        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const popup = $('miniInspector');
-        popup.style.left = `${rect.left + rect.width / 2 + scrollLeft}px`;
-        popup.style.top = `${rect.top + scrollTop}px`;
-      }
-    }
-  }, 50);
+/**
+ * Rotate the inspected product by toggling between 0 and 90 degrees
+ */
+function rotateInspect90() {
+  updateInspectedProduct((p) => { p.rotation = p.rotation === 90 ? 0 : 90; });
 }
 
 function deleteInspectPlacement() {
