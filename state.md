@@ -6,17 +6,18 @@
 ---
 
 ## ⚡ NOW
-
-- **Status**: แก้ PNG export สีซีด โดยปิด animation/transition ใน DOM clone ก่อน `html2canvas` จับภาพ เพื่อไม่ให้ติดเฟรมเริ่มต้นที่ `opacity: 0`
+- **Status**: ขนาดสินค้าดึงจาก Google Sheet ทับบอร์ดที่เซฟไว้อัตโนมัติ + เพิ่มรูปสินค้า 72 ไฟล์ใน `assets/products/` ตั้งชื่อตาม ODOO (รองรับ `-side`/`-top` ตาม orientation)
 - **Branch**: main
-- **Deploy**: Surge production สำเร็จที่ `https://planogram-mpsynergy.surge.sh` และตรวจ live asset `export-contrast` / `export-capture` แล้ว
-- **Blocker**: None
-- **Next**: ผู้ใช้ลอง export PNG จาก production เพื่อตรวจสีภาพตามงานจริง
-- **Files**: `index.html`, `src/export.js`, `src/styles.css`, `state.md`
+- **Deploy**: Surge production สำเร็จที่ `https://planogram-mpsynergy.surge.sh` ตรวจ live แล้วทั้ง `src/sheets.js?v=dims-sync` และ `assets/products/*.png` (`photos-raw/` ถูก `.surgeignore` กันไว้ 404)
+- **Blocker**: รอผู้ใช้ยืนยันสีของ Curble Grand (IMG_7302 → A10217), LAPTOP PRO (IMG_7309 → A10228) และรุ่น FOOT REST (IMG_7305 → A10020)
+- **Next**: ถ่ายรูปเพิ่มอีก 30 SKU หมวด Accessories ที่ยังไม่มีรูป แล้วรัน `python3 tools/packshot.py -o assets/products --map names.csv photos-raw/*.jpeg`
+- **Files**: `src/sheets.js`, `src/utils.js`, `src/products.js`, `src/planogram.js`, `src/export.js`, `src/app.js`, `tools/packshot.py`, `tools/cutout.swift`, `assets/products/`, `state.md`
 
 ---
 
 ## 📜 LOG
+
+- ✅ Previous NOW: แก้ PNG export สีซีด โดยปิด animation/transition ใน DOM clone ก่อน `html2canvas` จับภาพ พร้อม deploy Surge แล้ว
 
 ### 🗓️ 2026-08-05
 - ✅ Previous NOW: เพิ่มปุ่ม `Export เชลฟ์เปล่า PNG` ใน Shelf Templates และแก้ exporter ให้สร้างไฟล์ PNG binary ผ่าน `canvas.toBlob()` พร้อมตรวจไฟล์ไม่ว่างก่อนดาวน์โหลด; ส่งออกแบบ flat ไม่มีเงาและคืน canvas/localStorage เดิม
