@@ -175,7 +175,7 @@ function mapSheetRowToProduct(row) {
 
   const category = cleanCell(row.Category) || 'ไม่ระบุ';
   const subCategory = cleanCell(row['Sub Category']);
-  const imageUrl = cleanCell(row['Image URL']);
+  const imageUrl = normalizeImageUrl(cleanCell(row['Image URL']) || cleanCell(row['Image Preview']));
   const facing = clamp(parseInt(cleanCell(row['Facing Default']), 10) || 1, 1, 12);
 
   return {
@@ -306,6 +306,23 @@ function probeImage(url) {
     img.onerror = () => resolve(null);
     img.src = url;
   });
+}
+
+/**
+ * Turn a share link pasted into the sheet into something <img> can load.
+ * Google Drive's /file/d/<id>/view page and Dropbox's ?dl=0 page are HTML,
+ * not images — both have a direct form that works.
+ */
+function normalizeImageUrl(url) {
+  if (!url) return '';
+  if (!/^https?:\/\//i.test(url)) return url; // relative path to a local pack shot
+
+  const drive = url.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:[^#]*&)?id=|thumbnail\?(?:[^#]*&)?id=)([\w-]{10,})/);
+  if (drive) return `https://drive.google.com/thumbnail?id=${drive[1]}&sz=w1000`;
+
+  if (/dropbox\.com/.test(url)) return url.replace(/[?&]dl=0\b/, '').replace(/\?raw=1$/, '') + (url.includes('?') ? '&raw=1' : '?raw=1');
+
+  return url;
 }
 
 function applyProductLibraryFilter() {
