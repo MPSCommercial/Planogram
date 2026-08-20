@@ -192,7 +192,7 @@
 
     const edges = new THREE.LineSegments(
       new THREE.EdgesGeometry(geo),
-      new THREE.LineBasicMaterial({ color: 0x20242a, transparent: true, opacity: prod.image ? 0.06 : 0.18 })
+      new THREE.LineBasicMaterial({ color: 0x20242a, transparent: true, opacity: prod.image ? 0.22 : 0.3 })
     );
     mesh.add(edges);
     return mesh;
@@ -464,6 +464,10 @@
 
           const stack = Math.max(1, p.stack || 1);
           const rows = depthRows(p, D).used;
+          // Butted up against each other the rows read as one long block, so
+          // split them with whatever depth is left over — never more.
+          const slack = Math.max(0, D - frontPad - rows * d);
+          const rowGap = rows > 1 ? Math.min(0.5, slack / (rows - 1)) : 0;
           const base = makeProduct(p, w, h, d);
           for (let k = 0; k < stack; k++) {
             for (let r = 0; r < rows; r++) {
@@ -471,7 +475,7 @@
               mesh.position.set(
                 cursorX + w / 2,
                 surfaceY + thick + h / 2 + k * h,
-                D / 2 - d / 2 - frontPad - r * d
+                D / 2 - d / 2 - frontPad - r * (d + rowGap)
               );
               contentGroup.add(mesh);
             }
