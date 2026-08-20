@@ -801,12 +801,14 @@ function updateBoardMeta() {
   const s = spec.name ? spec : readSpec();
   $('boardTitle').textContent = s.name;
   $('canvasTitle').textContent = s.name;
-  $('boardMeta').textContent = `${s.width}w × ${s.height}h cm · ${s.segments} segments · ${s.shelves} shelves · depth ${s.depth}cm`;
+  const area = shelfAreaM2(s);
+  $('boardMeta').textContent = `${s.width}w × ${s.height}h cm · ${s.segments} segments · ${s.shelves} shelves · depth ${s.depth}cm · หน้าชั้นรวม ${area.toFixed(2)} ตร.ม.`;
 
   $('statusStrip').innerHTML = `
     <span class="chip">${s.segments} seg × ${s.shelves} shelves</span>
     <span class="chip">${s.width} × ${s.height} cm</span>
     <span class="chip">${products.length} SKU</span>
+    <span class="chip">${shelfAreaM2(s).toFixed(2)} ตร.ม.</span>
   `;
 }
 
@@ -816,6 +818,9 @@ function updateBoardMeta() {
 function updateSummary() {
   const totalCm = (spec.shelves || 0) * (spec.width || 0);
   let usedCm = 0;
+  let capacity = 0;
+  let value = 0;
+  let unpriced = new Set();
   let skuSet = new Set();
 
   Object.values(shelfData).forEach((arr) => {
@@ -826,17 +831,29 @@ function updateSummary() {
       const dims = getProductDimensions(p, spec.depth);
       usedCm += dims.width * (p.facing || 1);
       skuSet.add(pid);
+
+      const qty = (p.facing || 1) * Math.max(1, p.stack || 1) * depthRows(p, spec.depth || 48).used;
+      capacity += qty;
+      const price = parseFloat(p.price) || 0;
+      if (price) value += qty * price;
+      else unpriced.add(pid);
     });
   });
 
   const pct = totalCm ? Math.round((usedCm / totalCm) * 100) : 0;
   const categories = new Set(products.map((p) => p.category)).size;
+  const area = shelfAreaM2(spec);
+  const per = (n) => (area ? Math.round(n / area) : 0);
+  const priceNote = unpriced.size ? ` · ยังไม่มีราคา ${unpriced.size} SKU` : '';
 
   $('summaryGrid').innerHTML = `
     <div class="summary-card"><strong>${Math.round(totalCm)}</strong><span>cm ทั้งหมด</span></div>
     <div class="summary-card"><strong>${Math.round(usedCm)}</strong><span>cm ที่ใช้แล้ว</span></div>
     <div class="summary-card"><strong>${pct}%</strong><span>Utilization</span></div>
     <div class="summary-card"><strong>${products.length}</strong><span>SKU / ${categories} category</span></div>
+    <div class="summary-card"><strong>${per(capacity)}</strong><span>ชิ้น / ตร.ม. (วางได้ ${capacity} ชิ้น)</span></div>
+    <div class="summary-card"><strong>${area ? (skuSet.size / area).toFixed(1) : 0}</strong><span>SKU / ตร.ม. (วางจริง ${skuSet.size} SKU)</span></div>
+    <div class="summary-card"><strong>฿${per(value).toLocaleString()}</strong><span>มูลค่า / ตร.ม.${priceNote}</span></div>
   `;
   updateBoardMeta();
 }

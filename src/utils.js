@@ -129,6 +129,18 @@ function parseCm(val, fallback) {
 }
 
 /**
+ * Total shelf surface in square metres: every shelf board's width × depth.
+ * Custom segment widths already add up to spec.width, so they need no special
+ * case here.
+ */
+function shelfAreaM2(spec) {
+  const width = parseFloat(spec && spec.width) || 0;
+  const depth = parseFloat(spec && spec.depth) || 0;
+  const shelves = parseInt(spec && spec.shelves, 10) || 0;
+  return (width * depth * shelves) / 10000;
+}
+
+/**
  * How many units of a product fit one behind the other on the shelf (max), and
  * how many are actually placed there (used). `product.rows` holds the user's
  * choice; without one the row is filled to the back of the shelf as before.

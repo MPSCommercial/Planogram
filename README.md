@@ -89,6 +89,7 @@ python3 tools/packshot.py --selftest                # ตรวจว่าต�
 | `Height_cm` | ความสูง |
 | `Depth_cm` | ความลึก |
 | `Facing Default` | จำนวน Facing เริ่มต้น |
+| `Price` | ราคาต่อชิ้น (ไม่บังคับ — ใส่แล้วเว็บคำนวณมูลค่าต่อ ตร.ม. ให้) |
 
 *หมายเหตุ: ในปัจจุบันระบบจะฟิลเตอร์โหลดเฉพาะสินค้าที่มีหมวดหมู่ `Category = Accessories` (ประมาณ 80 SKUs)*
 

@@ -29,24 +29,27 @@ assert.equal(normalize(''), '');
 const row = {
   ODOO: 'A10018', 'Product Name': 'ERGO MOUSE 01', Category: 'Accessories',
   'Image URL': 'https://drive.google.com/file/d/1AbC_defGH12345678/view',
-  Width_cm: '12.5', Height_cm: '8', Depth_cm: '9',
+  Width_cm: '12.5', Height_cm: '8', Depth_cm: '9', Price: '1,290',
 };
 const mapped = get('mapSheetRowToProduct')(row);
 assert.equal(mapped.image, drive, 'sheet link not normalised on import');
+assert.equal(mapped.price, 1290, 'price column not read (thousands separator?)');
 
-get('rememberSheetDimensions')([mapped]);
+get('rememberSheetValues')([mapped]);
 const board = [
   { id: 'A10018', odoo: 'A10018', width: '99', height: '99', depth: '99' },
   { id: 'p_local', width: '11', height: '22', depth: '33' },
 ];
-assert.equal(get('applySheetDimensions')(board), 1);
+assert.equal(get('applySheetValues')(board), 1);
 assert.deepEqual([board[0].width, board[0].height, board[0].depth], ['12.5', '8', '9']);
+assert.equal(board[0].price, 1290, 'price not carried onto the saved board');
 assert.equal(board[1].width, '11', 'hand-added product was touched');
-assert.equal(get('applySheetDimensions')(board), 0, 'not idempotent');
+assert.equal(get('applySheetValues')(board), 0, 'not idempotent');
 
 // ── a blank cell must not wipe a size that is already there ──
-get('rememberSheetDimensions')([get('mapSheetRowToProduct')({ ...row, Width_cm: '', Height_cm: '', Depth_cm: '' })]);
-get('applySheetDimensions')(board);
+get('rememberSheetValues')([get('mapSheetRowToProduct')({ ...row, Width_cm: '', Height_cm: '', Depth_cm: '', Price: '' })]);
+get('applySheetValues')(board);
 assert.equal(board[0].width, '12.5', 'blank sheet cell wiped an existing size');
+assert.equal(board[0].price, 1290, 'blank price cell wiped an existing price');
 
 console.log('sheets.js checks ok');

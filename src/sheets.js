@@ -33,7 +33,7 @@ function syncProductsFromSheet() {
   loadSheetRows()
     .then((rows) => {
       const sheetProducts = rows.map(mapSheetRowToProduct).filter(Boolean);
-      rememberSheetDimensions(sheetProducts);
+      rememberSheetValues(sheetProducts);
       const importedProducts = sheetProducts.filter(isAllowedProductCategory);
 
       if (!importedProducts.length) {
@@ -177,6 +177,7 @@ function mapSheetRowToProduct(row) {
   const subCategory = cleanCell(row['Sub Category']);
   const imageUrl = normalizeImageUrl(cleanCell(row['Image URL']) || cleanCell(row['Image Preview']));
   const facing = clamp(parseInt(cleanCell(row['Facing Default']), 10) || 1, 1, 12);
+  const price = parseFloat(cleanCell(row.Price || row['ราคา'] || row['Price (THB)']).replace(/,/g, '')) || 0;
 
   return {
     id: odoo,
@@ -190,6 +191,7 @@ function mapSheetRowToProduct(row) {
     width: cleanDimension(row.Width_cm),
     height: cleanDimension(row.Height_cm),
     depth: cleanDimension(row.Depth_cm),
+    price,
     image: imageUrl || null,
     shelfZone: cleanCell(row['Shelf Zone']),
     status: cleanCell(row.Status),
@@ -197,49 +199,53 @@ function mapSheetRowToProduct(row) {
   };
 }
 
-/* ═══ Latest sizes from the sheet, applied over saved boards ═══ */
+/* ═══ Latest sizes and prices from the sheet, applied over saved boards ═══ */
 
-let sheetDimsById = {};
+const SHEET_OWNED_FIELDS = ['width', 'height', 'depth', 'price'];
 
-function rememberSheetDimensions(sheetProducts) {
-  sheetDimsById = {};
+let sheetValuesById = {};
+
+function rememberSheetValues(sheetProducts) {
+  sheetValuesById = {};
   sheetProducts.forEach((product) => {
-    sheetDimsById[product.id] = { width: product.width, height: product.height, depth: product.depth };
+    const values = {};
+    SHEET_OWNED_FIELDS.forEach((key) => { values[key] = product[key]; });
+    sheetValuesById[product.id] = values;
   });
 }
 
 /**
- * Overwrite W/H/D of a product list with the latest sheet values (matched by
- * ODOO id). Products not in the sheet — hand-added SKUs — are left alone.
- * Returns how many products changed.
+ * Overwrite W/H/D and price of a product list with the latest sheet values
+ * (matched by ODOO id). Products not in the sheet — hand-added SKUs — are left
+ * alone. Returns how many products changed.
  */
-function applySheetDimensions(list) {
+function applySheetValues(list) {
   if (!Array.isArray(list)) return 0;
   let changed = 0;
   list.forEach((product) => {
-    const dims = sheetDimsById[product.odoo || product.id];
-    if (!dims) return;
-    // ponytail: blank cells in the sheet keep the existing size instead of wiping it
-    const touched = ['width', 'height', 'depth'].filter(
-      (key) => dims[key] && String(product[key] || '') !== dims[key]
+    const values = sheetValuesById[product.odoo || product.id];
+    if (!values) return;
+    // ponytail: blank cells in the sheet keep the existing value instead of wiping it
+    const touched = SHEET_OWNED_FIELDS.filter(
+      (key) => values[key] && String(product[key] || '') !== String(values[key])
     );
-    touched.forEach((key) => { product[key] = dims[key]; });
+    touched.forEach((key) => { product[key] = values[key]; });
     if (touched.length) changed++;
   });
   return changed;
 }
 
 /**
- * Pull the sheet in the background and refresh the sizes of the board that was
- * just restored from localStorage / a branch snapshot.
+ * Pull the sheet in the background and refresh the board that was just restored
+ * from localStorage / a branch snapshot.
  */
 function refreshDimensionsFromSheet() {
   return loadSheetRows()
     .then((rows) => {
-      rememberSheetDimensions(rows.map(mapSheetRowToProduct).filter(Boolean));
-      const changed = applySheetDimensions(products);
+      rememberSheetValues(rows.map(mapSheetRowToProduct).filter(Boolean));
+      const changed = applySheetValues(products);
 
-      if (changed) showToast(`อัปเดตขนาดสินค้าใหม่ ${changed} SKU จาก Google Sheet`);
+      if (changed) showToast(`อัปเดตข้อมูลสินค้า ${changed} SKU จาก Google Sheet`);
       attachLocalPackShots(products);
       if (!changed) return;
 

@@ -7,6 +7,12 @@ const ctx = { window: {}, console, document: { getElementById: () => null } };
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(`${__dirname}/../src/utils.js`, 'utf8'), ctx);
 const depthRows = vm.runInContext('depthRows', ctx);
+const shelfAreaM2 = vm.runInContext('shelfAreaM2', ctx);
+
+// 90cm wide, 35cm deep, three shelves = 0.945 sq m of shelf surface
+assert.equal(shelfAreaM2({ width: 90, depth: 35, shelves: 3 }), 0.945);
+assert.equal(shelfAreaM2({ width: '360', depth: '48', shelves: '6' }), 10.368, 'string specs');
+assert.equal(shelfAreaM2({}), 0, 'an empty spec has no area to divide by');
 
 // 9cm deep box on a 48cm shelf: five fit, and all five are used by default
 const box = { width: '12.5', height: '8', depth: '9' };
