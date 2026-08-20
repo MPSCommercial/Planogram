@@ -10,6 +10,21 @@ const TEMPLATE_FIELDS = [
   'backColor', 'shelfColor', 'hasBackPanel', 'hasSidePanel', 'hasDivider',
 ];
 
+// ─── Built-in templates (shipped with the app, not stored in localStorage) ───
+const BUILTIN_TEMPLATES = [
+  {
+    id: 'builtin-orange',
+    name: 'เชลฟ์ส้ม',
+    builtin: true,
+    spec: {
+      segments: 1, shelves: 3, width: 95, height: 142, depth: 35,
+      gap: 28, shelfThickness: 3,
+      backColor: '#c1571f', shelfColor: '#c1571f',
+      hasBackPanel: true, hasSidePanel: true, hasDivider: true,
+    },
+  },
+];
+
 /**
  * Load user-saved templates from localStorage.
  */
@@ -36,14 +51,15 @@ function saveUserTemplates(list) {
 }
 
 /**
- * Find a saved template by id.
+ * Find a template by id — checks built-ins first, then user-saved.
  */
 function findTemplate(id) {
-  return loadUserTemplates().find((t) => t.id === id) || null;
+  return BUILTIN_TEMPLATES.find((t) => t.id === id)
+    || loadUserTemplates().find((t) => t.id === id) || null;
 }
 
 /**
- * Populate the template <select> with the user's saved shelves.
+ * Populate the template <select> with built-in shelves + the user's saved ones.
  */
 function renderTemplateOptions(selectedId = '') {
   const select = $('templateSelect');
@@ -53,11 +69,14 @@ function renderTemplateOptions(selectedId = '') {
   const optionHtml = (t) => `<option value="${t.id}">${esc(t.name)}</option>`;
 
   select.innerHTML = '<option value="">เลือกเทมเพลต…</option>'
+    + BUILTIN_TEMPLATES.map(optionHtml).join('')
     + userTemplates.map(optionHtml).join('');
   select.value = selectedId;
 
+  const selected = findTemplate(select.value);
+
   const delBtn = $('btnDeleteTemplate');
-  if (delBtn) delBtn.disabled = !select.value;
+  if (delBtn) delBtn.disabled = !select.value || !!(selected && selected.builtin);
 
   const exportBtn = $('btnExportTemplate');
   if (exportBtn) exportBtn.disabled = !select.value;
@@ -131,6 +150,7 @@ function deleteSelectedTemplate() {
   if (!select || !select.value) return;
   const tpl = findTemplate(select.value);
   if (!tpl) return;
+  if (tpl.builtin) { showToast('เทมเพลตนี้เป็นค่ามาตรฐาน ลบไม่ได้'); return; }
   if (!confirm(`ลบเทมเพลต "${tpl.name}"?`)) return;
 
   saveUserTemplates(loadUserTemplates().filter((t) => t.id !== tpl.id));

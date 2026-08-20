@@ -815,6 +815,31 @@ function updateBoardMeta() {
 /**
  * Update summary cards using cm-based utilization
  */
+/**
+ * Rough "how many items fit this shelf when full" estimate, based on the
+ * average SKU size in the product library — not what's actually placed.
+ */
+function estimateFillCapacity() {
+  if (!products.length || !spec.segments) return 0;
+  const dims = products.map((p) => getProductDimensions(p, spec.depth || 48));
+  const avg = (arr) => arr.reduce((a, b) => a + b, 0) / arr.length;
+  const avgW = Math.max(1, avg(dims.map((d) => d.width)));
+  const avgD = Math.max(1, avg(dims.map((d) => d.depth)));
+  const avgH = Math.max(1, avg(dims.map((d) => d.height)));
+
+  let total = 0;
+  for (let seg = 0; seg < spec.segments; seg++) {
+    const segW = (spec.segmentWidths && spec.segmentWidths[seg]) || (spec.width / spec.segments);
+    const facingsPerRow = Math.max(1, Math.floor(segW / avgW));
+    const rowsDeep = Math.max(1, Math.floor((spec.depth || 48) / avgD));
+    getCellHeights(seg).forEach((h) => {
+      const stackLayers = Math.max(1, Math.floor(h / avgH));
+      total += facingsPerRow * rowsDeep * stackLayers;
+    });
+  }
+  return total;
+}
+
 function updateSummary() {
   const totalCm = (spec.shelves || 0) * (spec.width || 0);
   let usedCm = 0;
@@ -854,6 +879,7 @@ function updateSummary() {
     <div class="summary-card"><strong>${per(capacity)}</strong><span>ชิ้น / ตร.ม. (วางได้ ${capacity} ชิ้น)</span></div>
     <div class="summary-card"><strong>${area ? (skuSet.size / area).toFixed(1) : 0}</strong><span>SKU / ตร.ม. (วางจริง ${skuSet.size} SKU)</span></div>
     <div class="summary-card"><strong>฿${per(value).toLocaleString()}</strong><span>มูลค่า / ตร.ม.${priceNote}</span></div>
+    <div class="summary-card"><strong>~${estimateFillCapacity()}</strong><span>ชิ้น แนะนำให้เต็มเชลฟ์ (ประมาณจากขนาดสินค้าเฉลี่ยใน library)</span></div>
   `;
   updateBoardMeta();
 }

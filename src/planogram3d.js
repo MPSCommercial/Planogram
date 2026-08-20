@@ -354,14 +354,15 @@
     grid.position.y = 0;
     contentGroup.add(grid);
 
-    // ── Gondola base ──
-    const base = makeBox(W, thick, D, '#cfd4da');
+    // ── Gondola base (kick plate) — matches the shelf color, not a fixed grey ──
+    const base = makeBox(W, thick, D, s.shelfColor);
     base.position.set(0, thick / 2, 0);
     contentGroup.add(base);
 
-    // ── Back panel ──
+    // ── Back panel — doesn't receive shadows, so shelf boards in narrow/deep
+    // segments don't cast a harsh diagonal band across it ──
     if (s.hasBackPanel) {
-      const back = makeBox(W, H, panelT, s.backColor);
+      const back = makeBox(W, H, panelT, s.backColor, { receive: false });
       back.position.set(0, H / 2, -D / 2 + panelT / 2);
       contentGroup.add(back);
     }

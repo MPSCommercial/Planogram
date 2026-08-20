@@ -63,6 +63,7 @@
   $('btnCloseReportModal').addEventListener('click', closeReportModal);
   $('btnCancelReport').addEventListener('click', closeReportModal);
   $('btnExportReportCSV').addEventListener('click', exportReportCSV);
+  $('btnExportStockExcel').addEventListener('click', exportStockExcel);
 
   $('btnTabBOM').addEventListener('click', () => {
     activeReportTab = 'BOM';

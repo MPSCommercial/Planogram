@@ -496,6 +496,59 @@ function updateReportTable() {
   }
 }
 
+/**
+ * Export placed products as an .xlsx sheet shaped like the Ergotrend
+ * "Stock" tab (ลำดับ / Ref. / รายการ / ตัวโชว์ / สต็อก / รวม) — Ref. is the
+ * ODOO code already on the product, so no XLOOKUP-against-a-ref-sheet is needed.
+ */
+function exportStockExcel() {
+  if (typeof XLSX === 'undefined') {
+    showToast('โหลด Excel engine ไม่สำเร็จ');
+    return;
+  }
+
+  const totalSKUsMap = new Map();
+  Object.values(shelfData || {}).forEach((productIds) => {
+    if (!Array.isArray(productIds)) return;
+    productIds.forEach((pid) => {
+      const product = products.find((p) => p.id === pid);
+      if (!product) return;
+      const facing = Math.max(1, parseInt(product.facing) || 1);
+      const stack = Math.max(1, parseInt(product.stack) || 1);
+      const rows = depthRows(product, spec.depth || 48).used;
+      const qty = facing * stack * rows;
+      const agg = totalSKUsMap.get(pid) || { product, qty: 0 };
+      agg.qty += qty;
+      totalSKUsMap.set(pid, agg);
+    });
+  });
+
+  if (totalSKUsMap.size === 0) {
+    showToast('ไม่มีสินค้าจัดวางอยู่บนชั้นวางในขณะนี้');
+    return;
+  }
+
+  const rows = [['ลำดับ', 'Ref.', 'รายการ', 'ตัวโชว์', 'สต็อก', 'รวม']];
+  let no = 1;
+  totalSKUsMap.forEach(({ product, qty }) => {
+    rows.push([no++, product.odoo || product.id, product.name, qty, '', null]);
+  });
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  for (let r = 2; r <= rows.length; r++) {
+    ws[`F${r}`] = { t: 'n', f: `SUM(D${r}:E${r})` };
+  }
+  ws['!cols'] = [{ wch: 6 }, { wch: 10 }, { wch: 40 }, { wch: 10 }, { wch: 10 }, { wch: 10 }];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Stock');
+
+  const name = (spec.name || 'planogram').replace(/\s+/g, '_');
+  const dateStr = new Date().toISOString().slice(0, 10);
+  XLSX.writeFile(wb, `${name}_ตัวโชว์-สต็อก_${dateStr}.xlsx`);
+  showToast('Export Excel แล้ว');
+}
+
 function exportReportCSV() {
   let csvContent = "";
   const name = (spec.name || 'planogram').replace(/\s+/g, '_');

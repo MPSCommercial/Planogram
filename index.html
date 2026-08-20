@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="src/styles.css?v=export-contrast">
 </head>
-<body>
+<body class="left-panel-collapsed">
   <div class="app-shell">
     <!-- ═══════════════════ TOP NAVIGATION ═══════════════════ -->
     <header class="topbar">
@@ -51,7 +51,7 @@
 
       <!-- ── LEFT PANEL: Shelf Specification ── -->
       <aside class="sidebar side-panel left-panel" id="leftPanel">
-        <button class="panel-toggle panel-toggle-left" id="btnToggleLeftPanel" type="button" aria-label="Toggle shelf panel" aria-expanded="true" onclick="togglePanel('left')">
+        <button class="panel-toggle panel-toggle-left" id="btnToggleLeftPanel" type="button" aria-label="Toggle shelf panel" aria-expanded="false" onclick="togglePanel('left')">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div class="panel-rail-label">Shelf</div>
@@ -70,27 +70,27 @@
               <div class="form-grid">
                 <div class="span-2">
                   <label for="planogramName">Planogram Name</label>
-                  <input id="planogramName" type="text" value="Multiple Segment Planogram">
+                  <input id="planogramName" type="text" value="เชลฟ์ส้ม">
                 </div>
                 <div>
                   <label for="numSegments">Segments</label>
-                  <input id="numSegments" type="number" value="3" min="1" max="8">
+                  <input id="numSegments" type="number" value="1" min="1" max="8">
                 </div>
                 <div>
                   <label for="shelvesPerSegment">Shelves / Segment</label>
-                  <input id="shelvesPerSegment" type="number" value="6" min="1" max="12">
+                  <input id="shelvesPerSegment" type="number" value="3" min="1" max="12">
                 </div>
                 <div>
                   <label for="overallWidth">Overall Width</label>
-                  <input id="overallWidth" type="number" value="360" min="60" max="1200">
+                  <input id="overallWidth" type="number" value="95" min="60" max="1200">
                 </div>
                 <div>
                   <label for="overallHeight">Overall Height</label>
-                  <input id="overallHeight" type="number" value="220" min="80" max="400">
+                  <input id="overallHeight" type="number" value="142" min="80" max="400">
                 </div>
                 <div>
                   <label for="shelfDepth">Shelf Depth</label>
-                  <input id="shelfDepth" type="number" value="48" min="10" max="120">
+                  <input id="shelfDepth" type="number" value="35" min="10" max="120">
                 </div>
                 <div>
                   <label for="gapSize">Gap Between Shelves</label>
@@ -102,11 +102,11 @@
                 </div>
                 <div>
                   <label for="backColor">Back Panel</label>
-                  <input id="backColor" type="color" value="#3a3a3a">
+                  <input id="backColor" type="color" value="#c1571f">
                 </div>
                 <div>
                   <label for="shelfColor">Shelf Color</label>
-                  <input id="shelfColor" type="color" value="#f4f4f0">
+                  <input id="shelfColor" type="color" value="#c1571f">
                 </div>
               </div>
               <div class="segment-custom-toggle" style="margin-top: 10px; margin-bottom: 10px;">
@@ -342,7 +342,7 @@
 
           <!-- Add Product -->
           <section class="side-section" id="sectionAddProduct">
-            <div class="section-header" data-collapse="addProduct">
+            <div class="section-header collapsed" data-collapse="addProduct">
               <h2>Add Product</h2>
               <span class="badge">SKU</span>
               <button class="collapse-btn" aria-label="Toggle section">
@@ -576,10 +576,16 @@
       </div>
       <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
         <button class="btn btn-ghost" id="btnCancelReport">ปิด</button>
-        <button class="btn btn-primary" id="btnExportReportCSV" style="width:auto; margin:0; padding:0 20px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Export CSV
-        </button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn btn-ghost" id="btnExportStockExcel" style="width:auto; margin:0; padding:0 20px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export ตัวโชว์-สต็อก.xlsx
+          </button>
+          <button class="btn btn-primary" id="btnExportReportCSV" style="width:auto; margin:0; padding:0 20px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export CSV
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -663,14 +669,14 @@
   <script src="src/utils.js?v=per-sqm"></script>
   <script src="src/sheets.js?v=per-sqm"></script>
   <script src="src/products.js?v=shelf"></script>
-  <script src="src/planogram.js?v=per-sqm"></script>
-  <script src="src/templates.js?v=no-builtin"></script>
+  <script src="src/planogram.js?v=suggest-fill"></script>
+  <script src="src/templates.js?v=orange-builtin"></script>
   <script src="src/branches.js?v=1.0"></script>
   <script src="src/salesData.js?v=1.0"></script>
   <script src="src/branchView.js?v=1.0"></script>
-  <script src="src/planogram3d.js?v=depth-rows-2"></script>
-  <script src="src/export.js?v=per-sqm"></script>
+  <script src="src/planogram3d.js?v=orange-kickplate"></script>
+  <script src="src/export.js?v=stock-excel"></script>
   <script src="src/topview.js?v=topview-smooth-rotate"></script>
-  <script src="src/app.js?v=depth-rows"></script>
+  <script src="src/app.js?v=stock-excel"></script>
 </body>
 </html>

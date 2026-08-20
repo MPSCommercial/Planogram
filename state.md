@@ -6,12 +6,12 @@
 ---
 
 ## ⚡ NOW
-- **Status**: ขนาดสินค้าดึงจาก Google Sheet ทับบอร์ดที่เซฟไว้อัตโนมัติ + เพิ่มรูปสินค้า 72 ไฟล์ใน `assets/products/` ตั้งชื่อตาม ODOO (รองรับ `-side`/`-top` ตาม orientation)
+- **Status**: ตั้งค่า default shelf spec ในหน้าเปิดแอปให้เป็น "เชลฟ์ส้ม" (อ้างอิงสเปค ERGOTREND 950×350×1420mm) — 1 segment, 3 shelves, สีส้ม `#c1571f` ทั้ง back panel และ shelf; ที่ปรับได้หลังจากนี้ยังเหมือนเดิมคือจำนวนชั้นวาง (`shelvesPerSegment`) และความสูงต่อชั้น (drag บน canvas หรือพิมพ์ cm)
 - **Branch**: main
-- **Deploy**: Surge production สำเร็จที่ `https://planogram-mpsynergy.surge.sh` ตรวจ live แล้วทั้ง `src/sheets.js?v=dims-sync` และ `assets/products/*.png` (`photos-raw/` ถูก `.surgeignore` กันไว้ 404)
+- **Deploy**: Surge production สำเร็จที่ `https://planogram-mpsynergy.surge.sh` ตรวจ live แล้วทั้ง `src/sheets.js?v=dims-sync` และ `assets/products/*.png` (`photos-raw/` ถูก `.surgeignore` กันไว้ 404) — ยังไม่ได้ deploy default shelf spec ใหม่นี้
 - **Blocker**: รอผู้ใช้ยืนยันสีของ Curble Grand (IMG_7302 → A10217), LAPTOP PRO (IMG_7309 → A10228) และรุ่น FOOT REST (IMG_7305 → A10020)
 - **Next**: ถ่ายรูปเพิ่มอีก 30 SKU หมวด Accessories ที่ยังไม่มีรูป แล้วรัน `python3 tools/packshot.py -o assets/products --map names.csv photos-raw/*.jpeg`
-- **Files**: `src/sheets.js`, `src/utils.js`, `src/products.js`, `src/planogram.js`, `src/export.js`, `src/app.js`, `tools/packshot.py`, `tools/cutout.swift`, `assets/products/`, `state.md`
+- **Files**: `index.html`, `src/sheets.js`, `src/utils.js`, `src/products.js`, `src/planogram.js`, `src/export.js`, `src/app.js`, `tools/packshot.py`, `tools/cutout.swift`, `assets/products/`, `state.md`
 
 ---
 
