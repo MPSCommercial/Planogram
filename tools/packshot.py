@@ -134,7 +134,8 @@ def process(cut_path, out_path, longest, aspect=None):
     if scale < 1:
         image = image.resize((max(1, round(image.width * scale)),
                               max(1, round(image.height * scale))), Image.LANCZOS)
-    image.save(out_path, optimize=True)
+    # 256 colours is plenty for a pack shot and cuts the file to about a fifth
+    image.quantize(colors=256, method=Image.FASTOCTREE).save(out_path, optimize=True)
     return note, image.size
 
 

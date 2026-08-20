@@ -707,8 +707,9 @@ function renderShelfRow(el, seg, shelf) {
       openMiniInspector(seg, shelf, idx, e, item);
     });
 
-    const visual = product.image
-      ? `<img src="${esc(product.image)}" alt="${esc(product.name)}" draggable="false">`
+    const faceImage = productImage(product);
+    const visual = faceImage
+      ? `<img src="${esc(faceImage)}" alt="${esc(product.name)}" draggable="false">`
       : `<div class="pack-fallback" style="background:${product.color};color:${contrast(product.color)}">${esc(shortName(product.name))}</div>`;
 
     const units = Array.from({ length: stack }, () => `<div class="stack-unit">${visual}</div>`).join('');

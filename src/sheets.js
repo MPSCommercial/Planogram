@@ -255,7 +255,7 @@ function refreshDimensionsFromSheet() {
     });
 }
 
-/* ═══ Local pack shots: assets/products/<ODOO>.png ═══ */
+/* ═══ Local pack shots: assets/products/<ODOO>[-side|-top].png ═══ */
 
 const PACK_SHOT_DIR = 'assets/products';
 
@@ -267,12 +267,21 @@ const PACK_SHOT_DIR = 'assets/products';
 function attachLocalPackShots(list) {
   const pending = (list || [])
     .filter((product) => !product.image && product.odoo)
-    .map((product) =>
-      probeImage(`${PACK_SHOT_DIR}/${encodeURIComponent(product.odoo)}.png`).then((url) => {
-        if (url) product.image = url;
-        return url;
-      })
-    );
+    .map((product) => {
+      const base = `${PACK_SHOT_DIR}/${encodeURIComponent(product.odoo)}`;
+      // <ODOO>.png is the front; -side/-top are the other faces of the box,
+      // used when the product is laid down on the shelf.
+      return Promise.all([
+        probeImage(`${base}.png`),
+        probeImage(`${base}-side.png`),
+        probeImage(`${base}-top.png`),
+      ]).then(([front, side, top]) => {
+        if (!front && !side && !top) return null;
+        product.image = front || side || top;
+        product.faces = { front: front, side: side, top: top };
+        return product.image;
+      });
+    });
 
   if (!pending.length) return Promise.resolve(0);
 

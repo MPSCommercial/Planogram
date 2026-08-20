@@ -140,8 +140,9 @@ function renderProductList() {
       'product-card' + (product.id === selectedProductId ? ' selected' : '');
     card.draggable = true;
 
-    const thumb = product.image
-      ? `<div class="thumb"><img src="${esc(product.image)}" alt="" draggable="false"></div>`
+    const thumbImage = productImage(product);
+    const thumb = thumbImage
+      ? `<div class="thumb"><img src="${esc(thumbImage)}" alt="" draggable="false"></div>`
       : `<div class="thumb" style="background:${product.color};color:${contrast(product.color)}" draggable="false">${esc(initials(product.name))}</div>`;
 
     const priceText = product.price ? `฿${product.price}` : '';

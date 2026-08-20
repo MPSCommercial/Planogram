@@ -110,6 +110,16 @@ function uid() {
 }
 
 /**
+ * Pack shot to draw for a product, following the face it is turned to.
+ * Falls back to the front shot when that face was never photographed.
+ */
+function productImage(p) {
+  const faces = p.faces;
+  if (!faces) return p.image;
+  return faces[p.orientation || 'front'] || faces.front || p.image;
+}
+
+/**
  * Parse the first numeric value from a cm field (handles ranges like "7-12")
  */
 function parseCm(val, fallback) {

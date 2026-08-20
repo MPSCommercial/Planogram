@@ -12,3 +12,6 @@ node_modules/
 
 # compiled Vision cutout helper (build with: swiftc -O tools/cutout.swift -o tools/cutout)
 tools/cutout
+
+# ไฟล์รูปต้นฉบับจากมือถือ (แปลงด้วย tools/packshot.py แล้วเก็บผลลัพธ์ใน assets/products/)
+photos-raw/
