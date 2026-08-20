@@ -243,6 +243,7 @@ function applyBoardData(data) {
 
   if (data.products) {
     products = data.products;
+    applySheetDimensions(products);
     applyProductLibraryFilter();
   }
 

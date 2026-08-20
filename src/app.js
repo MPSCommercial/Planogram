@@ -219,7 +219,9 @@
 
   // ─── Load saved state or build default ───
   const hasState = loadState();
-  if (!hasState) {
+  if (hasState) {
+    refreshDimensionsFromSheet();
+  } else {
     renderProductList();
     buildShelf();
     syncProductsFromSheet();

@@ -32,10 +32,9 @@ function syncProductsFromSheet() {
 
   loadSheetRows()
     .then((rows) => {
-      const importedProducts = rows
-        .map(mapSheetRowToProduct)
-        .filter(Boolean)
-        .filter(isAllowedProductCategory);
+      const sheetProducts = rows.map(mapSheetRowToProduct).filter(Boolean);
+      rememberSheetDimensions(sheetProducts);
+      const importedProducts = sheetProducts.filter(isAllowedProductCategory);
 
       if (!importedProducts.length) {
         throw new Error('No products found in sheet');
@@ -195,6 +194,62 @@ function mapSheetRowToProduct(row) {
     status: cleanCell(row.Status),
     source: 'google-sheet',
   };
+}
+
+/* ═══ Latest sizes from the sheet, applied over saved boards ═══ */
+
+let sheetDimsById = {};
+
+function rememberSheetDimensions(sheetProducts) {
+  sheetDimsById = {};
+  sheetProducts.forEach((product) => {
+    sheetDimsById[product.id] = { width: product.width, height: product.height, depth: product.depth };
+  });
+}
+
+/**
+ * Overwrite W/H/D of a product list with the latest sheet values (matched by
+ * ODOO id). Products not in the sheet — hand-added SKUs — are left alone.
+ * Returns how many products changed.
+ */
+function applySheetDimensions(list) {
+  if (!Array.isArray(list)) return 0;
+  let changed = 0;
+  list.forEach((product) => {
+    const dims = sheetDimsById[product.odoo || product.id];
+    if (!dims) return;
+    // ponytail: blank cells in the sheet keep the existing size instead of wiping it
+    const touched = ['width', 'height', 'depth'].filter(
+      (key) => dims[key] && String(product[key] || '') !== dims[key]
+    );
+    touched.forEach((key) => { product[key] = dims[key]; });
+    if (touched.length) changed++;
+  });
+  return changed;
+}
+
+/**
+ * Pull the sheet in the background and refresh the sizes of the board that was
+ * just restored from localStorage / a branch snapshot.
+ */
+function refreshDimensionsFromSheet() {
+  return loadSheetRows()
+    .then((rows) => {
+      rememberSheetDimensions(rows.map(mapSheetRowToProduct).filter(Boolean));
+      const changed = applySheetDimensions(products);
+      if (!changed) return;
+
+      renderProductList();
+      renderShelfFill();
+      updateLegend();
+      updateSummary();
+      saveState();
+      if (window.Planogram3D && Planogram3D.isOpen()) Planogram3D.refresh();
+      showToast(`อัปเดตขนาดสินค้าใหม่ ${changed} SKU จาก Google Sheet`);
+    })
+    .catch((error) => {
+      console.warn('Dimension refresh skipped:', error);
+    });
 }
 
 function applyProductLibraryFilter() {
