@@ -143,13 +143,14 @@ function shelfAreaM2(spec) {
 /**
  * How many units of a product fit one behind the other on the shelf (max), and
  * how many are actually placed there (used). `product.rows` holds the user's
- * choice; without one the row is filled to the back of the shelf as before.
+ * choice; without one, only 1 row is assumed placed — `max` is left for the
+ * capacity badge to show what *could* fit, not what's auto-filled.
  */
 function depthRows(product, shelfDepth = 48) {
   const dims = getProductDimensions(product, shelfDepth);
   const max = Math.max(1, Math.floor(shelfDepth / dims.depth));
   const wanted = parseInt(product.rows, 10);
-  return { max, used: clamp(wanted > 0 ? wanted : max, 1, max), depth: dims.depth };
+  return { max, used: clamp(wanted > 0 ? wanted : 1, 1, max), depth: dims.depth };
 }
 
 /**

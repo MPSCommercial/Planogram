@@ -716,8 +716,8 @@ function renderShelfRow(el, seg, shelf) {
     const dosInfo = calculateProductDOS(product);
     let badgeHTML = '';
     const shelfDepth = spec.depth || 48;
-    const singleRows = depthRows(product, shelfDepth).used;
-    const localCap = (product.facing || 1) * stack * singleRows;
+    const maxRows = depthRows(product, shelfDepth).max;
+    const localCap = (product.facing || 1) * stack * maxRows;
 
     if (dosInfo.dos !== null) {
       let badgeClass = 'dos-badge-ok';
@@ -725,7 +725,7 @@ function renderShelfRow(el, seg, shelf) {
       else if (dosInfo.dos < 7) badgeClass = 'dos-badge-warning';
       badgeHTML = `<span class="product-dos-badge ${badgeClass}" title="Days of Supply: ${dosInfo.dos.toFixed(1)} วัน (ความจุรวมแผง ${dosInfo.capacity} ชิ้น)">${dosInfo.dos.toFixed(1)}d</span>`;
     } else {
-      badgeHTML = `<span class="product-cap-badge" title="ความจุจุดนี้: ${localCap} ชิ้น (ลึก ${singleRows} แถว)">cap:${localCap}</span>`;
+      badgeHTML = `<span class="product-cap-badge" title="วางแนวลึกได้สูงสุด ${localCap} ชิ้น (ลึก ${maxRows} แถว) — ยังไม่ได้นับเป็นของที่วางจริง">cap:${localCap}</span>`;
     }
 
     item.innerHTML = `
@@ -876,10 +876,10 @@ function updateSummary() {
     <div class="summary-card"><strong>${Math.round(usedCm)}</strong><span>cm ที่ใช้แล้ว</span></div>
     <div class="summary-card"><strong>${pct}%</strong><span>Utilization</span></div>
     <div class="summary-card"><strong>${products.length}</strong><span>SKU / ${categories} category</span></div>
-    <div class="summary-card"><strong>${per(capacity)}</strong><span>ชิ้น / ตร.ม. (วางได้ ${capacity} ชิ้น)</span></div>
-    <div class="summary-card"><strong>${area ? (skuSet.size / area).toFixed(1) : 0}</strong><span>SKU / ตร.ม. (วางจริง ${skuSet.size} SKU)</span></div>
-    <div class="summary-card"><strong>฿${per(value).toLocaleString()}</strong><span>มูลค่า / ตร.ม.${priceNote}</span></div>
-    <div class="summary-card"><strong>~${estimateFillCapacity()}</strong><span>ชิ้น แนะนำให้เต็มเชลฟ์ (ประมาณจากขนาดสินค้าเฉลี่ยใน library)</span></div>
+    <div class="summary-card" title="วางได้ทั้งหมด ${capacity} ชิ้น"><strong>${per(capacity)}</strong><span>ชิ้น / ตร.ม.</span></div>
+    <div class="summary-card" title="วางจริง ${skuSet.size} SKU"><strong>${area ? (skuSet.size / area).toFixed(1) : 0}</strong><span>SKU / ตร.ม.</span></div>
+    <div class="summary-card"${priceNote ? ` title="${priceNote.replace(/^ · /, '')}"` : ''}><strong>฿${per(value).toLocaleString()}</strong><span>มูลค่า / ตร.ม.${priceNote ? ' *' : ''}</span></div>
+    <div class="summary-card" title="ประมาณจากขนาดสินค้าเฉลี่ยใน library"><strong>~${estimateFillCapacity()}</strong><span>ชิ้นแนะนำเติมเต็ม</span></div>
   `;
   updateBoardMeta();
 }

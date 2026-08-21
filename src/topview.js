@@ -852,6 +852,8 @@
 
     // Hand undo/redo buttons back to the planogram stacks
     if (typeof updateUndoButtons === 'function') updateUndoButtons();
+    // Restore the planogram summary cards (topview left its own stats behind)
+    if (typeof updateSummary === 'function') updateSummary();
 
     refresh3D();
   }

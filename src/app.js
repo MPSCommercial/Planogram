@@ -200,14 +200,7 @@
     tab.addEventListener('click', () => {
       document.querySelectorAll('.nav-tab').forEach((t) => t.setAttribute('aria-selected', 'false'));
       tab.setAttribute('aria-selected', 'true');
-
-      const target = tab.dataset.tab;
-      if (target === 'library') {
-        setPanelCollapsed('right', false);
-        $('rightPanel').scrollTo({ top: $('sectionLibrary').offsetTop, behavior: 'smooth' });
-      } else {
-        $('stage').scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      $('stage').scrollTo({ top: 0, behavior: 'smooth' });
     });
   });
 

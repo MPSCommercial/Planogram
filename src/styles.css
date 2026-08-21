@@ -153,6 +153,31 @@ body.app-ready .app-shell {
   gap: 6px;
 }
 
+/* Language toggle */
+.lang-toggle {
+  display: flex;
+  gap: 2px;
+  background: #0b0b0b;
+  border-radius: 999px;
+  padding: 3px;
+  margin-right: 4px;
+}
+
+.lang-btn {
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: .68rem;
+  font-weight: 700;
+  color: rgba(255,255,255,.58);
+  transition: color var(--transition), background var(--transition);
+}
+
+.lang-btn:hover { color: white; }
+.lang-btn.active {
+  color: var(--ink);
+  background: var(--accent-lime);
+}
+
 .status-chips {
   display: flex;
   gap: 6px;
@@ -938,16 +963,16 @@ input[type="checkbox"] {
 /* ─── Summary Cards ─── */
 .summary {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 10px;
-  margin-bottom: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
 .summary-card {
   border: 1px solid rgba(0,0,0,.09);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius);
   background: var(--surface);
-  padding: 14px;
+  padding: 9px 11px;
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition), box-shadow var(--transition);
   animation: itemIn .18s ease both;
@@ -958,9 +983,13 @@ input[type="checkbox"] {
   box-shadow: 0 14px 24px rgba(0,0,0,.08);
 }
 
+.summary-card[title] {
+  cursor: help;
+}
+
 .summary-card strong {
   display: block;
-  font-size: 1.45rem;
+  font-size: 1.1rem;
   font-family: var(--mono);
   font-weight: 600;
   line-height: 1;
@@ -969,10 +998,11 @@ input[type="checkbox"] {
 
 .summary-card span {
   display: block;
-  margin-top: 4px;
+  margin-top: 2px;
   color: var(--muted);
-  font-size: .7rem;
+  font-size: .64rem;
   font-weight: 500;
+  line-height: 1.25;
 }
 
 /* ─── Canvas Scroll ─── */
@@ -980,6 +1010,62 @@ input[type="checkbox"] {
   overflow-x: auto;
   padding: 4px 0 10px;
   scroll-padding: 24px;
+}
+
+/* ─── Board Tiles (multi-board switcher) ─── */
+.board-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.board-tile {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 5px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+  cursor: pointer;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.board-tile.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.board-tile-label {
+  font-size: .68rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  border: none;
+  background: transparent;
+  width: 60px;
+  font-family: inherit;
+}
+.board-tile-label:focus {
+  outline: none;
+}
+.board-tile-stats {
+  font-size: .6rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.board-tile-remove {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--muted);
+  font-size: .64rem;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.board-tile-remove:hover {
+  border-color: var(--danger);
+  color: var(--danger);
 }
 
 /* ─── Planogram Board ─── */

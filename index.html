@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="src/styles.css?v=export-contrast">
+  <link rel="stylesheet" href="src/styles.css?v=summary-compact">
 </head>
 <body class="left-panel-collapsed">
   <div class="app-shell">
@@ -28,11 +28,14 @@
       <nav class="topbar-nav" id="topbarNav">
         <button class="nav-tab" data-tab="planogram" aria-selected="true">Planogram</button>
         <button class="nav-tab" data-tab="topview">Top View Layout</button>
-        <button class="nav-tab" data-tab="library">Product Library</button>
       </nav>
 
       <div class="topbar-actions">
         <div class="status-chips" id="statusStrip"></div>
+        <div class="lang-toggle" role="group" aria-label="Language">
+          <button class="lang-btn" data-lang="th" type="button">TH</button>
+          <button class="lang-btn" data-lang="en" type="button">EN</button>
+        </div>
         <button class="btn btn-ghost" id="btnImportJSON" title="Import JSON">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </button>
@@ -60,7 +63,7 @@
           <!-- Planogram Settings -->
           <section class="side-section" id="sectionSettings">
             <div class="section-header" data-collapse="settings">
-              <h2>Shelf Specification</h2>
+              <h2 data-i18n="shelf_spec_heading">Shelf Specification</h2>
               <span class="badge">cm</span>
               <button class="collapse-btn" aria-label="Toggle section">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
@@ -69,91 +72,91 @@
             <div class="section-body" id="bodySettings">
               <div class="form-grid">
                 <div class="span-2">
-                  <label for="planogramName">Planogram Name</label>
+                  <label for="planogramName" data-i18n="planogram_name_label">Planogram Name</label>
                   <input id="planogramName" type="text" value="เชลฟ์ส้ม">
                 </div>
                 <div>
-                  <label for="numSegments">Segments</label>
+                  <label for="numSegments" data-i18n="segments_label">Segments</label>
                   <input id="numSegments" type="number" value="1" min="1" max="8">
                 </div>
                 <div>
-                  <label for="shelvesPerSegment">Shelves / Segment</label>
+                  <label for="shelvesPerSegment" data-i18n="shelves_per_segment_label">Shelves / Segment</label>
                   <input id="shelvesPerSegment" type="number" value="3" min="1" max="12">
                 </div>
                 <div>
-                  <label for="overallWidth">Overall Width</label>
+                  <label for="overallWidth" data-i18n="overall_width_label">Overall Width</label>
                   <input id="overallWidth" type="number" value="95" min="60" max="1200">
                 </div>
                 <div>
-                  <label for="overallHeight">Overall Height</label>
+                  <label for="overallHeight" data-i18n="overall_height_label">Overall Height</label>
                   <input id="overallHeight" type="number" value="142" min="80" max="400">
                 </div>
                 <div>
-                  <label for="shelfDepth">Shelf Depth</label>
+                  <label for="shelfDepth" data-i18n="shelf_depth_label">Shelf Depth</label>
                   <input id="shelfDepth" type="number" value="35" min="10" max="120">
                 </div>
                 <div>
-                  <label for="gapSize">Gap Between Shelves</label>
+                  <label for="gapSize" data-i18n="gap_between_shelves_label">Gap Between Shelves</label>
                   <input id="gapSize" type="number" value="28" min="8" max="80">
                 </div>
                 <div>
-                  <label for="shelfThickness">Shelf Thickness</label>
+                  <label for="shelfThickness" data-i18n="shelf_thickness_label">Shelf Thickness</label>
                   <input id="shelfThickness" type="number" value="3" min="1" max="12">
                 </div>
                 <div>
-                  <label for="backColor">Back Panel</label>
+                  <label for="backColor" data-i18n="back_panel_label">Back Panel</label>
                   <input id="backColor" type="color" value="#c1571f">
                 </div>
                 <div>
-                  <label for="shelfColor">Shelf Color</label>
+                  <label for="shelfColor" data-i18n="shelf_color_label">Shelf Color</label>
                   <input id="shelfColor" type="color" value="#c1571f">
                 </div>
               </div>
               <div class="segment-custom-toggle" style="margin-top: 10px; margin-bottom: 10px;">
                 <button class="btn btn-mini btn-ghost" id="btnToggleCustomSeg" type="button" style="font-size: 0.72rem; padding: 6px 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px; border: 1px dashed var(--line); border-radius: 8px; font-weight: 600;">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-                  ปรับความกว้างราย Segment (Bay)
+                  <span data-i18n="seg_width_toggle">ปรับความกว้างราย Segment (Bay)</span>
                 </button>
               </div>
               <div id="customSegmentPanel" style="display: none; background: var(--surface-2); border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-top: 10px; margin-bottom: 12px;">
-                <div style="font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">กำหนดความกว้างรายตู้ (cm)</div>
+                <div data-i18n="seg_width_heading" style="font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">กำหนดความกว้างรายตู้ (cm)</div>
                 <div id="segmentWidthInputs" style="display: flex; flex-direction: column; gap: 8px;">
                   <!-- Dynamically rendered inputs -->
                 </div>
               </div>
               <div class="toggle-row">
-                <label><input id="hasBackPanel" type="checkbox" checked> Back panel</label>
-                <label><input id="hasSidePanel" type="checkbox" checked> Side panels</label>
-                <label><input id="hasSegmentDivider" type="checkbox" checked> Segment dividers</label>
+                <label><input id="hasBackPanel" type="checkbox" checked> <span data-i18n="has_back_panel_label">Back panel</span></label>
+                <label><input id="hasSidePanel" type="checkbox" checked> <span data-i18n="has_side_panel_label">Side panels</span></label>
+                <label><input id="hasSegmentDivider" type="checkbox" checked> <span data-i18n="has_segment_divider_label">Segment dividers</span></label>
               </div>
               <div class="template-block">
-                <div class="template-block-label">เทมเพลตเชลฟ์</div>
+                <div class="template-block-label" data-i18n="template_label">เทมเพลตเชลฟ์</div>
                 <div class="template-row">
-                  <select id="templateSelect" class="template-select" aria-label="เลือกเทมเพลตเชลฟ์">
+                  <select id="templateSelect" class="template-select" data-i18n-aria-label="template_select_aria" aria-label="เลือกเทมเพลตเชลฟ์">
                     <option value="">เลือกเทมเพลต…</option>
                   </select>
-                  <button class="btn btn-mini" id="btnApplyTemplate" type="button">ใช้</button>
+                  <button class="btn btn-mini" id="btnApplyTemplate" type="button" data-i18n="apply">ใช้</button>
                 </div>
-                <img id="templateThumb" class="template-thumb" alt="ตัวอย่างเชลฟ์" hidden>
+                <img id="templateThumb" class="template-thumb" data-i18n-alt="template_thumb_alt" alt="ตัวอย่างเชลฟ์" hidden>
 
                 <div class="template-row">
-                  <button class="btn btn-mini btn-ghost" id="btnSaveTemplate" type="button">บันทึกขนาดปัจจุบันเป็นเทมเพลต</button>
-                  <button class="btn btn-mini btn-danger" id="btnDeleteTemplate" type="button" disabled aria-label="ลบเทมเพลต">ลบ</button>
+                  <button class="btn btn-mini btn-ghost" id="btnSaveTemplate" type="button" data-i18n="template_save">บันทึกขนาดปัจจุบันเป็นเทมเพลต</button>
+                  <button class="btn btn-mini btn-danger" id="btnDeleteTemplate" type="button" disabled data-i18n-aria-label="template_delete_aria" aria-label="ลบเทมเพลต" data-i18n="delete">ลบ</button>
                 </div>
-                <button class="btn btn-mini btn-ghost" id="btnExportTemplate" type="button" disabled>Export เชลฟ์เปล่า PNG</button>
+                <button class="btn btn-mini btn-ghost" id="btnExportTemplate" type="button" disabled data-i18n="template_export_empty">Export เชลฟ์เปล่า PNG</button>
               </div>
 
               <div class="template-block">
-                <div class="template-block-label">สาขา (Branch)</div>
+                <div class="template-block-label" data-i18n="branch_label">สาขา (Branch)</div>
                 <div class="template-row">
-                  <select id="branchSelect" class="template-select" aria-label="เลือกสาขา">
+                  <select id="branchSelect" class="template-select" data-i18n-aria-label="branch_select_aria" aria-label="เลือกสาขา">
                     <option value="">เลือกสาขา…</option>
                   </select>
-                  <button class="btn btn-mini" id="btnSwitchBranch" type="button">เปิด</button>
+                  <button class="btn btn-mini" id="btnSwitchBranch" type="button" data-i18n="open">เปิด</button>
                 </div>
                 <div class="template-row">
-                  <button class="btn btn-mini btn-ghost" id="btnSaveBranch" type="button">บันทึกบอร์ดปัจจุบันเป็นสาขา</button>
-                  <button class="btn btn-mini btn-danger" id="btnDeleteBranch" type="button" disabled aria-label="ลบสาขา">ลบ</button>
+                  <button class="btn btn-mini btn-ghost" id="btnSaveBranch" type="button" data-i18n="branch_save">บันทึกบอร์ดปัจจุบันเป็นสาขา</button>
+                  <button class="btn btn-mini btn-danger" id="btnDeleteBranch" type="button" disabled data-i18n-aria-label="branch_delete_aria" aria-label="ลบสาขา" data-i18n="delete">ลบ</button>
                 </div>
                 <div id="branchViewPanel"></div>
               </div>
@@ -186,17 +189,17 @@
               </div>
               <button class="btn btn-build" id="btnUpdateRoom" style="margin-top: 12px; width: 100%;">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                สร้าง / อัปเดตห้อง
+                <span data-i18n="room_update">สร้าง / อัปเดตห้อง</span>
               </button>
               <div style="margin-top: 20px; border-top: 1px solid var(--line); padding-top: 16px;">
                 <label for="roomTemplateSelect" style="font-weight: 600; margin-bottom: 8px; display: block; font-size: 0.85rem; color: var(--text);">Room Layout Templates</label>
                 <div style="display: flex; gap: 6px;">
                   <select id="roomTemplateSelect" style="flex: 1; padding: 6px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface-1); color: var(--text); font-size: 0.8rem; height: 32px;">
-                    <option value="showroom">Showroom (ชั้นวางสินค้าเรียงต่อกัน)</option>
-                    <option value="bedroom">Bedroom (เตียง + โต๊ะทำงาน + เก้าอี้ + ชั้นวาง)</option>
-                    <option value="office">Office Workspace (โต๊ะทำงานคู่ + ชั้นวางของริมผนัง)</option>
+                    <option value="showroom" data-i18n="room_tpl_showroom">Showroom (ชั้นวางสินค้าเรียงต่อกัน)</option>
+                    <option value="bedroom" data-i18n="room_tpl_bedroom">Bedroom (เตียง + โต๊ะทำงาน + เก้าอี้ + ชั้นวาง)</option>
+                    <option value="office" data-i18n="room_tpl_office">Office Workspace (โต๊ะทำงานคู่ + ชั้นวางของริมผนัง)</option>
                   </select>
-                  <button class="btn btn-mini" id="btnApplyRoomTemplate" type="button" style="padding: 0 12px; font-size: 0.8rem; height: 32px; border-radius: 6px;">ใช้</button>
+                  <button class="btn btn-mini" id="btnApplyRoomTemplate" type="button" style="padding: 0 12px; font-size: 0.8rem; height: 32px; border-radius: 6px;" data-i18n="apply">ใช้</button>
                 </div>
               </div>
             </div>
@@ -212,7 +215,7 @@
               </button>
             </div>
             <div class="section-body" id="bodyTopviewInspector">
-              <p id="tvInspectorEmpty" style="font-size: 0.78rem; color: var(--muted); margin: 4px 0;">คลิกเลือกสิ่งของในแปลน เพื่อแก้ไขตำแหน่งและหมุน</p>
+              <p id="tvInspectorEmpty" data-i18n="tv_inspector_empty" style="font-size: 0.78rem; color: var(--muted); margin: 4px 0;">คลิกเลือกสิ่งของในแปลน เพื่อแก้ไขตำแหน่งและหมุน</p>
               <div id="tvInspectorFields" style="display: none;">
                 <div id="tvItemName" style="font-size: 0.85rem; font-weight: 700; color: var(--ink); margin-bottom: 10px;"></div>
                 <div class="form-grid">
@@ -225,7 +228,7 @@
                     <input id="tvItemY" type="number" min="0" step="1">
                   </div>
                   <div>
-                    <label for="tvItemRot">หมุน (°)</label>
+                    <label for="tvItemRot" data-i18n="tv_rotate_label">หมุน (°)</label>
                     <select id="tvItemRot">
                       <option value="0">0°</option>
                       <option value="45">45°</option>
@@ -238,16 +241,16 @@
                     </select>
                   </div>
                   <div>
-                    <label for="tvItemSize">ขนาด W×D</label>
+                    <label for="tvItemSize" data-i18n="tv_size_label">ขนาด W×D</label>
                     <input id="tvItemSize" type="text" readonly tabindex="-1">
                   </div>
                 </div>
                 <div style="display: flex; gap: 6px; margin-top: 12px;">
-                  <button class="btn btn-mini" id="btnTvDuplicate" type="button" style="flex: 1;">ทำซ้ำ ⌘D</button>
-                  <button class="btn btn-mini btn-ghost" id="btnTvRotate" type="button" style="flex: 1;">หมุน 45°</button>
-                  <button class="btn btn-mini btn-danger" id="btnTvDelete" type="button" style="flex: 1;">ลบ ⌫</button>
+                  <button class="btn btn-mini" id="btnTvDuplicate" type="button" style="flex: 1;" data-i18n="tv_duplicate">ทำซ้ำ ⌘D</button>
+                  <button class="btn btn-mini btn-ghost" id="btnTvRotate" type="button" style="flex: 1;" data-i18n="tv_rotate45">หมุน 45°</button>
+                  <button class="btn btn-mini btn-danger" id="btnTvDelete" type="button" style="flex: 1;" data-i18n="tv_delete">ลบ ⌫</button>
                 </div>
-                <p style="font-size: 0.7rem; color: var(--muted); margin-top: 10px; line-height: 1.6;">ลูกศร = ขยับตาม grid · Shift+ลูกศร = ขยับ 1 cm · ลากปุ่ม ↺ = หมุน 8 ทิศ · ⌘Z = Undo</p>
+                <p style="font-size: 0.7rem; color: var(--muted); margin-top: 10px; line-height: 1.6;" data-i18n="tv_hint">ลูกศร = ขยับตาม grid · Shift+ลูกศร = ขยับ 1 cm · ลากปุ่ม ↺ = หมุน 8 ทิศ · ⌘Z = Undo</p>
               </div>
             </div>
           </section>
@@ -259,7 +262,7 @@
         <div class="stage-toolbar">
           <div class="stage-title">
             <h2 id="canvasTitle">Multiple Segment Planogram</h2>
-            <p id="modeText">เลือกสินค้า แล้วคลิก shelf หรือ drag ไปวางได้เลย</p>
+            <p id="modeText" data-i18n="mode_text_default">เลือกสินค้า แล้วคลิก shelf หรือ drag ไปวางได้เลย</p>
           </div>
           <div class="stage-actions">
             <button class="btn btn-ghost btn-sm icon-btn" id="btnUndo" title="Undo (⌘Z)" disabled>
@@ -268,20 +271,24 @@
             <button class="btn btn-ghost btn-sm icon-btn" id="btnRedo" title="Redo (⌘⇧Z)" disabled>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 7v6h-6"/><path d="M21 13C18.5 7 12 4 6 7.5S-1 18.5 3 23"/></svg>
             </button>
-            <button class="btn btn-ghost btn-sm icon-btn" id="btnToggle3D" title="สลับมุมมอง 3D">
+            <button class="btn btn-ghost btn-sm icon-btn" id="btnToggle3D" data-i18n-title="toggle_3d_title" title="สลับมุมมอง 3D">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
             </button>
-            <button class="btn btn-ghost btn-sm" id="btnLoadDemo">โหลดตัวอย่าง</button>
-            <button class="btn btn-ghost btn-sm" id="btnShowReport">รายงานสินค้า (BOM)</button>
-            <button class="btn btn-ghost btn-sm" id="btnClearAll">ล้างชั้นวาง</button>
+            <button class="btn btn-ghost btn-sm" id="btnLoadDemo" data-i18n="load_demo">โหลดตัวอย่าง</button>
+            <button class="btn btn-ghost btn-sm" id="btnShowReport" data-i18n="show_report">รายงานสินค้า (BOM)</button>
+            <button class="btn btn-ghost btn-sm" id="btnClearAll" data-i18n="clear_all">ล้างชั้นวาง</button>
+            <button class="btn btn-ghost btn-sm" id="btnAddBoard" type="button" data-i18n="add_shelf_column">+ เพิ่มเชลฟ์ (ฝั่ง)</button>
           </div>
         </div>
+
+        <!-- Board switcher (multiple shelves sharing the same panels) -->
+        <div class="board-tiles" id="boardTiles"></div>
 
         <!-- Summary cards -->
         <div class="summary" id="summaryGrid"></div>
 
         <!-- The planogram canvas -->
-        <div class="canvas-scroll">
+        <div class="canvas-scroll" id="canvasScroll">
           <div class="planogram-board" id="exportArea">
             <div class="board-head">
               <div>
@@ -292,7 +299,7 @@
             <div class="gondola-wrap" id="gondolaWrap">
               <div class="empty-state">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                <p>กด <strong>"สร้าง / อัปเดต Shelf"</strong> เพื่อเริ่มวาง Planogram</p>
+                <p data-i18n-html="empty_state_planogram_html">กด <strong>"สร้าง / อัปเดต Shelf"</strong> เพื่อเริ่มวาง Planogram</p>
               </div>
             </div>
             <div class="legend" id="legendBox"></div>
@@ -305,10 +312,10 @@
                 <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text);">Top View Room Layout</h3>
                 <p id="topviewMeta" style="font-size: 0.75rem; color: var(--muted); margin-top: 2px;">600w × 400d cm</p>
               </div>
-              <span style="font-size: 0.68rem; color: var(--muted); margin-right: 10px;">Space+ลาก = เลื่อนผัง · ⌘+Scroll = ซูม · M = วัดระยะ</span>
+              <span data-i18n="topview_hint" style="font-size: 0.68rem; color: var(--muted); margin-right: 10px;">Space+ลาก = เลื่อนผัง · ⌘+Scroll = ซูม · M = วัดระยะ</span>
               <div class="zoom-controls" style="display: flex; gap: 4px; align-items: center; background: var(--surface-2); padding: 4px 8px; border-radius: 20px; border: 1px solid var(--line);">
-                <button class="btn btn-mini btn-ghost" id="btnExportTopview" title="Export Top View PNG" type="button" style="padding: 2px 8px; font-size: 10px; border-radius: 12px;">Export รูป</button>
-                <button class="btn btn-mini btn-ghost" id="btnMeasure" title="วัดระยะ (M)" type="button" style="padding: 2px 8px; font-size: 10px; border-radius: 12px;">📏 วัด</button>
+                <button class="btn btn-mini btn-ghost" id="btnExportTopview" title="Export Top View PNG" type="button" style="padding: 2px 8px; font-size: 10px; border-radius: 12px;" data-i18n="export_image">Export รูป</button>
+                <button class="btn btn-mini btn-ghost" id="btnMeasure" data-i18n-title="measure_title" title="วัดระยะ (M)" type="button" style="padding: 2px 8px; font-size: 10px; border-radius: 12px;" data-i18n="measure_btn">📏 วัด</button>
                 <button class="btn btn-mini" id="btnZoomOut" title="Zoom Out" type="button" style="padding: 2px 8px; font-weight: bold; border-radius: 12px; min-width: 24px;">−</button>
                 <span id="zoomPercent" style="font-size: 0.75rem; min-width: 42px; text-align: center; font-weight: 600; color: var(--text);">100%</span>
                 <button class="btn btn-mini" id="btnZoomIn" title="Zoom In" type="button" style="padding: 2px 8px; font-weight: bold; border-radius: 12px; min-width: 24px;">+</button>
@@ -318,14 +325,14 @@
             <div class="topview-wrap" id="topviewWrap" style="position: relative; overflow: auto; min-height: 400px; max-height: 70vh; display: flex; align-items: center; justify-content: center; background: var(--surface-2); border-radius: 8px; border: 1px dashed var(--line); padding: 20px;">
               <div class="empty-state" style="display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--muted);">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-                <p>กด <strong>"สร้าง / อัปเดตห้อง"</strong> เพื่อเริ่มจัดวาง Layout ด้านบน</p>
+                <p data-i18n-html="empty_state_topview_html">กด <strong>"สร้าง / อัปเดตห้อง"</strong> เพื่อเริ่มจัดวาง Layout ด้านบน</p>
               </div>
             </div>
           </div>
           <!-- SketchUp-style 3D view (Three.js renders here) -->
           <div class="stage-3d" id="stage3d" style="display:none">
-            <div class="stage-3d-hint">ลากเพื่อหมุน · scroll ซูม · คลิกขวาลากเพื่อเลื่อน</div>
-            <button class="btn btn-mini btn-ghost" id="btnReset3D" type="button" style="position:absolute; top:12px; right:12px; z-index:2;">รีเซ็ตมุมมอง</button>
+            <div class="stage-3d-hint" data-i18n="stage3d_hint">ลากเพื่อหมุน · scroll ซูม · คลิกขวาลากเพื่อเลื่อน</div>
+            <button class="btn btn-mini btn-ghost" id="btnReset3D" type="button" style="position:absolute; top:12px; right:12px; z-index:2;" data-i18n="reset_view">รีเซ็ตมุมมอง</button>
           </div>
         </div>
       </section>
@@ -352,7 +359,7 @@
                 <input id="imgInput" type="file" accept="image/png,image/jpeg,image/webp">
                 <div class="upload-content" id="uploadHint">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-                  <span>อัปโหลดรูปสินค้า<br><small>PNG, JPG, WEBP</small></span>
+                  <span><span data-i18n="upload_hint_product">อัปโหลดรูปสินค้า</span><br><small>PNG, JPG, WEBP</small></span>
                 </div>
                 <div class="preview-wrap" id="uploadPreview" style="display:none">
                   <img id="previewImg" src="" alt="Product preview">
@@ -361,7 +368,7 @@
               </div>
               <div class="form-grid">
                 <div class="span-2">
-                  <label for="pName">ชื่อสินค้า / SKU</label>
+                  <label for="pName" data-i18n="product_name_label">ชื่อสินค้า / SKU</label>
                   <input id="pName" type="text" placeholder="เช่น BOSS Bottled 100ml">
                 </div>
                 <div>
@@ -403,7 +410,7 @@
               </div>
               <button class="btn btn-build" id="btnAddProduct">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                เพิ่มสินค้า
+                <span data-i18n="add_product_btn">เพิ่มสินค้า</span>
               </button>
             </div>
           </section>
@@ -419,10 +426,10 @@
                 <div class="sheet-sync-header" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
                   <div>
                     <strong>Product database</strong>
-                    <span id="sheetSyncStatus">Google Sheet พร้อม sync</span>
+                    <span id="sheetSyncStatus" data-i18n="sheet_sync_status">Google Sheet พร้อม sync</span>
                   </div>
                   <div class="sheet-sync-actions" style="display: flex; gap: 4px; align-items: center;">
-                    <button class="btn btn-ghost btn-sm icon-btn" id="btnToggleSyncSettings" type="button" title="ตั้งค่า Google Sheet" style="padding: 4px; display: flex; align-items: center;">
+                    <button class="btn btn-ghost btn-sm icon-btn" id="btnToggleSyncSettings" type="button" data-i18n-title="sheet_settings_title" title="ตั้งค่า Google Sheet" style="padding: 4px; display: flex; align-items: center;">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
                     </button>
                     <button class="btn btn-ghost btn-sm" id="btnSyncSheet">Sync Sheet</button>
@@ -444,7 +451,7 @@
               </div>
               <div class="library-search">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                <input id="productSearch" type="text" placeholder="ค้นหาสินค้า...">
+                <input id="productSearch" type="text" data-i18n-placeholder="search_products_placeholder" placeholder="ค้นหาสินค้า...">
               </div>
               <select class="category-filter" id="categoryFilter">
                 <option value="">ทั้งหมด</option>
@@ -463,7 +470,7 @@
   <div class="modal-overlay" id="editModal">
     <div class="modal">
       <div class="modal-header">
-        <h3>แก้ไขสินค้า</h3>
+        <h3 data-i18n="edit_product_title">แก้ไขสินค้า</h3>
         <button class="modal-close" id="btnCloseModal">×</button>
       </div>
       <div class="modal-body">
@@ -471,7 +478,7 @@
           <input id="editImgInput" type="file" accept="image/png,image/jpeg,image/webp">
           <div class="upload-content" id="editUploadHint">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
-            <span>เปลี่ยนรูปสินค้า<br><small>PNG, JPG, WEBP</small></span>
+            <span><span data-i18n="change_product_image">เปลี่ยนรูปสินค้า</span><br><small>PNG, JPG, WEBP</small></span>
           </div>
           <div class="preview-wrap" id="editUploadPreview" style="display:none">
             <img id="editPreviewImg" src="" alt="Product preview">
@@ -480,7 +487,7 @@
         </div>
         <div class="form-grid">
           <div class="span-2">
-            <label for="editName">ชื่อสินค้า / SKU</label>
+            <label for="editName" data-i18n="product_name_label">ชื่อสินค้า / SKU</label>
             <input id="editName" type="text">
           </div>
           <div>
@@ -522,10 +529,10 @@
         </div>
       </div>
       <div class="modal-footer">
-        <button class="btn btn-ghost" id="btnCancelEdit">ยกเลิก</button>
+        <button class="btn btn-ghost" id="btnCancelEdit" data-i18n="cancel">ยกเลิก</button>
         <button class="btn btn-build" id="btnSaveEdit" style="width:auto; margin:0; padding:0 20px;">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          บันทึก
+          <span data-i18n="save">บันทึก</span>
         </button>
       </div>
     </div>
@@ -535,28 +542,28 @@
   <div class="modal-overlay" id="reportModal">
     <div class="modal modal-large">
       <div class="modal-header">
-        <h3>รายงานสรุปการจัดเรียงสินค้า (BOM & Placements)</h3>
+        <h3 data-i18n="report_title">รายงานสรุปการจัดเรียงสินค้า (BOM & Placements)</h3>
         <button class="modal-close" id="btnCloseReportModal">×</button>
       </div>
       <div class="modal-body">
         <div class="report-stats" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 20px;">
           <div class="stat-card" style="background: var(--surface-2); padding: 14px; border-radius: 10px; border: 1px solid var(--line); text-align: center;">
-            <div style="font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">จำนวน SKU ที่วาง</div>
+            <div data-i18n="report_skus_placed" style="font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">จำนวน SKU ที่วาง</div>
             <div id="reportTotalSKUs" style="font-size: 1.8rem; font-weight: 800; color: var(--ink); margin-top: 4px;">0</div>
           </div>
           <div class="stat-card" style="background: var(--surface-2); padding: 14px; border-radius: 10px; border: 1px solid var(--line); text-align: center;">
-            <div style="font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">จำนวนชิ้นรวม (Facing × Stack)</div>
+            <div data-i18n="report_total_qty" style="font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">จำนวนชิ้นรวม (Facing × Stack)</div>
             <div id="reportTotalQty" style="font-size: 1.8rem; font-weight: 800; color: var(--ink); margin-top: 4px;">0</div>
           </div>
           <div class="stat-card" style="background: var(--surface-2); padding: 14px; border-radius: 10px; border: 1px solid var(--line); text-align: center;">
-            <div style="font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">พื้นที่ใช้งานสะสมบนเชลฟ์</div>
+            <div data-i18n="report_space_used" style="font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;">พื้นที่ใช้งานสะสมบนเชลฟ์</div>
             <div id="reportSpaceUtil" style="font-size: 1.8rem; font-weight: 800; color: var(--ink); margin-top: 4px;">0 cm</div>
           </div>
         </div>
 
         <div class="report-tab-nav" style="display: flex; gap: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--line); padding-bottom: 8px;">
-          <button class="report-tab-btn active" id="btnTabBOM" type="button">สรุปยอดสินค้า (BOM Summary)</button>
-          <button class="report-tab-btn" id="btnTabPlacements" type="button">รายละเอียดจุดจัดวาง (Placement Details)</button>
+          <button class="report-tab-btn active" id="btnTabBOM" type="button" data-i18n="report_tab_bom">สรุปยอดสินค้า (BOM Summary)</button>
+          <button class="report-tab-btn" id="btnTabPlacements" type="button" data-i18n="report_tab_placements">รายละเอียดจุดจัดวาง (Placement Details)</button>
         </div>
         
         <div class="report-table-wrap" style="max-height: 380px; overflow-y: auto; border: 1px solid var(--line); border-radius: 10px; background: var(--surface);">
@@ -573,11 +580,11 @@
         </div>
       </div>
       <div class="modal-footer" style="display: flex; justify-content: space-between; align-items: center;">
-        <button class="btn btn-ghost" id="btnCancelReport">ปิด</button>
+        <button class="btn btn-ghost" id="btnCancelReport" data-i18n="close">ปิด</button>
         <div style="display:flex; gap:8px;">
           <button class="btn btn-ghost" id="btnExportStockExcel" style="width:auto; margin:0; padding:0 20px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-            Export ตัวโชว์-สต็อก.xlsx
+            <span data-i18n="export_stock_xlsx">Export ตัวโชว์-สต็อก.xlsx</span>
           </button>
           <button class="btn btn-primary" id="btnExportReportCSV" style="width:auto; margin:0; padding:0 20px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -597,37 +604,37 @@
       <div class="inspector-sku" id="inspectorSku">Product SKU</div>
       <div class="inspector-controls">
         <span class="inspector-ctl-label">Facing</span>
-        <button class="btn-inspect-action" id="btnInspectDec" type="button" title="ลด Facing">-</button>
+        <button class="btn-inspect-action" id="btnInspectDec" type="button" data-i18n-title="facing_dec_title" title="ลด Facing">-</button>
         <span class="inspector-facing-val" id="inspectorFacingVal">1</span>
-        <button class="btn-inspect-action" id="btnInspectInc" type="button" title="เพิ่ม Facing">+</button>
+        <button class="btn-inspect-action" id="btnInspectInc" type="button" data-i18n-title="facing_inc_title" title="เพิ่ม Facing">+</button>
       </div>
       <div class="inspector-controls">
-        <span class="inspector-ctl-label">แถวลึก</span>
-        <button class="btn-inspect-action" id="btnInspectRowsDec" type="button" title="ลดจำนวนชิ้นที่วางเรียงเข้าไปในแนวลึก">-</button>
+        <span class="inspector-ctl-label" data-i18n="depth_rows_label">แถวลึก</span>
+        <button class="btn-inspect-action" id="btnInspectRowsDec" type="button" data-i18n-title="depth_rows_dec_title" title="ลดจำนวนชิ้นที่วางเรียงเข้าไปในแนวลึก">-</button>
         <span class="inspector-facing-val" id="inspectorRowsCtlVal">1</span>
-        <button class="btn-inspect-action" id="btnInspectRowsInc" type="button" title="เพิ่มจำนวนชิ้นที่วางเรียงเข้าไปในแนวลึก">+</button>
+        <button class="btn-inspect-action" id="btnInspectRowsInc" type="button" data-i18n-title="depth_rows_inc_title" title="เพิ่มจำนวนชิ้นที่วางเรียงเข้าไปในแนวลึก">+</button>
       </div>
       <div class="inspector-controls">
         <span class="inspector-ctl-label">Stack</span>
-        <button class="btn-inspect-action" id="btnInspectStackDec" type="button" title="ลดชั้นวางซ้อน">-</button>
+        <button class="btn-inspect-action" id="btnInspectStackDec" type="button" data-i18n-title="stack_dec_title" title="ลดชั้นวางซ้อน">-</button>
         <span class="inspector-facing-val" id="inspectorStackVal">1</span>
-        <button class="btn-inspect-action" id="btnInspectStackInc" type="button" title="วางซ้อนเพิ่ม">+</button>
+        <button class="btn-inspect-action" id="btnInspectStackInc" type="button" data-i18n-title="stack_inc_title" title="วางซ้อนเพิ่ม">+</button>
         <div class="inspector-divider"></div>
-        <button class="btn-inspect-action btn-inspect-del" id="btnInspectDel" type="button" title="ลบจากชั้นวาง">
+        <button class="btn-inspect-action btn-inspect-del" id="btnInspectDel" type="button" data-i18n-title="remove_from_shelf_title" title="ลบจากชั้นวาง">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="inspector-controls">
-        <span class="inspector-ctl-label">หันด้าน</span>
-        <select id="inspectorOrientation" class="inspector-select" title="เลือกด้านที่แสดง">
-          <option value="front">ด้านหน้า (Front)</option>
-          <option value="side">ด้านข้าง (Side)</option>
-          <option value="top">ด้านบน (Top)</option>
+        <span class="inspector-ctl-label" data-i18n="facing_side_label">หันด้าน</span>
+        <select id="inspectorOrientation" class="inspector-select" data-i18n-title="orientation_select_title" title="เลือกด้านที่แสดง">
+          <option value="front" data-i18n="orient_front">ด้านหน้า (Front)</option>
+          <option value="side" data-i18n="orient_side">ด้านข้าง (Side)</option>
+          <option value="top" data-i18n="orient_top">ด้านบน (Top)</option>
         </select>
       </div>
       <div class="inspector-controls">
-        <span class="inspector-ctl-label">หมุน</span>
-        <button class="btn-inspect-action" id="btnInspectRotate" type="button" title="หมุนสินค้า 90 องศา">
+        <span class="inspector-ctl-label" data-i18n="rotate_label">หมุน</span>
+        <button class="btn-inspect-action" id="btnInspectRotate" type="button" data-i18n-title="rotate_90_title" title="หมุนสินค้า 90 องศา">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
         </button>
         <span class="inspector-facing-val" id="inspectorRotateVal" style="font-size:0.75rem; min-width:30px;">0°</span>
@@ -636,15 +643,15 @@
       <!-- Space & Capacity Analytics -->
       <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.15); font-size: 0.72rem; color: #ccc;">
         <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
-          <span>แถวลึกที่ใช้:</span>
+          <span data-i18n="depth_rows_used_label">แถวลึกที่ใช้:</span>
           <strong id="inspectorRowsVal" style="color:#fff;">1 / 1 แถว</strong>
         </div>
         <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
-          <span>ความจุรวมจุดนี้:</span>
+          <span data-i18n="capacity_here_label">ความจุรวมจุดนี้:</span>
           <strong id="inspectorCapacityVal" style="color:#fff; font-weight:700;">1 ชิ้น</strong>
         </div>
         <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
-          <span>อัตราการขาย:</span>
+          <span data-i18n="sales_rate_label">อัตราการขาย:</span>
           <strong id="inspectorSalesRateVal" style="color:#fff;">- /วัน</strong>
         </div>
         <div style="display:flex; justify-content:space-between;">
@@ -664,17 +671,19 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <!-- Application Scripts (modular) -->
-  <script src="src/utils.js?v=per-sqm"></script>
+  <script src="src/utils.js?v=drop-storage-key-slot"></script>
+  <script src="src/i18n.js?v=shelf-row"></script>
   <script src="src/sheets.js?v=per-sqm"></script>
   <script src="src/products.js?v=shelf"></script>
-  <script src="src/planogram.js?v=suggest-fill"></script>
+  <script src="src/planogram.js?v=summary-label-shorten"></script>
   <script src="src/templates.js?v=sync-segment-width"></script>
   <script src="src/branches.js?v=1.0"></script>
   <script src="src/salesData.js?v=1.0"></script>
   <script src="src/branchView.js?v=1.0"></script>
   <script src="src/planogram3d.js?v=board-full-width"></script>
-  <script src="src/export.js?v=stock-default"></script>
-  <script src="src/topview.js?v=topview-smooth-rotate"></script>
-  <script src="src/app.js?v=reset-3d-view"></script>
+  <script src="src/export.js?v=board-row-shared-catalog"></script>
+  <script src="src/topview.js?v=drop-storage-key-slot"></script>
+  <script src="src/app.js?v=drop-library-tab"></script>
+  <script src="src/multiBoard.js?v=1.2"></script>
 </body>
 </html>

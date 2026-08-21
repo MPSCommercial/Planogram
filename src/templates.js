@@ -38,6 +38,19 @@ const BUILTIN_TEMPLATES = [
       shelfHeights: [12, 46, 46, 46],
     },
   },
+  {
+    id: 'builtin-wood-orange',
+    name: 'เชลฟ์ไม้-ส้ม',
+    builtin: true,
+    image: 'assets/templates/shelf-wood-orange.png',
+    spec: {
+      // 1600x450x1200mm drawing: 4 boards / 3 cells, ~40cm each
+      segments: 1, shelves: 3, width: 160, height: 120, depth: 45,
+      gap: 28, shelfThickness: 2,
+      backColor: '#d9bd93', shelfColor: '#d9bd93',
+      hasBackPanel: true, hasSidePanel: true, hasDivider: true,
+    },
+  },
 ];
 
 /**
