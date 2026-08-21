@@ -421,23 +421,15 @@
         const surfaceY = segSurfaceYs[i];
         
         let leftBound = segLeft;
-        if (seg === 0) {
-          if (s.hasSidePanel) leftBound += panelT;
-        } else {
-          if (s.hasDivider) leftBound += panelT / 2;
-        }
+        if (seg !== 0 && s.hasDivider) leftBound += panelT / 2;
 
         let rightBound = segLeft + segW;
-        if (seg === segCount - 1) {
-          if (s.hasSidePanel) rightBound -= panelT;
-        } else {
-          if (s.hasDivider) rightBound -= panelT / 2;
-        }
+        if (seg !== segCount - 1 && s.hasDivider) rightBound -= panelT / 2;
 
         const boardW = Math.max(0, rightBound - leftBound);
         const boardX = (leftBound + rightBound) / 2;
 
-        const board = makeBox(boardW, thick, D - 2, s.shelfColor);
+        const board = makeBox(boardW, thick, D - 0.4, s.shelfColor);
         board.position.set(boardX, surfaceY + thick / 2, 0);
         contentGroup.add(board);
       }

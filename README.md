@@ -115,15 +115,10 @@ python3 tools/packshot.py --selftest                # ตรวจว่าต�
 
 ## Deployment
 
-โปรเจกต์นี้ได้รับการ Deploy ไว้บน Surge.sh ที่ลิงก์:
-[http://planogram-mpsynergy.surge.sh](http://planogram-mpsynergy.surge.sh)
+โปรเจกต์นี้ Deploy อยู่บน GitHub Pages ที่ลิงก์:
+[https://mpscommercial.github.io/Planogram/](https://mpscommercial.github.io/Planogram/)
 
-หากต้องการ Deploy อัปเดตไปยัง Surge ใหม่อีกครั้ง:
-1. ล็อกอินเข้าใช้งานบัญชี Surge บน Terminal
-2. รันคำสั่งต่อไปนี้จาก root directory:
-   ```bash
-   npx surge . planogram-mpsynergy.surge.sh
-   ```
+Auto-deploy ทุกครั้งที่ push ขึ้น branch `main` (เดิมใช้ Surge.sh แต่ deploy fail ซ้ำ ๆ จึงย้ายมา GitHub Pages)
 
 ## License
 

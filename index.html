@@ -126,11 +126,6 @@
                 <label><input id="hasSidePanel" type="checkbox" checked> Side panels</label>
                 <label><input id="hasSegmentDivider" type="checkbox" checked> Segment dividers</label>
               </div>
-              <button class="btn btn-build" id="btnBuildShelf">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                สร้าง / อัปเดต Shelf
-              </button>
-
               <div class="template-block">
                 <div class="template-block-label">เทมเพลตเชลฟ์</div>
                 <div class="template-row">
@@ -139,6 +134,8 @@
                   </select>
                   <button class="btn btn-mini" id="btnApplyTemplate" type="button">ใช้</button>
                 </div>
+                <img id="templateThumb" class="template-thumb" alt="ตัวอย่างเชลฟ์" hidden>
+
                 <div class="template-row">
                   <button class="btn btn-mini btn-ghost" id="btnSaveTemplate" type="button">บันทึกขนาดปัจจุบันเป็นเทมเพลต</button>
                   <button class="btn btn-mini btn-danger" id="btnDeleteTemplate" type="button" disabled aria-label="ลบเทมเพลต">ลบ</button>
@@ -328,6 +325,7 @@
           <!-- SketchUp-style 3D view (Three.js renders here) -->
           <div class="stage-3d" id="stage3d" style="display:none">
             <div class="stage-3d-hint">ลากเพื่อหมุน · scroll ซูม · คลิกขวาลากเพื่อเลื่อน</div>
+            <button class="btn btn-mini btn-ghost" id="btnReset3D" type="button" style="position:absolute; top:12px; right:12px; z-index:2;">รีเซ็ตมุมมอง</button>
           </div>
         </div>
       </section>
@@ -670,13 +668,13 @@
   <script src="src/sheets.js?v=per-sqm"></script>
   <script src="src/products.js?v=shelf"></script>
   <script src="src/planogram.js?v=suggest-fill"></script>
-  <script src="src/templates.js?v=orange-builtin"></script>
+  <script src="src/templates.js?v=sync-segment-width"></script>
   <script src="src/branches.js?v=1.0"></script>
   <script src="src/salesData.js?v=1.0"></script>
   <script src="src/branchView.js?v=1.0"></script>
-  <script src="src/planogram3d.js?v=orange-kickplate"></script>
-  <script src="src/export.js?v=stock-excel"></script>
+  <script src="src/planogram3d.js?v=board-full-width"></script>
+  <script src="src/export.js?v=stock-default"></script>
   <script src="src/topview.js?v=topview-smooth-rotate"></script>
-  <script src="src/app.js?v=stock-excel"></script>
+  <script src="src/app.js?v=reset-3d-view"></script>
 </body>
 </html>

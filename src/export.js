@@ -531,7 +531,7 @@ function exportStockExcel() {
   const rows = [['ลำดับ', 'Ref.', 'รายการ', 'ตัวโชว์', 'สต็อก', 'รวม']];
   let no = 1;
   totalSKUsMap.forEach(({ product, qty }) => {
-    rows.push([no++, product.odoo || product.id, product.name, qty, '', null]);
+    rows.push([no++, product.odoo || product.id, product.name, '', qty, null]);
   });
 
   const ws = XLSX.utils.aoa_to_sheet(rows);

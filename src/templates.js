@@ -16,11 +16,26 @@ const BUILTIN_TEMPLATES = [
     id: 'builtin-orange',
     name: 'เชลฟ์ส้ม',
     builtin: true,
+    image: 'assets/templates/shelf-orange.png',
     spec: {
       segments: 1, shelves: 3, width: 95, height: 142, depth: 35,
       gap: 28, shelfThickness: 3,
       backColor: '#c1571f', shelfColor: '#c1571f',
       hasBackPanel: true, hasSidePanel: true, hasDivider: true,
+    },
+  },
+  {
+    id: 'builtin-orange-white',
+    name: 'เชลฟ์ใหม่ (ส้ม-ขาว)',
+    builtin: true,
+    image: 'assets/templates/shelf-orange-white.png',
+    spec: {
+      segments: 1, shelves: 4, width: 120, height: 150, depth: 45,
+      gap: 40, shelfThickness: 3,
+      backColor: '#f0f0f0', shelfColor: '#f0f0f0',
+      hasBackPanel: true, hasSidePanel: true, hasDivider: true,
+      // Top cell is short headroom (frame lip), not a full shelf gap — matches ref photo
+      shelfHeights: [12, 46, 46, 46],
     },
   },
 ];
@@ -81,6 +96,15 @@ function renderTemplateOptions(selectedId = '') {
   const exportBtn = $('btnExportTemplate');
   if (exportBtn) exportBtn.disabled = !select.value;
 
+  const thumb = $('templateThumb');
+  if (thumb) {
+    if (selected && selected.image) {
+      thumb.src = selected.image;
+      thumb.hidden = false;
+    } else {
+      thumb.hidden = true;
+    }
+  }
 }
 
 /**
@@ -111,6 +135,16 @@ function applySelectedTemplate() {
   $('hasBackPanel').checked = s.hasBackPanel !== false;
   $('hasSidePanel').checked = s.hasSidePanel !== false;
   $('hasSegmentDivider').checked = s.hasDivider !== false;
+
+  // Setting .value directly above doesn't fire 'change', so the hidden
+  // per-segment width inputs (segWidth-0, ...) would keep stale values
+  // from whatever template/edit ran before this one — force them back
+  // in sync with the template's own width before rebuilding.
+  renderSegmentWidthInputs();
+
+  pendingSegmentShelfHeights = (Array.isArray(s.shelfHeights) && s.shelfHeights.length === s.shelves)
+    ? Array.from({ length: s.segments }, () => s.shelfHeights.slice())
+    : null;
 
   buildShelf();
   showToast(`ใช้เทมเพลต "${tpl.name}" แล้ว`);

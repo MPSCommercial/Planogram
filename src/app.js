@@ -6,11 +6,9 @@
   requestAnimationFrame(() => document.body.classList.add('app-ready'));
   restorePanelState();
 
-  // ─── Button bindings ───
-  $('btnBuildShelf').addEventListener('click', buildShelf);
-
   // ─── Auto-update shelf layout on style & toggle option changes ───
-  ['hasSidePanel', 'hasBackPanel', 'hasSegmentDivider', 'backColor', 'shelfColor'].forEach((id) => {
+  ['hasSidePanel', 'hasBackPanel', 'hasSegmentDivider', 'backColor', 'shelfColor',
+    'shelvesPerSegment', 'overallHeight', 'shelfDepth', 'gapSize', 'shelfThickness'].forEach((id) => {
     const el = $(id);
     if (el) el.addEventListener('change', buildShelf);
   });
@@ -90,6 +88,10 @@
   $('btnRemoveImage').addEventListener('click', (e) => removeUploadedImage(e));
   $('imgInput').addEventListener('change', handleImageUpload);
   
+  $('btnReset3D').addEventListener('click', () => {
+    if (window.Planogram3D) Planogram3D.refresh();
+  });
+
   // ─── SketchUp-style 3D view toggle binding ───
   $('btnToggle3D').addEventListener('click', () => {
     const btn = $('btnToggle3D');
