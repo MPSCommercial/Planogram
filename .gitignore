@@ -2,6 +2,8 @@
 node_modules/
 *.log
 .omg/
+.claude/
+AGENTS.override.md
 
 # wrangler files
 .wrangler

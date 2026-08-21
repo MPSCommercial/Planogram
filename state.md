@@ -9,9 +9,9 @@
 - **Status**: เพิ่มระบบ "หลายเชลฟ์" (Multi-Board) — เพิ่มเชลฟ์ได้มากกว่า 1 อันในหน้าเดียว ตั้งชื่อฝั่งได้ (ซ้าย/ขวา/หลัง ฯลฯ), แต่ละเชลฟ์มีข้อมูล/สินค้าเป็นอิสระต่อกัน แต่ยังใช้ Shelf Specification panel (ซ้าย) และ Product Library (ขวา) ชุดเดียวกันร่วมกันโดยคลิกเลือกว่าจะแก้เชลฟ์ไหน (ลองมาแล้ว 2 แบบ: แบบแรกฝัง iframe ทั้งแอปซ้อนกัน — ผู้ใช้บอกว่าซ้อนแปลกๆ ไม่เอา — เปลี่ยนมาเป็นแบบ tile คลิกสลับแทน ตามที่ผู้ใช้ต้องการ)
 - **ฟีเจอร์อื่นที่เพิ่มรอบนี้**: ปุ่มสลับภาษา TH/EN สำหรับ UI หลัก (default เป็น EN); เทมเพลตเชลฟ์ใหม่ "เชลฟ์ไม้-ส้ม" (จากแบบ drawing 1600×450×1200mm) พร้อม thumbnail; แก้บั๊กแนวลึกสินค้า (`depth rows`) เดิม auto เต็มความลึกเสมอโดยไม่ถาม ตอนนี้ default แค่ 1 แถว ผู้ใช้กด + เพิ่มเองถ้าต้องการ (badge cap ยังโชว์ความจุสูงสุดไว้อ้างอิง); แก้บั๊ก summary card ค้างค่า Top View หลังสลับกลับมาแท็บ Planogram; เอาปุ่มเมนู "Product Library" ที่ซ้ำซ้อนออก (มันแค่ scroll ไป panel ขวาที่เปิดอยู่แล้ว); ย่อขนาด summary card และ board tile ให้กระชับขึ้น
 - **Live URL**: `https://mpscommercial.github.io/Planogram/` (deploy ผ่าน GitHub Pages auto-deploy จาก `main`, ตรวจแล้ว build สำเร็จ)
-- **Branch**: main (commit `d355a01`, pushed + deployed)
-- **Blocker**: รอผู้ใช้ยืนยันสีของ Curble Grand (IMG_7302 → A10217), LAPTOP PRO (IMG_7309 → A10228) และรุ่น FOOT REST (IMG_7305 → A10020) — ยังไม่มีอัปเดตเรื่องนี้
-- **Next**: ถามผู้ใช้ว่าจะตั้ง custom domain (เช่น `planogram.mpsynergy.co.th`) ชี้มาที่ GitHub Pages ไหม; ถ่ายรูปเพิ่มอีก 30 SKU หมวด Accessories ที่ยังไม่มีรูป แล้วรัน `python3 tools/packshot.py -o assets/products --map names.csv photos-raw/*.jpeg`; ถ้าสลับเชลฟ์บ่อยแล้วรำคาญที่ต้องเลือก Branch เองทุกครั้ง มี fast-follow ไว้แล้วคือให้ Multi-Board จำ branch ต่อฝั่งได้อัตโนมัติ
+- **Branch**: main (commit `77f911b`, pushed + deployed)
+- **Blocker**: ไม่มี (ยืนยันสีและรุ่นสินค้า Curble Grand, LAPTOP PRO, FOOT REST เรียบร้อยแล้ว)
+- **Next**: ถามผู้ใช้ว่าจะตั้ง custom domain (เช่น `planogram.mpsynergy.co.th`) ชี้มาที่ GitHub Pages ไหม; ถ่ายรูปเพิ่มอีก 30 SKU หมวด Accessories ที่ยังไม่มีรูป แล้วรัน `python3 tools/packshot.py -o assets/products --map names.csv photos-raw/*.jpeg`; พัฒนาให้ Multi-Board จำ branch ต่อฝั่งได้อัตโนมัติ
 - **Files**: `index.html`, `src/multiBoard.js`, `src/i18n.js`, `src/utils.js`, `src/planogram.js`, `src/topview.js`, `src/templates.js`, `src/app.js`, `src/styles.css`, `assets/templates/shelf-wood-orange.png`, `state.md`
 
 ---
