@@ -6,23 +6,28 @@
 ---
 
 ## ⚡ NOW
-- **Status**: ย้าย production hosting จาก Surge ไป **GitHub Pages** เพราะ Surge deploy fail ซ้ำ ๆ ทุกครั้ง (`Aborted`/crash) ทั้งจากเครื่อง user เองและ session นี้ ลองทุกทาง (เปลี่ยน Node version, `surge@latest`, รอ 1 ชม. เผื่อ rate-limit) ก็ยังไม่ผ่าน — สรุปว่าเป็นปัญหาฝั่ง Surge/บัญชี ไม่ใช่โค้ด จึงเปลี่ยน repo เป็น **public** แล้วเปิด GitHub Pages (จำเป็นเพราะ private repo ใช้ Pages ไม่ได้บน Free plan) auto-deploy จาก branch `main` ทุกครั้งที่ push
-- **Live URL ใหม่**: `https://mpscommercial.github.io/Planogram/` (ตรวจแล้ว live, โหลดรูป/สคริปต์ครบ)
-- **Surge เดิม**: `https://planogram-mpsynergy.surge.sh` ปล่อยไว้เฉย ๆ ไม่ลบ (ยังพังอยู่ ไม่ได้ debug เพิ่ม)
-- **ฟีเจอร์ที่เพิ่มรอบนี้**: default shelf spec เปลี่ยนเป็น "เชลฟ์ส้ม" (สเปค ERGOTREND 950×350×1420mm, 1 segment, 3 shelves, สีส้ม `#c1571f`) + built-in template เลือกได้จาก dropdown โดยไม่ทับ localStorage เดิมของ user; แก้เงาทแยงบนแผ่นหลังเชลฟ์แคบ/ลึกใน 3D view และทำฐาน kick plate ให้เป็นสีเดียวกับเชลฟ์; เพิ่ม summary card ประมาณจำนวนสินค้าที่เชลฟ์รับได้เต็ม; เพิ่มปุ่ม Export "ตัวโชว์-สต็อก.xlsx" ตามฟอร์แมต `assets/Template/Template.xlsx` ของ Ergotrend; Add Product panel และ Shelf Specification panel หุบเป็น default
-- **Branch**: main (commit `cbd3c79`, pushed)
-- **Blocker**: รอผู้ใช้ยืนยันสีของ Curble Grand (IMG_7302 → A10217), LAPTOP PRO (IMG_7309 → A10228) และรุ่น FOOT REST (IMG_7305 → A10020)
-- **Next**: ถามผู้ใช้ว่าจะตั้ง custom domain (เช่น `planogram.mpsynergy.co.th`) ชี้มาที่ GitHub Pages ไหม; ถ่ายรูปเพิ่มอีก 30 SKU หมวด Accessories ที่ยังไม่มีรูป แล้วรัน `python3 tools/packshot.py -o assets/products --map names.csv photos-raw/*.jpeg`
-- **Files**: `index.html`, `src/app.js`, `src/export.js`, `src/planogram.js`, `src/planogram3d.js`, `src/templates.js`, `assets/Template/Template.xlsx`, `state.md`
+- **Status**: เพิ่มระบบ "หลายเชลฟ์" (Multi-Board) — เพิ่มเชลฟ์ได้มากกว่า 1 อันในหน้าเดียว ตั้งชื่อฝั่งได้ (ซ้าย/ขวา/หลัง ฯลฯ), แต่ละเชลฟ์มีข้อมูล/สินค้าเป็นอิสระต่อกัน แต่ยังใช้ Shelf Specification panel (ซ้าย) และ Product Library (ขวา) ชุดเดียวกันร่วมกันโดยคลิกเลือกว่าจะแก้เชลฟ์ไหน (ลองมาแล้ว 2 แบบ: แบบแรกฝัง iframe ทั้งแอปซ้อนกัน — ผู้ใช้บอกว่าซ้อนแปลกๆ ไม่เอา — เปลี่ยนมาเป็นแบบ tile คลิกสลับแทน ตามที่ผู้ใช้ต้องการ)
+- **ฟีเจอร์อื่นที่เพิ่มรอบนี้**: ปุ่มสลับภาษา TH/EN สำหรับ UI หลัก (default เป็น EN); เทมเพลตเชลฟ์ใหม่ "เชลฟ์ไม้-ส้ม" (จากแบบ drawing 1600×450×1200mm) พร้อม thumbnail; แก้บั๊กแนวลึกสินค้า (`depth rows`) เดิม auto เต็มความลึกเสมอโดยไม่ถาม ตอนนี้ default แค่ 1 แถว ผู้ใช้กด + เพิ่มเองถ้าต้องการ (badge cap ยังโชว์ความจุสูงสุดไว้อ้างอิง); แก้บั๊ก summary card ค้างค่า Top View หลังสลับกลับมาแท็บ Planogram; เอาปุ่มเมนู "Product Library" ที่ซ้ำซ้อนออก (มันแค่ scroll ไป panel ขวาที่เปิดอยู่แล้ว); ย่อขนาด summary card และ board tile ให้กระชับขึ้น
+- **Live URL**: `https://mpscommercial.github.io/Planogram/` (deploy ผ่าน GitHub Pages auto-deploy จาก `main`, ตรวจแล้ว build สำเร็จ)
+- **Branch**: main (commit `d355a01`, pushed + deployed)
+- **Blocker**: รอผู้ใช้ยืนยันสีของ Curble Grand (IMG_7302 → A10217), LAPTOP PRO (IMG_7309 → A10228) และรุ่น FOOT REST (IMG_7305 → A10020) — ยังไม่มีอัปเดตเรื่องนี้
+- **Next**: ถามผู้ใช้ว่าจะตั้ง custom domain (เช่น `planogram.mpsynergy.co.th`) ชี้มาที่ GitHub Pages ไหม; ถ่ายรูปเพิ่มอีก 30 SKU หมวด Accessories ที่ยังไม่มีรูป แล้วรัน `python3 tools/packshot.py -o assets/products --map names.csv photos-raw/*.jpeg`; ถ้าสลับเชลฟ์บ่อยแล้วรำคาญที่ต้องเลือก Branch เองทุกครั้ง มี fast-follow ไว้แล้วคือให้ Multi-Board จำ branch ต่อฝั่งได้อัตโนมัติ
+- **Files**: `index.html`, `src/multiBoard.js`, `src/i18n.js`, `src/utils.js`, `src/planogram.js`, `src/topview.js`, `src/templates.js`, `src/app.js`, `src/styles.css`, `assets/templates/shelf-wood-orange.png`, `state.md`
 
 ---
 
 ## 📜 LOG
 
+### 🗓️ 2026-08-21
+- ✅ Previous NOW: live spec อัปเดตทันทีที่แก้ไข (ไม่ต้องกดปุ่ม build ใหม่ — เอาปุ่ม "สร้าง/อัปเดต Shelf" ที่ซ้ำซ้อนออก); เพิ่ม shelf template ใหม่ "เชลฟ์ใหม่ (ส้ม-ขาว)" (ERGOTREND 1200×1500×450mm) พร้อม thumbnail รูปจริงในทุกเทมเพลต; stock export default เติมคอลัมน์ สต็อก ให้ก่อน (เว้น ตัวโชว์ ให้กรอกเอง); 3D view เพิ่มปุ่ม "รีเซ็ตมุมมอง" และแก้บั๊กแผ่นชั้นไม่เต็มความกว้าง segment ตอน apply template; README ชี้ลิงก์ deploy ไปที่ GitHub Pages
+- Files: `README.md`, `index.html`, `src/app.js`, `src/export.js`, `src/planogram3d.js`, `src/styles.css`, `src/templates.js`, `assets/products/`, `assets/templates/`
+
 ### 🗓️ 2026-08-20
 - ✅ Previous NOW: ตั้งค่า default shelf spec ในหน้าเปิดแอปให้เป็น "เชลฟ์ส้ม" (อ้างอิงสเปค ERGOTREND 950×350×1420mm) — 1 segment, 3 shelves, สีส้ม `#c1571f` ทั้ง back panel และ shelf; ที่ปรับได้หลังจากนี้ยังเหมือนเดิมคือจำนวนชั้นวาง (`shelvesPerSegment`) และความสูงต่อชั้น (drag บน canvas หรือพิมพ์ cm)
 - Files: `index.html`, `src/sheets.js`, `src/utils.js`, `src/products.js`, `src/planogram.js`, `src/export.js`, `src/app.js`, `tools/packshot.py`, `tools/cutout.swift`, `assets/products/`, `state.md`
 - ✅ Previous NOW: แก้ PNG export สีซีด โดยปิด animation/transition ใน DOM clone ก่อน `html2canvas` จับภาพ พร้อม deploy Surge แล้ว
+- ✅ Previous NOW: ย้าย production hosting จาก Surge ไป **GitHub Pages** เพราะ Surge deploy fail ซ้ำ ๆ ทุกครั้ง (`Aborted`/crash) ทั้งจากเครื่อง user เองและ session นั้น ลองทุกทาง (เปลี่ยน Node version, `surge@latest`, รอ 1 ชม. เผื่อ rate-limit) ก็ยังไม่ผ่าน — สรุปว่าเป็นปัญหาฝั่ง Surge/บัญชี ไม่ใช่โค้ด จึงเปลี่ยน repo เป็น **public** แล้วเปิด GitHub Pages (จำเป็นเพราะ private repo ใช้ Pages ไม่ได้บน Free plan) auto-deploy จาก branch `main` ทุกครั้งที่ push; Surge เดิม (`https://planogram-mpsynergy.surge.sh`) ปล่อยไว้เฉยๆ ไม่ลบ; รอบเดียวกันนี้ยังเพิ่ม built-in template dropdown (ไม่ทับ localStorage เดิมของ user), แก้เงาทแยงบนแผ่นหลังเชลฟ์แคบ/ลึกใน 3D view, ทำฐาน kick plate สีเดียวกับเชลฟ์, เพิ่ม summary card ประมาณจำนวนสินค้าที่เชลฟ์รับได้เต็ม, เพิ่มปุ่ม Export "ตัวโชว์-สต็อก.xlsx" ตามฟอร์แมต Ergotrend
+- Files: `index.html`, `src/app.js`, `src/export.js`, `src/planogram.js`, `src/planogram3d.js`, `src/templates.js`, `assets/Template/Template.xlsx`, `state.md`
 
 ### 🗓️ 2026-08-05
 - ✅ Previous NOW: เพิ่มปุ่ม `Export เชลฟ์เปล่า PNG` ใน Shelf Templates และแก้ exporter ให้สร้างไฟล์ PNG binary ผ่าน `canvas.toBlob()` พร้อมตรวจไฟล์ไม่ว่างก่อนดาวน์โหลด; ส่งออกแบบ flat ไม่มีเงาและคืน canvas/localStorage เดิม
