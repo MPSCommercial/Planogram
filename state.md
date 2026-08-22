@@ -6,19 +6,24 @@
 ---
 
 ## ⚡ NOW
-- **Status**: เพิ่มระบบ "หลายเชลฟ์" (Multi-Board) — เพิ่มเชลฟ์ได้มากกว่า 1 อันในหน้าเดียว ตั้งชื่อฝั่งได้ (ซ้าย/ขวา/หลัง ฯลฯ), แต่ละเชลฟ์มีข้อมูล/สินค้าเป็นอิสระต่อกัน แต่ยังใช้ Shelf Specification panel (ซ้าย) และ Product Library (ขวา) ชุดเดียวกันร่วมกันโดยคลิกเลือกว่าจะแก้เชลฟ์ไหน (ลองมาแล้ว 2 แบบ: แบบแรกฝัง iframe ทั้งแอปซ้อนกัน — ผู้ใช้บอกว่าซ้อนแปลกๆ ไม่เอา — เปลี่ยนมาเป็นแบบ tile คลิกสลับแทน ตามที่ผู้ใช้ต้องการ)
-- **ฟีเจอร์อื่นที่เพิ่มรอบนี้**: ปุ่มสลับภาษา TH/EN สำหรับ UI หลัก (default เป็น EN); เทมเพลตเชลฟ์ใหม่ "เชลฟ์ไม้-ส้ม" (จากแบบ drawing 1600×450×1200mm) พร้อม thumbnail; แก้บั๊กแนวลึกสินค้า (`depth rows`) เดิม auto เต็มความลึกเสมอโดยไม่ถาม ตอนนี้ default แค่ 1 แถว ผู้ใช้กด + เพิ่มเองถ้าต้องการ (badge cap ยังโชว์ความจุสูงสุดไว้อ้างอิง); แก้บั๊ก summary card ค้างค่า Top View หลังสลับกลับมาแท็บ Planogram; เอาปุ่มเมนู "Product Library" ที่ซ้ำซ้อนออก (มันแค่ scroll ไป panel ขวาที่เปิดอยู่แล้ว); ย่อขนาด summary card และ board tile ให้กระชับขึ้น
-- **Live URL**: `https://mpscommercial.github.io/Planogram/` (deploy ผ่าน GitHub Pages auto-deploy จาก `main`, ตรวจแล้ว build สำเร็จ)
-- **Branch**: main (commit `77f911b`, pushed + deployed)
+- **Status**: ปรับแก้การแสดงผลสีในมุมมอง 3D (Three.js) ให้สีอิ่มสวย ไม่ซีดขาว — โดยเพิ่มการแปลงสี sRGB to Linear (`to3Color`) ป้องกัน double-gamma washout เมื่อใช้ `outputEncoding = sRGBEncoding`, เปิดใช้ `ACESFilmicToneMapping` เพื่อความสมจริงของมิติแสงและสี, ปรับความสมดุลของแสง (Key light + Fill light + Hemisphere light) และปรับค่า Material roughness/metalness ให้ออกมาเป็นพื้นผิวที่ดูสดใส คมชัด ไม่สะท้อนแสงซีดฟุ้ง
+- **Live URL**: `https://mpscommercial.github.io/Planogram/` (deploy ผ่าน GitHub Pages auto-deploy จาก `main`)
+- **Branch**: main
 - **Blocker**: ไม่มี (ยืนยันสีและรุ่นสินค้า Curble Grand, LAPTOP PRO, FOOT REST เรียบร้อยแล้ว)
-- **Next**: ถามผู้ใช้ว่าจะตั้ง custom domain (เช่น `planogram.mpsynergy.co.th`) ชี้มาที่ GitHub Pages ไหม; ถ่ายรูปเพิ่มอีก 30 SKU หมวด Accessories ที่ยังไม่มีรูป แล้วรัน `python3 tools/packshot.py -o assets/products --map names.csv photos-raw/*.jpeg`; พัฒนาให้ Multi-Board จำ branch ต่อฝั่งได้อัตโนมัติ
-- **Files**: `index.html`, `src/multiBoard.js`, `src/i18n.js`, `src/utils.js`, `src/planogram.js`, `src/topview.js`, `src/templates.js`, `src/app.js`, `src/styles.css`, `assets/templates/shelf-wood-orange.png`, `state.md`
+- **Next**: ทดสอบมุมมอง 3D ร่วมกับผู้ใช้; ถามผู้ใช้ว่าจะตั้ง custom domain (เช่น `planogram.mpsynergy.co.th`) ชี้มาที่ GitHub Pages ไหม; ถ่ายรูปเพิ่มอีก 30 SKU หมวด Accessories ที่ยังไม่มีรูป แล้วรัน `python3 tools/packshot.py -o assets/products --map names.csv photos-raw/*.jpeg`
+- **Files**: `src/planogram3d.js`, `state.md`
 
 ---
 
 ## 📜 LOG
 
+### 🗓️ 2026-08-22
+- ✅ Previous NOW: ปรับแก้ระบบ Color Management และแสงเงาใน Three.js 3D View แก้ปัญหาสีเชลฟ์และวัสดุซีดขาว
+- Files: `src/planogram3d.js`, `state.md`
+
 ### 🗓️ 2026-08-21
+- ✅ Previous NOW: เพิ่มระบบ "หลายเชลฟ์" (Multi-Board) — เพิ่มเชลฟ์ได้มากกว่า 1 อันในหน้าเดียว ตั้งชื่อฝั่งได้ (ซ้าย/ขวา/หลัง ฯลฯ); ปุ่มสลับภาษา TH/EN สำหรับ UI หลัก (default เป็น EN); เทมเพลตเชลฟ์ใหม่ "เชลฟ์ไม้-ส้ม" พร้อม thumbnail; แก้บั๊กแนวลึกสินค้า (`depth rows`); ย่อขนาด summary card และ board tile ให้กระชับขึ้น
+- Files: `index.html`, `src/multiBoard.js`, `src/i18n.js`, `src/utils.js`, `src/planogram.js`, `src/topview.js`, `src/templates.js`, `src/app.js`, `src/styles.css`, `assets/templates/shelf-wood-orange.png`, `state.md`
 - ✅ Previous NOW: live spec อัปเดตทันทีที่แก้ไข (ไม่ต้องกดปุ่ม build ใหม่ — เอาปุ่ม "สร้าง/อัปเดต Shelf" ที่ซ้ำซ้อนออก); เพิ่ม shelf template ใหม่ "เชลฟ์ใหม่ (ส้ม-ขาว)" (ERGOTREND 1200×1500×450mm) พร้อม thumbnail รูปจริงในทุกเทมเพลต; stock export default เติมคอลัมน์ สต็อก ให้ก่อน (เว้น ตัวโชว์ ให้กรอกเอง); 3D view เพิ่มปุ่ม "รีเซ็ตมุมมอง" และแก้บั๊กแผ่นชั้นไม่เต็มความกว้าง segment ตอน apply template; README ชี้ลิงก์ deploy ไปที่ GitHub Pages
 - Files: `README.md`, `index.html`, `src/app.js`, `src/export.js`, `src/planogram3d.js`, `src/styles.css`, `src/templates.js`, `assets/products/`, `assets/templates/`
 
@@ -54,7 +59,7 @@
 - Files: `src/topview.js`, `state.md`
 - ✅ Previous NOW (2): ปรับปรุงรูปทรงโมเดล 3D แบบสำนักงาน (Office-style) สำหรับโต๊ะทำงานและเก้าอี้สำนักงาน โดยเพิ่มแผงปิดบังขาส่วนหน้า (Modesty Panel), ตู้ลิ้นชักด้านข้าง (Drawer Unit) พร้อมหูจับโลหะ และออกแบบเก้าอี้ตามหลักการยศาสตร์ (Ergonomic armrests, Lumbar support) พร้อมโครงขา 5 แฉกและล้อเลื่อนเรียบร้อยแล้ว
 - Files: `src/planogram3d.js`, `state.md`
-- ✅ Previous NOW (2): เพิ่มระบบคลิกเพื่อวางสินค้า (Click-to-Place) บนบอร์ด 2D Grid ของ Top View Layout เพื่อความมั่นใจ 100% ว่าผู้ใช้จะสามารถจัดวางสินค้าได้แม้มีปัญหา Drag & Drop ของบราวเซอร์ และเพิ่มระบบ "Room Layout Templates" (มี 3 แบบ: Showroom, Bedroom, Office Workspace) ซึ่งจัดพิกัดสินค้าเฟอร์นิเจอร์หลัก (โต๊ะ, เก้าอี้, เตียง, ชั้นวางสินค้า) ไว้เป็นตัวอย่างเรียบร้อย
+- ✅ Previous NOW (2): เพิ่มระบบคลิกเพื่อวางสินค้า (Click-to-Place) บนบอร์ด 2D Grid ของ Top View Layout เพื่อความมั่นใจ 100% ว่าผู้ใช้จะสามารถจัดวางสินค้าได้แม้มีปัญหา Drag & Drop ของเบราว์เซอร์ และเพิ่มระบบ "Room Layout Templates" (มี 3 แบบ: Showroom, Bedroom, Office Workspace) ซึ่งจัดพิกัดสินค้าเฟอร์นิเจอร์หลัก (โต๊ะ, เก้าอี้, เตียง, ชั้นวางสินค้า) ไว้เป็นตัวอย่างเรียบร้อย
 - Files: `index.html`, `src/topview.js`, `state.md`
 - ✅ Previous NOW (2): แก้ไขปัญหาผู้ใช้ไม่สามารถเพิ่มสินค้าลงในแปลน Top View ได้เนื่องจากเปิด 3D View ค้างไว้บดบังหน้าจอการวาง 2D โดยการเพิ่มระบบ Auto-close 3D View เมื่อมีการเปลี่ยนสลับหน้าจอแท็บ (nav-tab) และปิด 3D View อัตโนมัติเมื่อผู้ใช้เริ่มคลิกขยับลากสินค้า (dragstart) เพื่อเปลี่ยนมุมมองกลับมาเป็น 2D Canvas พร้อมให้ทำการวางสิ่งของได้ทันทีอย่างลื่นไหล
 - Files: `src/topview.js`, `src/products.js`, `state.md`
@@ -95,96 +100,3 @@
 - ✅ Previous NOW (3): เพิ่มชั้นวางแบบปรับตำแหน่งแผ่นชั้นได้อิสระ + สเกลความสูง — แต่ละชั้นมี cell height (cm) ของตัวเอง (`spec.shelfHeights`), ลากแผ่นชั้นบนแคนวาส (board-grip) หรือพิมพ์ตัวเลข cm ต่อชั้น (pill input) ได้, มีไม้บรรทัด cm ด้านซ้าย (ruler) + ป้ายความสูงต่อชั้น. อัปเดตทั้ง 2D, 3D (`surfaceYs` cumulative) และ persistence
 - Files: `src/planogram.js`, `src/planogram3d.js`, `src/export.js`, `index.html`, `src/styles.css`
 - หมายเหตุ: ช่อง "Gap Between Shelves" ในฟอร์มไม่ถูกใช้ใน layout แล้ว (แทนด้วยตำแหน่งแผ่นชั้น) — ยังเก็บค่าไว้ ยังไม่ลบ
-
-> ย้าย NOW เก่ามาใส่ที่นี่ทุกครั้งที่อัปเดต — ไม่ต้องลบ
-
-### 🗓️ 2026-06-02
-- ✅ Previous NOW: เพิ่มการวางสินค้าซ้อนกัน (stacking) — property `stack` ต่อสินค้า ปรับใน mini-inspector, เรนเดอร์ 2D (stack-unit) + 3D (clone mesh)
-- Files: `src/planogram.js`, `src/planogram3d.js`, `index.html`, `src/app.js`, `src/styles.css`, `state.md`
-
-### 🗓️ 2026-06-02
-- ✅ Previous NOW: เพิ่มฟีเจอร์ Shelf Templates — เทมเพลตพื้นฐาน 5 แบบ + บันทึก/ลบ/ซ่อน-คืนค่า (localStorage)
-- Files: `src/templates.js`, `index.html`, `src/app.js`, `src/styles.css`, `state.md`
-
-### 🗓️ 2026-06-02
-- ✅ Previous NOW: Pushed all recent local commits up to date with `origin/main`
-- ✅ Branch: `main` | Commit: `be7bfb1` — style: revert sticky stage toolbar and apply transparent minimal font-only layout | Deploy: Pushed to `origin/main`
-- ✅ Next เดิม: พร้อมเริ่มงานพัฒนาส่วนถัดไปตาม `PLANOGRAM_REQUIREMENTS.md` หรือรอรับ feedback จากผู้ใช้
-- Files: `state.md`
-
-### 🗓️ 2026-05-21
-- ✅ Previous NOW: Completed Stage Toolbar aesthetic cleanup by reverting sticky behaviors and setting background to 100% transparent to ensure a highly minimal font-only layout
-- ✅ Branch: `main` | Commit: `be7bfb1` — style: revert sticky stage toolbar and apply transparent minimal font-only layout | Deploy: Pushed to `origin/main`
-- ✅ Next เดิม: พร้อมตรวจสอบ Visual QA โทนสีและเลย์เอาต์มินิมอลแบบใหม่ร่วมกับผู้ใช้
-- Files: `state.md`
-
-### 🗓️ 2026-05-21
-- ✅ Previous NOW: Shipped 3D Perspective Mode and Shelf Capacity Utilization Warnings to index.html and assets
-- ✅ Branch: `main` | Commit: `286bf75` — feat: add 3D perspective mode and shelf capacity utilization warning badge
-- ✅ Next เดิม: พร้อมทดสอบ 3D visual effects และรับความเห็นเพิ่มเติมจากผู้ใช้
-- Files: `index.html`, `src/app.js`, `src/planogram.js`, `src/styles.css`, `state.md`
-
-### 🗓️ 2026-05-21
-- ✅ Previous NOW: Shipped interactive UI/UX enhancements (on-board rearranging, direct facing manipulation, and dynamic sync configuration)
-- ✅ Branch: `main` | Commit: `4807b43` — feat: on-board rearranging, direct facing manipulation via mini-inspector, and dynamic sheet sync settings
-- ✅ Next เดิม: ตรวจสอบการทำงานของ feature ทั้ง 3 และรับ requirement/feedback อื่น ๆ เพิ่มเติม
-- Files: `index.html`, `src/app.js`, `src/planogram.js`, `src/styles.css`, `state.md`
-
-### 🗓️ 2026-05-21
-- ✅ Previous NOW: Checked repo hooks; no active Git/npm hook is configured
-- ✅ Branch: `main` | Commit: `21f4d96` — style: smooth stage background gradient and toolbar blend
-- ✅ Next เดิม: หากต้องการ enforce checks ก่อน commit/push ให้เพิ่ม hook manager เช่น Husky/Lefthook หรือสร้าง `.git/hooks/pre-commit` เอง
-- Files: `index.html`, `src/app.js`, `src/planogram.js`, `src/sheets.js`, `src/styles.css`, `state.md`
-
-### 🗓️ 2026-05-17
-- ✅ ตรวจ hook ของ repo: ไม่มี executable hook ใน `.git/hooks`, ไม่มี `core.hooksPath`, ไม่มี `package.json`/Husky/Lefthook/lint-staged config
-- ✅ Hidden files ที่พบ (`.omg/state/learn-watch.json`, `.sc/last-chat-settings.json`) เป็น tool state/config ไม่ใช่ hook runtime ของ repo
-- Files: `state.md`
-
-### 🗓️ 2026-05-17
-- ✅ Previous NOW: Shipped refreshed Planogram UI layout and Figma design reference to `origin/main`
-- ✅ Branch: `main` | Commit: `b8167bb` — feat: refresh planogram studio layout | Deploy: pushed to `origin/main`
-- ✅ Next เดิม: เปิด visual QA ที่ `http://localhost:4174/?v=design-layout` หากต้องการตรวจ UI ต่อ
-- Files: `state.md`
-
-### 🗓️ 2026-05-11
-- ✅ ปรับ design layout ตาม `frontend-design` + `DESIGN.md`: เปลี่ยน typography เป็น IBM Plex Sans Thai/Mono, ปรับ topbar/nav, panels, product cards, summary cards, canvas board, และ shelf visual ให้ scan ง่ายขึ้น
-- ✅ เพิ่ม motion เร็ว: app entry, card reveal, hover lift, panel/collapse transitions, drag-over shelf feedback, product placement pop, modal/toast transitions และรองรับ `prefers-reduced-motion`
-- ✅ Verification ผ่าน: `node --check` สำหรับไฟล์ JS หลัก, `git diff --check`, และ local preview ตอบ `HTTP 200` ที่ `http://localhost:4174/?v=design-layout`
-- Files: `index.html`, `src/app.js`, `src/styles.css`, `state.md`
-
-### 🗓️ 2026-05-11
-- ✅ เพิ่ม `DESIGN.md` จาก preset `figma` ด้วย `npx getdesign@latest add figma`
-- ✅ ใช้ไฟล์นี้เป็น design reference สำหรับ UI work ถัดไป เช่น color, typography, radius, spacing, และ interaction style
-- Files: `DESIGN.md`, `state.md`
-
-### 🗓️ 2026-05-10
-- ✅ Ship: ignore `.omg` tool state directory
-- Files: `.gitignore`
-
-### 🗓️ 2026-05-09
-- ✅ Ship: free-placement shelf layout, shelf image CSS, placement migration, and `state.md` workflow
-- ✅ Deploy ready on `origin/main`
-- Files: `AGENTS.md`, `index.html`, `src/export.js`, `src/planogram.js`, `src/products.js`, `src/sheets.js`, `src/styles.css`, `state.md`
-
-### 🗓️ 2026-05-09
-- ✅ Ship: เตรียม commit/push งาน free-placement shelf layout, shelf image CSS, placement migration, และ `state.md` workflow
-- ✅ Verification ผ่าน: `node --check` ทุกไฟล์ JS, `git diff --check`, และไม่พบ reference `slotsPerShelf`/slot API เก่าใน `index.html`/`src`
-- Files: `AGENTS.md`, `index.html`, `src/export.js`, `src/planogram.js`, `src/products.js`, `src/sheets.js`, `src/styles.css`, `state.md`
-
-### 🗓️ 2026-05-09
-- ✅ รัน `git merge --ff-only planogram` แล้วได้ `Already up to date.`
-- ✅ ปิด Subspace session ของ branch `planogram`, remove worktree `/Users/chibzthawch/DevOps/.subspace/Planogram/planogram`, และลบ local branch `planogram`
-- ⚠️ เหลือเฉพาะ branch `main`; ยังมี WIP เดิม 7 ไฟล์บน `main`
-- Files: `state.md`
-
-### 🗓️ 2026-05-09
-- ✅ เช็ก branch: `main` = `origin/main`; `planogram` เป็น ancestor ของ `main` แล้ว จึงไม่มี commit ที่ต้อง merge เพิ่ม
-- ⚠️ ยังมี WIP ใน `AGENTS.md`, `index.html`, `src/export.js`, `src/planogram.js`, `src/products.js`, `src/styles.css`, `state.md`
-- Files: `state.md`
-
-### 🗓️ 2026-05-09
-- ✅ สร้าง `state.md` เป็นไฟล์สถานะกลางสำหรับบันทึก NOW/LOG หลังจบงาน
-- ✅ อัปเดต `AGENTS.md` ให้ต้องอ่าน `state.md` ส่วน NOW ก่อนเริ่มงาน และอัปเดต NOW/LOG หลังจบงาน
-- ⚠️ มี WIP เดิมใน `index.html`, `src/export.js`, `src/planogram.js`, `src/products.js`, `src/styles.css` ที่ไม่ได้แตะในงานนี้
-- Files: `state.md`, `AGENTS.md`
