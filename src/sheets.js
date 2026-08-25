@@ -3,16 +3,25 @@
    ═══════════════════════════════════════════════════════ */
 
 let currentSheetId = '1l8pkJUaXIhwTsKJzHP9AW5MLMYKjXNo7ApcIcOyNUqE';
-let currentCategoryFilter = 'Accessories';
+let currentCategoryFilter = 'Accessories, Chair & Sofa, Adjustable Desk, Bedding, Kids';
+let currentTabAcc = 'Master ACC';
+let currentTabFur = 'Master Fur';
 
-function getSheetCsvUrl() {
-  const sheetId = $('syncSheetId') ? $('syncSheetId').value.trim() : currentSheetId;
-  return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=0`;
+function getSheetTabNames() {
+  const acc = $('syncTabAcc') ? $('syncTabAcc').value.trim() : currentTabAcc;
+  const fur = $('syncTabFur') ? $('syncTabFur').value.trim() : currentTabFur;
+  return [acc, fur].filter(Boolean);
 }
 
-function getSheetJsonpUrl() {
+// gviz tq (not the plain export endpoint) so a tab can be addressed by name instead of gid
+function getSheetCsvUrl(tabName) {
   const sheetId = $('syncSheetId') ? $('syncSheetId').value.trim() : currentSheetId;
-  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?gid=0&headers=1&tqx=out:json`;
+  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(tabName)}`;
+}
+
+function getSheetJsonpUrl(tabName) {
+  const sheetId = $('syncSheetId') ? $('syncSheetId').value.trim() : currentSheetId;
+  return `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(tabName)}&headers=1&tqx=out:json`;
 }
 
 function getCategoryFilter() {
@@ -30,8 +39,15 @@ const CATEGORY_COLORS = {
 function syncProductsFromSheet() {
   setSheetSyncState('loading', 'กำลัง sync จาก Google Sheet...');
 
-  loadSheetRows()
-    .then((rows) => {
+  const tabNames = getSheetTabNames();
+  if (!tabNames.length) {
+    setSheetSyncState('error', 'กรุณาระบุชื่อแท็บอย่างน้อย 1 แท็บ');
+    return;
+  }
+
+  Promise.all(tabNames.map(loadSheetRows))
+    .then((tabRowsList) => {
+      const rows = tabRowsList.flat();
       const sheetProducts = rows.map(mapSheetRowToProduct).filter(Boolean);
       rememberSheetValues(sheetProducts);
       const importedProducts = sheetProducts.filter(isAllowedProductCategory);
@@ -62,24 +78,24 @@ function syncProductsFromSheet() {
     });
 }
 
-function loadSheetRows() {
+function loadSheetRows(tabName) {
   if (window.fetch) {
-    return fetch(getSheetCsvUrl(), { cache: 'no-store' })
+    return fetch(getSheetCsvUrl(tabName), { cache: 'no-store' })
       .then((response) => {
         if (!response.ok) throw new Error(`CSV export failed: ${response.status}`);
         return response.text();
       })
       .then(parseCsv)
       .catch((error) => {
-        console.warn('CSV sheet sync fallback:', error);
-        return loadSheetRowsViaJsonp();
+        console.warn(`CSV sheet sync fallback (${tabName}):`, error);
+        return loadSheetRowsViaJsonp(tabName);
       });
   }
 
-  return loadSheetRowsViaJsonp();
+  return loadSheetRowsViaJsonp(tabName);
 }
 
-function loadSheetRowsViaJsonp() {
+function loadSheetRowsViaJsonp(tabName) {
   return new Promise((resolve, reject) => {
     const callbackName = `__planogramSheet_${Date.now()}_${Math.random().toString(36).slice(2)}`;
     const script = document.createElement('script');
@@ -95,7 +111,7 @@ function loadSheetRowsViaJsonp() {
       resolve(convertGoogleTable(response.table));
     };
 
-    script.src = `${getSheetJsonpUrl()};responseHandler:${callbackName}`;
+    script.src = `${getSheetJsonpUrl(tabName)};responseHandler:${callbackName}`;
     script.async = true;
     script.onerror = () => {
       cleanupSheetCallback(callbackName, script);
@@ -343,7 +359,8 @@ function applyProductLibraryFilter() {
 function isAllowedProductCategory(product) {
   const catFilter = getCategoryFilter();
   if (!catFilter) return true; // ถ้าเว้นว่างไว้ จะอนุญาตทุก category
-  return cleanCell(product.category).toLowerCase() === catFilter.toLowerCase();
+  const allowed = catFilter.split(',').map((c) => c.trim().toLowerCase()).filter(Boolean);
+  return allowed.includes(cleanCell(product.category).toLowerCase());
 }
 
 function cleanCell(value) {
