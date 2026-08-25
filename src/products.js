@@ -94,10 +94,19 @@ function selectProduct(id) {
 /**
  * Render the product library list
  */
+// ponytail: each view's library scopes to its own sheet tab — Top View to
+// Master Fur (furniture), Planogram to Master ACC — so the other tab's SKUs
+// never show up as browsable there. Hand-added SKUs (no tabRole) show in both.
+function productLibrarySource() {
+  return window.TopViewLayout && TopViewLayout.isActive()
+    ? products.filter((p) => p.tabRole !== 'acc')
+    : products.filter((p) => p.tabRole !== 'furniture');
+}
+
 function renderCategoryFilter() {
   const sel = $('categoryFilter');
   if (!sel) return;
-  const groups = [...new Set(products.map((p) => p.subCategory || p.category).filter(Boolean))].sort();
+  const groups = [...new Set(productLibrarySource().map((p) => p.subCategory || p.category).filter(Boolean))].sort();
   sel.innerHTML = '<option value="">ทั้งหมด</option>' +
     groups.map((g) => `<option value="${esc(g)}"${g === activeCategoryFilter ? ' selected' : ''}>${esc(g)}</option>`).join('');
 }
@@ -105,11 +114,12 @@ function renderCategoryFilter() {
 function renderProductList() {
   const list = $('productList');
   const search = ($('productSearch').value || '').toLowerCase();
-  $('productCountBadge').textContent = products.length;
+  const source = productLibrarySource();
+  $('productCountBadge').textContent = source.length;
 
   renderCategoryFilter();
 
-  let filtered = products;
+  let filtered = source;
   if (activeCategoryFilter) {
     filtered = filtered.filter((p) => (p.subCategory || p.category) === activeCategoryFilter);
   }

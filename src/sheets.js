@@ -10,7 +10,10 @@ let currentTabFur = 'Master Fur';
 function getSheetTabNames() {
   const acc = $('syncTabAcc') ? $('syncTabAcc').value.trim() : currentTabAcc;
   const fur = $('syncTabFur') ? $('syncTabFur').value.trim() : currentTabFur;
-  return [acc, fur].filter(Boolean);
+  return [
+    { name: acc, role: 'acc' },
+    { name: fur, role: 'furniture' },
+  ].filter((tab) => tab.name);
 }
 
 // gviz tq (not the plain export endpoint) so a tab can be addressed by name instead of gid
@@ -39,13 +42,17 @@ const CATEGORY_COLORS = {
 function syncProductsFromSheet() {
   setSheetSyncState('loading', 'กำลัง sync จาก Google Sheet...');
 
-  const tabNames = getSheetTabNames();
-  if (!tabNames.length) {
+  const tabs = getSheetTabNames();
+  if (!tabs.length) {
     setSheetSyncState('error', 'กรุณาระบุชื่อแท็บอย่างน้อย 1 แท็บ');
     return;
   }
 
-  Promise.all(tabNames.map(loadSheetRows))
+  Promise.all(
+    tabs.map((tab) =>
+      loadSheetRows(tab.name).then((rows) => rows.map((row) => ({ ...row, __tabRole: tab.role })))
+    )
+  )
     .then((tabRowsList) => {
       const rows = tabRowsList.flat();
       const sheetProducts = rows.map(mapSheetRowToProduct).filter(Boolean);
@@ -212,6 +219,7 @@ function mapSheetRowToProduct(row) {
     shelfZone: cleanCell(row['Shelf Zone']),
     status: cleanCell(row.Status),
     source: 'google-sheet',
+    tabRole: row.__tabRole,
   };
 }
 

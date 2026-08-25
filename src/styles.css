@@ -2206,93 +2206,87 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
   display: none;
 }
 
+/* Adjustable Bed icon: outer .tv-symbol rect is the bed body — two pillows
+   up top and a single divider line to the mattress, per the reference icon. */
 .tv-symbol-bed {
-  border-radius: 6px;
-  background: linear-gradient(180deg, #fff 0%, #f2f1ed 100%);
-}
-
-.tv-bed-mattress {
-  position: absolute;
-  inset: 9% 8%;
-  border: 1px solid rgba(0, 0, 0, 0.26);
-  border-radius: 4px;
-  background: #fff;
+  border-radius: 8%;
 }
 
 .tv-bed-pillow {
   position: absolute;
-  top: 15%;
-  width: 30%;
-  height: 18%;
-  border: 1px solid rgba(0, 0, 0, 0.22);
-  border-radius: 28% 28% 35% 35%;
-  background: #fbfbf8;
+  top: 8%;
+  width: 34%;
+  height: 22%;
+  border: 1.2px solid rgba(0, 0, 0, 0.6);
+  border-radius: 14%;
+  background: #fff;
   z-index: 2;
 }
 
-.tv-bed-pillow.pillow-a { left: 17%; }
-.tv-bed-pillow.pillow-b { right: 17%; }
+.tv-bed-pillow.pillow-a { left: 8%; }
+.tv-bed-pillow.pillow-b { right: 8%; }
 
-.tv-bed-throw {
+.tv-bed-divider {
   position: absolute;
-  left: 13%;
-  right: 13%;
-  bottom: 12%;
-  height: 38%;
-  border-top: 1px solid rgba(0, 0, 0, 0.18);
-  background: linear-gradient(135deg, rgba(0,0,0,0.06), rgba(255,255,255,0.2));
-  z-index: 1;
+  left: 4%;
+  right: 4%;
+  top: 36%;
+  height: 0;
+  border-top: 1.2px solid rgba(0, 0, 0, 0.6);
 }
 
+/* Ergonomic Chair icon: the base .tv-symbol rounded-rect IS the chair body
+   (very rounded, almost a squircle) — a wide pill headrest overflowing above
+   it and a tall pill on each side, per the reference icon's own proportions. */
 .tv-symbol-chair {
-  border: 0;
-  background: transparent;
-  box-shadow: none;
+  border-radius: 38%;
 }
 
-.tv-chair-back,
-.tv-chair-seat,
-.tv-chair-arm,
-.tv-chair-base {
+.tv-ergo-headrest {
   position: absolute;
+  left: 10%;
+  right: 10%;
+  top: -40%;
+  height: 46%;
+  border: 1.2px solid rgba(0, 0, 0, 0.62);
+  border-radius: 999px;
   background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.34);
-  box-shadow: 0 3px 7px rgba(0, 0, 0, 0.14);
+  z-index: 2;
 }
 
-.tv-chair-back {
-  left: 23%;
-  right: 23%;
-  top: 6%;
-  height: 26%;
-  border-radius: 45% 45% 28% 28%;
-}
-
-.tv-chair-seat {
-  left: 18%;
-  right: 18%;
-  top: 28%;
-  bottom: 19%;
-  border-radius: 42% 42% 48% 48%;
-}
-
-.tv-chair-arm {
-  top: 33%;
-  width: 15%;
-  height: 39%;
+.tv-ergo-side-pill {
+  position: absolute;
+  top: 22%;
+  width: 17%;
+  height: 55%;
+  border: 1.1px solid rgba(0, 0, 0, 0.55);
   border-radius: 999px;
+  background: transparent;
 }
 
-.tv-chair-arm.arm-l { left: 2%; }
-.tv-chair-arm.arm-r { right: 2%; }
+.tv-ergo-side-pill.side-l { left: -14%; }
+.tv-ergo-side-pill.side-r { right: -14%; }
 
-.tv-chair-base {
-  left: 38%;
-  right: 38%;
-  bottom: 5%;
-  height: 18%;
-  border-radius: 999px;
-  background: #f3f3ef;
+/* Chair icons: full model name wraps centered on the seat instead of the
+   cramped corner label used by every other furniture kind. */
+.tv-symbol-chair .tv-symbol-label,
+.tv-symbol-sayl-chair .tv-symbol-label {
+  left: 50%;
+  top: 52%;
+  right: auto;
+  transform: translate(-50%, -50%);
+  max-width: 62%;
+  width: 62%;
+  white-space: normal;
+  text-align: center;
+  font-size: 7.5px;
+  line-height: 1.15;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  z-index: 5;
 }
 
 .tv-symbol-sayl-chair {
@@ -2561,7 +2555,10 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
   box-shadow: 0 0 0 6px rgba(201, 45, 32, 0.14), 0 3px 6px rgba(0, 0, 0, 0.12) !important;
 }
 
-/* ═══════════════ TOP VIEW: ROOM SCALES ═══════════════ */
+/* ═══════════════ TOP VIEW: CAD-STYLE DIMENSION LINES ═══════════════
+   Box sizes come from topview.js's DIM_TOP (34px) / DIM_RIGHT (70px) —
+   the 14px line offset and tick positions below are derived from those
+   and must move together if those constants change. */
 .room-scale-shell {
   position: relative;
   margin: auto;
@@ -2570,120 +2567,68 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
 
 .room-scale-shell .room-board {
   position: absolute;
-  left: 0;
-  top: 0;
 }
 
-.tv-room-scale {
+.tv-dim {
   position: absolute;
   pointer-events: none;
-  color: var(--ink-2);
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0;
+  color: var(--ink);
 }
 
-.tv-room-scale-x {
-  left: 0;
-  top: calc(var(--room-board-h) + 15px);
-  width: var(--room-board-w);
-  height: 34px;
-}
-
-.tv-room-scale-y {
-  left: calc(var(--room-board-w) + 18px);
-  top: 0;
-  width: 52px;
-  height: var(--room-board-h);
-}
-
-.tv-room-scale-line {
+.tv-dim-ext {
   position: absolute;
-  background: var(--accent);
-  box-shadow: 0 0 0 1px rgba(255, 108, 12, 0.1);
+  background: var(--ink-2);
 }
 
-.tv-room-scale-x .tv-room-scale-line {
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 2px;
-}
-
-.tv-room-scale-y .tv-room-scale-line {
-  top: 0;
+.tv-dim-x .tv-dim-ext {
+  top: 6px;
   bottom: 0;
-  left: 0;
-  width: 2px;
-}
-
-.tv-room-scale-tick {
-  position: absolute;
-}
-
-.tv-room-scale-x .tv-room-scale-tick {
-  top: -4px;
   width: 1px;
-  height: 10px;
-  background: var(--accent);
 }
+.tv-dim-x .tv-dim-ext.ext-a { left: 0; }
+.tv-dim-x .tv-dim-ext.ext-b { right: 0; }
 
-.tv-room-scale-y .tv-room-scale-tick {
-  left: -4px;
-  width: 10px;
-  height: 1px;
-  background: var(--accent);
-}
-
-.tv-room-scale-tick.edge {
-  background: var(--ink);
-}
-
-.tv-room-scale-x .tv-room-scale-tick span {
-  position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
-  white-space: nowrap;
-}
-
-.tv-room-scale-y .tv-room-scale-tick span {
-  position: absolute;
-  top: 50%;
-  left: 18px;
-  transform: translateY(-50%);
-  white-space: nowrap;
-}
-
-.tv-room-scale-label {
-  position: absolute;
-  display: inline-flex;
-  align-items: center;
-  height: 18px;
-  padding: 0 7px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: #fff;
-  font-family: var(--font);
-  font-size: 10px;
-  font-weight: 800;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.14);
-}
-
-.tv-room-scale-x .tv-room-scale-label {
-  left: 50%;
-  top: -9px;
-  transform: translateX(-50%);
-}
-
-.tv-room-scale-y .tv-room-scale-label {
+.tv-dim-y .tv-dim-ext {
   left: 0;
-  top: 50%;
-  transform: translate(-50%, -50%) rotate(90deg);
-  transform-origin: center;
+  width: 22px;
+  height: 1px;
 }
+.tv-dim-y .tv-dim-ext.ext-a { top: 0; }
+.tv-dim-y .tv-dim-ext.ext-b { bottom: 0; }
+
+.tv-dim-line {
+  position: absolute;
+  background: var(--ink);
+}
+.tv-dim-x .tv-dim-line { left: 0; right: 0; top: 14px; height: 1px; }
+.tv-dim-y .tv-dim-line { top: 0; bottom: 0; left: 14px; width: 1px; }
+
+.tv-dim-tick {
+  position: absolute;
+  width: 9px;
+  height: 1px;
+  background: var(--ink);
+  transform: rotate(45deg);
+}
+.tv-dim-x .tv-dim-tick { top: 14px; }
+.tv-dim-x .tv-dim-tick.tick-a { left: -4px; }
+.tv-dim-x .tv-dim-tick.tick-b { left: calc(100% - 5px); }
+
+.tv-dim-y .tv-dim-tick { left: 10px; }
+.tv-dim-y .tv-dim-tick.tick-a { top: -4px; }
+.tv-dim-y .tv-dim-tick.tick-b { top: calc(100% - 5px); }
+
+.tv-dim-label {
+  position: absolute;
+  background: var(--surface);
+  padding: 0 5px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.tv-dim-x .tv-dim-label { left: 50%; top: 14px; transform: translate(-50%, -50%); }
+.tv-dim-y .tv-dim-label { left: 14px; top: 50%; transform: translate(-50%, -50%) rotate(-90deg); }
 
 /* ═══════════════ TOP VIEW: TAPE MEASURE ═══════════════ */
 #btnMeasure.active {
@@ -2758,39 +2703,6 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
 .tv-category-tag.tag-product { background: #718096 !important; }
 
 
-
-/* 🛌 1. BED (เตียง) - Mint Pastel Theme */
-.tv-symbol-bed {
-  background: #e6fffa !important;
-  border-color: #319795 !important;
-}
-.tv-bed-mattress {
-  background: #ffffff !important;
-  border-color: rgba(49, 151, 149, 0.4) !important;
-}
-.tv-bed-pillow {
-  background: #e2fbf5 !important;
-  border-color: rgba(49, 151, 149, 0.45) !important;
-}
-
-/* 🪑 2. CHAIR (เก้าอี้) - Work Blue Theme */
-.tv-symbol-chair {
-  background: #ebf8ff !important;
-  border: 1.2px solid #3182ce !important;
-  border-radius: 6px !important;
-}
-.tv-chair-seat {
-  background: #cbd5e0 !important;
-  border-color: #718096 !important;
-}
-.tv-chair-back {
-  background: #718096 !important;
-  border-color: #4a5568 !important;
-}
-.tv-chair-arm {
-  background: #a0aec0 !important;
-  border-color: #718096 !important;
-}
 
 /* 💺 3. SAYL CHAIR (Ergonomic Office Chair) - Tech Midnight Theme */
 .tv-symbol-sayl-chair {

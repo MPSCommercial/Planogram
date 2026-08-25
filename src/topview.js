@@ -281,6 +281,13 @@
     return 'product';
   }
 
+  /** "เก้าอี้เพื่อสุขภาพ รุ่น Bergen All Black" → "Bergen All Black" */
+  function chairModelLabel(name) {
+    const marker = 'รุ่น ';
+    const idx = name.indexOf(marker);
+    return idx === -1 ? name : name.slice(idx + marker.length);
+  }
+
   function appendTopviewSymbol(visual, p, kind) {
     visual.classList.add('tv-symbol', `tv-symbol-${kind}`);
     visual.innerHTML = '';
@@ -304,16 +311,13 @@
     visual.appendChild(tag);
 
     if (kind === 'bed') {
-      add('tv-bed-mattress');
       add('tv-bed-pillow pillow-a');
       add('tv-bed-pillow pillow-b');
-      add('tv-bed-throw');
+      add('tv-bed-divider');
     } else if (kind === 'chair') {
-      add('tv-chair-back');
-      add('tv-chair-seat');
-      add('tv-chair-arm arm-l');
-      add('tv-chair-arm arm-r');
-      add('tv-chair-base');
+      add('tv-ergo-headrest');
+      add('tv-ergo-side-pill side-l');
+      add('tv-ergo-side-pill side-r');
     } else if (kind === 'sayl-chair') {
       add('tv-sayl-back');
       add('tv-sayl-seat');
@@ -352,9 +356,12 @@
       add('tv-product-face');
     }
 
+    // Chair icons show just the model name (the part after "รุ่น"), centered
+    // on the seat; everything else keeps the compact corner label.
+    const isChairKind = kind === 'chair' || kind === 'sayl-chair';
     const label = document.createElement('span');
     label.className = 'tv-symbol-label';
-    label.textContent = shortName(p.name);
+    label.textContent = isChairKind ? chairModelLabel(p.name) : shortName(p.name);
     visual.appendChild(label);
 
     const size = document.createElement('span');
@@ -760,7 +767,10 @@
       tab.addEventListener('click', () => {
         const target = tab.dataset.tab;
         activeTab = target;
-        
+
+        // Re-scope the Product Library to the new tab (Top View = Master Fur only)
+        if (typeof renderProductList === 'function') renderProductList();
+
         // Auto-close 3D view when switching tabs to ensure 2D workspace is visible
         if (window.Planogram3D && Planogram3D.isOpen()) {
           Planogram3D.close();
@@ -973,12 +983,15 @@
     wrap.style.alignItems = 'flex-start';
     wrap.style.justifyContent = 'flex-start';
 
+    // Gutter reserved for the CAD-style dimension lines: width total above the
+    // room, depth total to its right (matches an architectural floor plan).
+    const DIM_TOP = 34;
+    const DIM_RIGHT = 70;
+
     const scaleShell = document.createElement('div');
     scaleShell.className = 'room-scale-shell';
-    scaleShell.style.width = `${canvasW + 82}px`;
-    scaleShell.style.height = `${canvasH + 58}px`;
-    scaleShell.style.setProperty('--room-board-w', `${canvasW}px`);
-    scaleShell.style.setProperty('--room-board-h', `${canvasH}px`);
+    scaleShell.style.width = `${canvasW + DIM_RIGHT + 16}px`;
+    scaleShell.style.height = `${canvasH + DIM_TOP + 16}px`;
     scaleShell.style.flexShrink = '0';
 
     // Create Floor Board
@@ -987,6 +1000,8 @@
     board.style.width = `${canvasW}px`;
     board.style.height = `${canvasH}px`;
     board.style.position = 'absolute';
+    board.style.left = '0px';
+    board.style.top = `${DIM_TOP}px`;
     board.style.background = '#fcfcf9';
     board.style.border = '2px solid #20242a';
     board.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)';
@@ -1101,16 +1116,9 @@
       visual.style.boxSizing = 'border-box';
       visual.style.pointerEvents = 'none';
 
+      // ponytail: always draw the CAD line-art symbol here (not the product
+      // photo) so the floor plan reads as one consistent architectural sketch.
       appendTopviewSymbol(visual, p, topviewKind(p));
-
-      // Render actual image if uploaded
-      if (p.image) {
-        visual.dataset.imgSrc = p.image;
-        visual.style.backgroundImage = `url(${p.image})`;
-        visual.style.backgroundSize = 'contain';
-        visual.style.backgroundPosition = 'center';
-        visual.style.backgroundRepeat = 'no-repeat';
-      }
 
       el.appendChild(visual);
 
@@ -1209,8 +1217,8 @@
     });
 
     scaleShell.appendChild(board);
-    renderRoomScale(scaleShell, 'x', areaSpec.width, canvasW, `ความยาว ${areaSpec.width} cm`);
-    renderRoomScale(scaleShell, 'y', areaSpec.depth, canvasH, `ความลึก ${areaSpec.depth} cm`);
+    renderDimensionLine(scaleShell, 'x', areaSpec.width, 0, 0, canvasW, DIM_TOP);
+    renderDimensionLine(scaleShell, 'y', areaSpec.depth, canvasW, DIM_TOP, DIM_RIGHT, canvasH);
     wrap.appendChild(scaleShell);
     wrap.scrollLeft = prevScrollLeft;
     wrap.scrollTop = prevScrollTop;
@@ -1219,48 +1227,41 @@
     updateInspector();
   }
 
-  /** Pick a readable ruler interval based on current zoom density */
-  function chooseScaleStep() {
-    const candidates = [20, 50, 100, 200, 500];
-    return candidates.find((cm) => cm * pxPerCm >= 58) || candidates[candidates.length - 1];
-  }
+  /** Render one CAD-style dimension line (extension lines + tick ends + centered length) */
+  function renderDimensionLine(shell, axis, lengthCm, boxLeft, boxTop, boxWidth, boxHeight) {
+    const dim = document.createElement('div');
+    dim.className = `tv-dim tv-dim-${axis}`;
+    dim.style.left = `${boxLeft}px`;
+    dim.style.top = `${boxTop}px`;
+    dim.style.width = `${boxWidth}px`;
+    dim.style.height = `${boxHeight}px`;
 
-  /** Render room dimension scales for width (x) and depth (y) */
-  function renderRoomScale(shell, axis, lengthCm, lengthPx, labelText) {
-    const scale = document.createElement('div');
-    scale.className = `tv-room-scale tv-room-scale-${axis}`;
+    const extA = document.createElement('div');
+    extA.className = 'tv-dim-ext ext-a';
+    dim.appendChild(extA);
+
+    const extB = document.createElement('div');
+    extB.className = 'tv-dim-ext ext-b';
+    dim.appendChild(extB);
 
     const line = document.createElement('div');
-    line.className = 'tv-room-scale-line';
-    scale.appendChild(line);
+    line.className = 'tv-dim-line';
+    dim.appendChild(line);
 
-    const step = chooseScaleStep();
-    const marks = [];
-    for (let cm = 0; cm < lengthCm; cm += step) marks.push(cm);
-    if (marks[marks.length - 1] !== lengthCm) marks.push(lengthCm);
+    const tickA = document.createElement('div');
+    tickA.className = 'tv-dim-tick tick-a';
+    dim.appendChild(tickA);
 
-    marks.forEach((cm) => {
-      const tick = document.createElement('div');
-      tick.className = `tv-room-scale-tick${cm === 0 || cm === lengthCm ? ' edge' : ''}`;
-      const pos = Math.round((cm / lengthCm) * lengthPx);
-      if (axis === 'x') {
-        tick.style.left = `${pos}px`;
-      } else {
-        tick.style.top = `${pos}px`;
-      }
-
-      const num = document.createElement('span');
-      num.textContent = `${cm}`;
-      tick.appendChild(num);
-      scale.appendChild(tick);
-    });
+    const tickB = document.createElement('div');
+    tickB.className = 'tv-dim-tick tick-b';
+    dim.appendChild(tickB);
 
     const label = document.createElement('div');
-    label.className = 'tv-room-scale-label';
-    label.textContent = labelText;
-    scale.appendChild(label);
+    label.className = 'tv-dim-label';
+    label.textContent = `${Math.round(lengthCm)}`;
+    dim.appendChild(label);
 
-    shell.appendChild(scale);
+    shell.appendChild(dim);
   }
 
   /** Find guide-snap targets (edges/centers of other items + room) near the dragged footprint */
@@ -1698,36 +1699,18 @@
     const width = target.scrollWidth || target.offsetWidth;
     const height = target.scrollHeight || target.offsetHeight;
 
-    // Inline remote product images as data URLs first — html2canvas drops
-    // cross-origin images whose host doesn't send CORS headers.
-    const urls = [...new Set(
-      placedItems
-        .map((it) => (products.find((q) => q.id === it.productId) || {}).image)
-        .filter((src) => src && !src.startsWith('data:'))
-    )];
-
-    Promise.all(urls.map((src) => imageToDataURL(src).then((data) => [src, data])))
-      .then((pairs) => {
-        const inlined = new Map(pairs.filter(([, data]) => data));
-        return html2canvas(target, {
-          scale: 2,
-          backgroundColor: '#f5f4f1',
-          useCORS: true,
-          allowTaint: false,
-          width,
-          height,
-          windowWidth: Math.max(document.documentElement.clientWidth, width + 40),
-          windowHeight: Math.max(document.documentElement.clientHeight, height + 40),
-          scrollX: 0,
-          scrollY: 0,
-          onclone: (doc) => {
-            doc.querySelectorAll('.placed-furniture-visual[data-img-src]').forEach((el) => {
-              const data = inlined.get(el.dataset.imgSrc);
-              if (data) el.style.backgroundImage = `url(${data})`;
-            });
-          }
-        });
-      })
+    html2canvas(target, {
+      scale: 2,
+      backgroundColor: '#f5f4f1',
+      useCORS: true,
+      allowTaint: false,
+      width,
+      height,
+      windowWidth: Math.max(document.documentElement.clientWidth, width + 40),
+      windowHeight: Math.max(document.documentElement.clientHeight, height + 40),
+      scrollX: 0,
+      scrollY: 0,
+    })
       .then((canvas) => {
         const link = document.createElement('a');
         link.download = `${name}_${new Date().toISOString().slice(0, 10)}.png`;
