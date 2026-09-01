@@ -94,6 +94,10 @@
     const btnApplyRoomTemplate = $('btnApplyRoomTemplate');
     if (btnApplyRoomTemplate) btnApplyRoomTemplate.addEventListener('click', applyRoomTemplate);
 
+    // Capacity suggestion binding
+    const btnSuggestCapacity = $('btnSuggestCapacity');
+    if (btnSuggestCapacity) btnSuggestCapacity.addEventListener('click', suggestCapacity);
+
     // Tape measure toggle binding
     const btnMeasure = $('btnMeasure');
     if (btnMeasure) btnMeasure.addEventListener('click', () => setMeasureMode(!measureMode));
@@ -907,6 +911,194 @@
     }
   }
 
+  // Back wall = y near 0 (display fixtures against it); front = y near areaSpec.depth
+  // (kept clear as the booth entrance/walkway). See wall labels drawn in drawRoom().
+  const BOOTH_ZONE_ORDER = ['shelf', 'bed', 'chair', 'table'];
+
+  function capWalkwayValue() {
+    const input = document.querySelector('#capacitySuggestResult #capWalkway');
+    return Math.max(0, parseInt(input && input.value, 10) || 50);
+  }
+
+  /** All room cells (in booth-band order) where a w×d item would fit without
+   *  overlapping anything already placed in the real room, starting from startY. */
+  function tileBandCells(w, d, startY, minX, maxX, maxY, gap) {
+    const cells = [];
+    let x = minX, y = startY;
+    while (true) {
+      if (x + w > maxX) { x = minX; y += d + gap; }
+      if (y + d > maxY) break;
+      const rect = { x, y, w, d };
+      if (!getFootprints().some((f) => rectsOverlap(rect, f))) cells.push({ x, y });
+      x += w + gap;
+    }
+    return cells;
+  }
+
+  /** Run the booth-band plan across all category rows in zone order, each row
+   *  consuming real floor space before the next is evaluated — so a category's
+   *  "max that fits" reflects what's actually left after earlier categories' chosen
+   *  quantities (and anything already in the room), not the whole room in isolation. */
+  function computeBoothPlan(entries) {
+    const WALKWAY = capWalkwayValue();
+    const ITEM_GAP = 10; // cm breathing room between items within a band
+    const minX = WALKWAY, maxX = areaSpec.width - WALKWAY, maxY = areaSpec.depth - WALKWAY;
+    const roomOk = maxX > minX && maxY > WALKWAY;
+
+    let cursorY = WALKWAY;
+    const results = entries.map((entry) => {
+      if (!roomOk || cursorY >= maxY) return { ...entry, maxFit: 0, placed: 0, cells: [] };
+      const cells = tileBandCells(entry.w, entry.d, cursorY, minX, maxX, maxY, ITEM_GAP);
+      const placed = Math.min(entry.qty, cells.length);
+      const used = cells.slice(0, placed);
+      if (used.length) cursorY = Math.max(...used.map((c) => c.y + entry.d)) + WALKWAY;
+      return { ...entry, maxFit: cells.length, placed, cells: used };
+    });
+
+    return { results, WALKWAY, roomOk };
+  }
+
+  function readCapRows() {
+    return Array.from(document.querySelectorAll('#capacitySuggestResult .cap-row'))
+      .sort((a, b) => BOOTH_ZONE_ORDER.indexOf(a.dataset.kind) - BOOTH_ZONE_ORDER.indexOf(b.dataset.kind))
+      .map((row) => ({
+        row,
+        productId: row.querySelector('.cap-product').value,
+        w: parseFloat(row.querySelector('.cap-w').value) || 1,
+        d: parseFloat(row.querySelector('.cap-d').value) || 1,
+        qty: parseInt(row.querySelector('.cap-qty').value, 10) || 0
+      }));
+  }
+
+  /** Estimate how many chairs/tables/shelves/beds fit in a W×D room. Each row lets the
+   *  user pick the exact SKU (or type a custom W×D) and a quantity to place; "สูงสุด"
+   *  recalculates live across all rows via computeBoothPlan, so setting e.g. 10 chairs
+   *  visibly eats into the remaining quota shown for tables/shelves/beds that come
+   *  after chairs in the booth band order — the number always reflects real remaining
+   *  floor space, not each category estimated in isolation. */
+  function suggestCapacity() {
+    const kindLabels = { chair: 'เก้าอี้', table: 'โต๊ะ', shelf: 'เชลฟ์', bed: 'เตียง' };
+    const kindAlias = { 'sayl-chair': 'chair', 'nevi-desk': 'table' };
+    const byKind = {}; // kind -> products[]
+    productLibrarySource().forEach((p) => {
+      const key = kindAlias[topviewKind(p)] || topviewKind(p);
+      if (!kindLabels[key]) return;
+      (byKind[key] = byKind[key] || []).push(p);
+    });
+
+    const result = $('capacitySuggestResult');
+    if (!result) return;
+
+    const kinds = Object.keys(kindLabels).filter((k) => byKind[k] && byKind[k].length);
+    if (!kinds.length) {
+      result.innerHTML = `<div style="color: var(--muted);">ไม่พบสินค้าเฟอร์นิเจอร์ในคลังเพื่อประมาณการ</div>`;
+      return;
+    }
+
+    result.innerHTML = kinds.map((k) => {
+      const opts = byKind[k].map((p) =>
+        `<option value="${esc(p.id)}">${esc(p.name)} (${parseCm(p.width, 10)}×${parseCm(p.depth, 10)})</option>`
+      ).join('');
+      const first = byKind[k][0];
+      return `
+        <div class="cap-row" data-kind="${k}" style="margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px dashed var(--line);">
+          <div style="font-weight: 600; margin-bottom: 4px;">${kindLabels[k]}</div>
+          <select class="cap-product" style="width: 100%; margin-bottom: 4px; font-size: 0.75rem;">${opts}</select>
+          <div style="display: flex; gap: 4px; align-items: center; flex-wrap: wrap;">
+            <input type="number" class="cap-w" min="1" style="width: 56px;" value="${parseCm(first.width, 10)}"> ×
+            <input type="number" class="cap-d" min="1" style="width: 56px;" value="${parseCm(first.depth, 10)}"> cm
+            → เหลือที่วางได้ <strong class="cap-count">-</strong> ตัว
+          </div>
+          <div style="display: flex; gap: 4px; align-items: center; margin-top: 4px;">
+            <label style="font-size: 0.72rem; color: var(--muted);">จำนวนที่จะวาง:</label>
+            <input type="number" class="cap-qty" min="0" step="1" value="0" style="width: 56px;">
+          </div>
+        </div>`;
+    }).join('')
+      + `<div style="color: var(--muted); margin: 4px 0;">*"เหลือที่วางได้" คำนวณจากพื้นที่จริงที่เหลือ หลังหักของที่วางอยู่แล้วและจำนวนที่ตั้งไว้ในหมวดอื่นๆ ด้านบน</div>`
+      + `<div style="display: flex; gap: 4px; align-items: center; margin-bottom: 6px;">
+           <label style="font-size: 0.72rem; color: var(--muted);">ระยะเว้นทางเดิน (cm):</label>
+           <input type="number" id="capWalkway" min="0" step="5" value="50" style="width: 56px;">
+         </div>`
+      + `<button type="button" id="btnPlaceSuggested" class="btn btn-mini btn-build" style="width: 100%; margin-top: 4px;">📥 จัดวางลงแปลนตามจำนวน</button>`;
+
+    const recalcAll = () => {
+      const entries = readCapRows();
+      const { results, roomOk } = computeBoothPlan(entries);
+      results.forEach((r) => {
+        r.row.querySelector('.cap-count').textContent = roomOk ? r.maxFit : 0;
+      });
+    };
+
+    kinds.forEach((k) => {
+      const row = result.querySelector(`.cap-row[data-kind="${k}"]`);
+      const sel = row.querySelector('.cap-product');
+      sel.addEventListener('change', () => {
+        const p = byKind[k].find((q) => q.id === sel.value);
+        row.querySelector('.cap-w').value = parseCm(p.width, 10);
+        row.querySelector('.cap-d').value = parseCm(p.depth, 10);
+        recalcAll();
+      });
+      row.querySelector('.cap-w').addEventListener('input', recalcAll);
+      row.querySelector('.cap-d').addEventListener('input', recalcAll);
+      row.querySelector('.cap-qty').addEventListener('input', recalcAll);
+    });
+
+    const walkwayInput = result.querySelector('#capWalkway');
+    if (walkwayInput) walkwayInput.addEventListener('input', recalcAll);
+
+    recalcAll();
+
+    const btnPlace = $('btnPlaceSuggested');
+    if (btnPlace) btnPlace.addEventListener('click', placeSuggestedItems);
+  }
+
+  /** Auto-place the quantities chosen in the capacity-suggestion rows into the room as a
+   *  booth-style layout: a walkway clearance runs around the room's perimeter and as an
+   *  aisle between category bands (default 50cm, matches standard booth circulation).
+   *  Shelves/beds band against the back wall first, chairs/tables fill the open center
+   *  toward the front entrance, each band wrapping left-to-right within itself. Uses the
+   *  same computeBoothPlan as the live "เหลือที่วางได้" preview, so what gets placed here
+   *  matches what the panel showed. */
+  function placeSuggestedItems() {
+    const entries = readCapRows();
+    if (!entries.length) return;
+
+    const totalRequested = entries.reduce((sum, e) => sum + e.qty, 0);
+    if (!totalRequested) {
+      showToast('กรุณาระบุจำนวนที่ต้องการวางก่อน');
+      return;
+    }
+
+    const { results, WALKWAY, roomOk } = computeBoothPlan(entries);
+    if (!roomOk) {
+      showToast('ระยะเว้นทางเดินกว้างเกินขนาดห้อง ลองลดค่าลง');
+      return;
+    }
+
+    pushHistory();
+    let totalPlaced = 0;
+    results.forEach((r) => {
+      r.cells.forEach(({ x, y }) => {
+        placedItems.push({
+          id: 'placed_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+          productId: r.productId,
+          x, y,
+          rotation: 0
+        });
+      });
+      totalPlaced += r.cells.length;
+    });
+
+    saveState();
+    drawRoom();
+    refresh3D();
+    const shortfall = totalRequested - totalPlaced;
+    showToast(shortfall > 0
+      ? `วางแล้ว ${totalPlaced} ชิ้น (พื้นที่ไม่พอสำหรับอีก ${shortfall} ชิ้น หลังเว้นทางเดิน ${WALKWAY}cm)`
+      : `วางแล้ว ${totalPlaced} ชิ้น เว้นทางเดินรอบบูธ ${WALKWAY}cm`);
+  }
+
   /** Calculate Room area usage statistics */
   function updateRoomStats() {
     const totalArea = areaSpec.width * areaSpec.depth; // cm^2
@@ -988,11 +1180,23 @@
     const DIM_TOP = 34;
     const DIM_RIGHT = 70;
 
+    // Extra gutters, outside the room's border, for the BACK/FRONT/LEFT/RIGHT wall
+    // labels — kept off the floor plan itself so grid lines, dimension ticks, and
+    // placed furniture never sit behind (or get sat on by) the label text.
+    const LABEL_TOP = 22;
+    const LABEL_BOTTOM = 22;
+    const LABEL_LEFT = 92;
+    const LABEL_RIGHT = 92;
+
+    const boardLeft = LABEL_LEFT;
+    const boardTop = DIM_TOP + LABEL_TOP;
+
     const scaleShell = document.createElement('div');
     scaleShell.className = 'room-scale-shell';
-    scaleShell.style.width = `${canvasW + DIM_RIGHT + 16}px`;
-    scaleShell.style.height = `${canvasH + DIM_TOP + 16}px`;
+    scaleShell.style.width = `${boardLeft + canvasW + LABEL_RIGHT + DIM_RIGHT + 16}px`;
+    scaleShell.style.height = `${boardTop + canvasH + LABEL_BOTTOM + 16}px`;
     scaleShell.style.flexShrink = '0';
+    scaleShell.style.position = 'relative';
 
     // Create Floor Board
     const board = document.createElement('div');
@@ -1000,8 +1204,8 @@
     board.style.width = `${canvasW}px`;
     board.style.height = `${canvasH}px`;
     board.style.position = 'absolute';
-    board.style.left = '0px';
-    board.style.top = `${DIM_TOP}px`;
+    board.style.left = `${boardLeft}px`;
+    board.style.top = `${boardTop}px`;
     board.style.background = '#fcfcf9';
     board.style.border = '2px solid #20242a';
     board.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)';
@@ -1013,6 +1217,46 @@
       linear-gradient(to bottom, rgba(0,0,0,0.06) 1px, transparent 1px)
     `;
     board.style.backgroundSize = `${gridSizePx}px ${gridSizePx}px`;
+
+    // Wall/side labels — placed outside the room's border (in their own gutters, not
+    // on the floor plan itself) so grid lines, dimension ticks, or placed furniture
+    // never sit behind (or get sat on by) the label text. Orientation: back wall
+    // (fixtures band against it) at the top, front/entrance (kept clear as the booth
+    // walkway) at the bottom.
+    const wallLabel = (text, style) => {
+      const el = document.createElement('div');
+      el.className = 'tv-wall-label';
+      el.textContent = text;
+      el.style.position = 'absolute';
+      el.style.fontSize = '10px';
+      el.style.fontWeight = '700';
+      el.style.letterSpacing = '0.02em';
+      el.style.color = '#3a3f47';
+      el.style.background = 'rgba(255,255,255,0.92)';
+      el.style.border = '1px solid rgba(32,36,42,0.15)';
+      el.style.borderRadius = '10px';
+      el.style.padding = '2px 8px';
+      el.style.pointerEvents = 'none';
+      el.style.zIndex = '5';
+      Object.assign(el.style, style);
+      scaleShell.appendChild(el);
+    };
+    wallLabel('ผนังหลัง / BACK', {
+      top: `${DIM_TOP + 2}px`, left: `${boardLeft + canvasW / 2}px`,
+      transform: 'translateX(-50%)', whiteSpace: 'nowrap', maxWidth: `${canvasW - 8}px`, overflow: 'hidden', textOverflow: 'ellipsis'
+    });
+    wallLabel('ทางเข้า / WALKWAY', {
+      top: `${boardTop + canvasH + 2}px`, left: `${boardLeft + canvasW / 2}px`,
+      transform: 'translateX(-50%)', whiteSpace: 'nowrap', maxWidth: `${canvasW - 8}px`, overflow: 'hidden', textOverflow: 'ellipsis'
+    });
+    wallLabel('ผนังซ้าย (LEFT)', {
+      left: '2px', top: `${boardTop + canvasH / 2}px`, transform: 'translateY(-50%)',
+      width: `${LABEL_LEFT - 8}px`, textAlign: 'center'
+    });
+    wallLabel('ผนังขวา (RIGHT)', {
+      left: `${boardLeft + canvasW + 4}px`, top: `${boardTop + canvasH / 2}px`, transform: 'translateY(-50%)',
+      width: `${LABEL_RIGHT - 8}px`, textAlign: 'center'
+    });
 
     // Click to place product on board
     board.addEventListener('click', (e) => {
@@ -1217,8 +1461,8 @@
     });
 
     scaleShell.appendChild(board);
-    renderDimensionLine(scaleShell, 'x', areaSpec.width, 0, 0, canvasW, DIM_TOP);
-    renderDimensionLine(scaleShell, 'y', areaSpec.depth, canvasW, DIM_TOP, DIM_RIGHT, canvasH);
+    renderDimensionLine(scaleShell, 'x', areaSpec.width, boardLeft, 0, canvasW, DIM_TOP);
+    renderDimensionLine(scaleShell, 'y', areaSpec.depth, boardLeft + canvasW + LABEL_RIGHT, boardTop, DIM_RIGHT, canvasH);
     wrap.appendChild(scaleShell);
     wrap.scrollLeft = prevScrollLeft;
     wrap.scrollTop = prevScrollTop;
