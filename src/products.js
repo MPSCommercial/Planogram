@@ -169,7 +169,7 @@ function renderProductList() {
     card.innerHTML = `
       ${thumb}
       <div>
-        <div class="product-name">${esc(product.name)}</div>
+        <div class="product-name" title="${esc(product.name)}">${esc(product.name)}</div>
         <div class="product-meta">${esc(meta)}</div>
       </div>
       <div class="card-actions">
