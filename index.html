@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="src/styles.css?v=depth-stack">
+  <link rel="stylesheet" href="src/styles.css?v=true-scale">
 </head>
 <body class="left-panel-collapsed">
   <div class="app-shell">
@@ -645,6 +645,13 @@
         </select>
       </div>
       <div class="inspector-controls">
+        <span class="inspector-ctl-label" data-i18n="depth_align_label">ตำแหน่งลึก</span>
+        <select id="inspectorDepthAlign" class="inspector-select" data-i18n-title="depth_align_title" title="วางชิดขอบหน้าหรือดันไปชิดขอบหลังชั้น">
+          <option value="front" data-i18n="depth_align_front">ชิดขอบหน้า</option>
+          <option value="back" data-i18n="depth_align_back">ชิดขอบหลัง</option>
+        </select>
+      </div>
+      <div class="inspector-controls">
         <span class="inspector-ctl-label" data-i18n="rotate_label">หมุน</span>
         <button class="btn-inspect-action" id="btnInspectRotate" type="button" data-i18n-title="rotate_90_title" title="หมุนสินค้า 90 องศา">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
@@ -681,24 +688,24 @@
   <input type="file" id="jsonImportInput" accept=".json" style="display:none">
 
   <!-- 3D engine (SketchUp-style view) -->
-  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
-  <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- CDN libs load async so a slow/blocked CDN never blanks the app; 3D/XLSX guard for them at use time. -->
+  <script async src="https://unpkg.com/three@0.128.0/build/three.min.js" onload="var s=document.createElement('script');s.src='https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js';document.head.appendChild(s)"></script>
+  <script async src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <!-- Application Scripts (modular) -->
-  <script src="src/utils.js?v=depth-stack"></script>
-  <script src="src/i18n.js?v=shelf-row"></script>
+  <script src="src/utils.js?v=true-scale"></script>
+  <script src="src/i18n.js?v=true-scale"></script>
   <script src="src/sheets.js?v=depth-layers"></script>
   <script src="src/products.js?v=depth-layers"></script>
-  <script src="src/planogram.js?v=depth-stack"></script>
+  <script src="src/planogram.js?v=true-scale"></script>
   <script src="src/templates.js?v=sync-segment-width"></script>
   <script src="src/branches.js?v=1.0"></script>
   <script src="src/salesData.js?v=1.0"></script>
   <script src="src/branchView.js?v=1.0"></script>
-  <script src="src/planogram3d.js?v=depth-stack"></script>
+  <script src="src/planogram3d.js?v=true-scale"></script>
   <script src="src/export.js?v=depth-layers"></script>
   <script src="src/topview.js?v=drop-storage-key-slot"></script>
-  <script src="src/app.js?v=drop-library-tab"></script>
+  <script src="src/app.js?v=true-scale"></script>
   <script src="src/multiBoard.js?v=depth-layers"></script>
 </body>
 </html>

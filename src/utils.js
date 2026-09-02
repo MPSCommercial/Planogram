@@ -207,7 +207,10 @@ function stackIds(layer) { return Array.isArray(layer) ? layer : [layer]; }
 function colIds(col) { return depthLayers(col).flatMap(stackIds); }
 function flatPlacements(arr) { return (arr || []).flatMap(colIds); }
 /** Collapse a list back to the stored form; null when empty. Works for both axes. */
-function packCol(items) { return items.length === 0 ? null : items.length === 1 ? items[0] : items; }
+function packCol(items) {
+  // A lone layer that is itself a stack must stay wrapped, or it reads as depth layers.
+  return items.length === 0 ? null : items.length === 1 && !Array.isArray(items[0]) ? items[0] : items;
+}
 /** Drop products that fail `keep`, collapsing stacks/columns that end up empty. */
 function pruneColumns(arr, keep) {
   return (arr || [])

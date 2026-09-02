@@ -116,6 +116,7 @@
   $('btnInspectStackInc').addEventListener('click', () => adjustInspectStack(1));
   $('btnInspectDel').addEventListener('click', deleteInspectPlacement);
   $('inspectorOrientation').addEventListener('change', (e) => changeInspectOrientation(e.target.value));
+  $('inspectorDepthAlign').addEventListener('change', (e) => changeInspectDepthAlign(e.target.value));
   $('btnInspectRotate').addEventListener('click', rotateInspect90);
 
   // ─── Google Sheet Toggle Settings drawer ───
@@ -208,7 +209,8 @@
   document.addEventListener('click', (e) => {
     const mini = $('miniInspector');
     if (mini && mini.style.display !== 'none') {
-      if (!mini.contains(e.target) && !e.target.closest('.shelf-product')) {
+      // A click inside the inspector can re-render it, detaching the clicked node; that is not "outside".
+      if (e.target.isConnected && !mini.contains(e.target) && !e.target.closest('.shelf-product')) {
         closeMiniInspector();
       }
     }

@@ -50,10 +50,7 @@ body {
   font-family: var(--font);
   font-size: 14px;
   color: var(--ink);
-  background:
-    linear-gradient(112deg, transparent 0 62%, rgba(255, 108, 12, 0.12) 62% 74%, transparent 74%),
-    linear-gradient(168deg, transparent 0 74%, rgba(197, 176, 244, 0.24) 74% 88%, transparent 88%),
-    var(--bg);
+  background: var(--bg);
   line-height: 1.5;
   letter-spacing: 0;
   overflow: hidden;
@@ -1244,6 +1241,19 @@ input[type="checkbox"] {
   transform: translateY(-1px);
 }
 
+/* Drop onto upper half of an item = stack on top */
+.shelf-product.drop-stack {
+  outline: 2px solid var(--accent-lime);
+  outline-offset: -2px;
+  box-shadow: inset 0 14px 0 -8px var(--accent-lime);
+}
+.shelf-product.drop-stack::before {
+  content: '⬆ ซ้อน';
+  position: absolute; top: 2px; left: 50%; transform: translateX(-50%);
+  font-size: 0.6rem; font-weight: 700; padding: 1px 6px; border-radius: 4px;
+  background: var(--accent-lime); color: #111; z-index: 3; pointer-events: none;
+}
+
 /* Individual product item on shelf */
 .shelf-product {
   position: relative;
@@ -1696,7 +1706,11 @@ input[type="checkbox"] {
   transform: translate(-50%, -100%) translateY(-10px);
   animation: inspectorIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
   color: white;
+  max-height: calc(100vh - 24px);
 }
+.mini-inspector.below { transform: translate(-50%, 0) translateY(10px); }
+.mini-inspector.below .inspector-arrow { top: -6px; bottom: auto; transform: translateX(-50%) rotate(225deg); }
+.mini-inspector .inspector-body { overflow-y: auto; min-height: 0; }
 
 .inspector-select {
   flex: 1;
@@ -2842,6 +2856,8 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
 }
 .btn-inspect-add-behind:hover { background: rgba(255,255,255,0.12); }
 .btn-inspect-add-behind:disabled { opacity: 0.45; cursor: not-allowed; }
+select.btn-inspect-add-behind { flex: 1; min-width: 0; }
+select.btn-inspect-add-behind option { background: #1f1f1f; color: #fff; }
 .inspector-depth-group {
   border: 1px solid rgba(255,255,255,0.12);
   border-radius: 6px;

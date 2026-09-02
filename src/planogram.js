@@ -13,7 +13,7 @@ let pendingShelfHeights = null;   // heights to honour on the next buildShelf (f
 let pendingSegmentShelfHeights = null; // heights to honour per segment on the next buildShelf
 
 const PX_PER_CM = 3.4;   // horizontal scale: pixels per centimeter
-const V_PX_PER_CM = 2.4;  // vertical scale: pixels per centimeter (shelf heights / ruler)
+const V_PX_PER_CM = PX_PER_CM; // vertical scale: same as horizontal so products read true-to-ruler, not squashed
 const MIN_ITEM_W = 34;    // minimum px width for very narrow products
 const MIN_CELL_CM = 8;    // smallest allowed shelf cell height in cm
 const MIN_ROW_PX = 38;    // smallest pixel height a shelf row may render at
@@ -426,6 +426,13 @@ function makeShelfRow(seg, shelf, segWidthPx, shelfThickPx, cellH) {
   return el;
 }
 
+/** Smallest height a cell can shrink to without crushing what is on it (tallest column + 1 cm). */
+function minCellCm(seg, shelf) {
+  const cols = shelfData[`${seg}-${shelf}`] || [];
+  const tallest = cols.reduce((h, col) => Math.max(h, colMetrics(col, spec.depth || 48).height), 0);
+  return Math.max(MIN_CELL_CM, Math.ceil(tallest) + 1);
+}
+
 /**
  * Set the cell height (cm) of one shelf, compensating from the shelf below
  * (or above for the bottom shelf) so the gondola total stays constant.
@@ -441,7 +448,8 @@ function setCellHeight(seg, shelf, cm) {
   if (partner < 0) return; // single shelf — nothing to balance against
 
   const pair = heights[shelf] + heights[partner];
-  const next = clamp(cm, MIN_CELL_CM, pair - MIN_CELL_CM);
+  const next = clamp(cm, minCellCm(seg, shelf), pair - minCellCm(seg, partner));
+  if (next !== cm) showToast('ปรับไม่ได้ต่ำกว่านี้ ชั้นจะชนสินค้า');
   heights[shelf] = next;
   heights[partner] = pair - next;
 
@@ -467,14 +475,18 @@ function startBoardDrag(e, seg, shelf) {
   const above = shelf;        // dragging down grows the shelf above the board
   const below = shelf + 1;
   const pair = start[above] + start[below];
+  const lo = minCellCm(seg, above), hi = pair - minCellCm(seg, below); // products on either cell lock the board
   let changed = false;
   let queued = false;
+  let warned = false;
   document.body.classList.add('resizing-shelf');
 
   function onMove(ev) {
     const dCm = (ev.clientY - startY) / V_PX_PER_CM;
     const heights = start.slice();
-    const next = clamp(start[above] + dCm, MIN_CELL_CM, pair - MIN_CELL_CM);
+    const want = start[above] + dCm;
+    const next = clamp(want, lo, hi);
+    if (next !== want && !warned) { warned = true; showToast('ชั้นชนสินค้าแล้ว ปรับต่อไม่ได้'); }
     heights[above] = next;
     heights[below] = pair - next;
     spec.segmentShelfHeights[seg] = heights;
@@ -612,8 +624,36 @@ function moveProductOnBoard(sourceSeg, sourceShelf, sourceIdx, targetSeg, target
 }
 
 /**
- * Re-render all shelves from shelfData
+ * Put a product (library id) or a whole board column ({seg,shelf,idx}) on top of
+ * the front layer of column `idx`. Used by drag-drop onto an item's upper half.
  */
+function stackOntoColumn(seg, shelf, idx, src) {
+  const key = `${seg}-${shelf}`;
+  if (!shelfData[key] || shelfData[key][idx] === undefined) return;
+  let ids;
+  if (src && typeof src === 'object') {
+    const sk = `${src.seg}-${src.shelf}`;
+    if (sk === key && src.idx === idx) return;
+    pushHistory();
+    ids = colIds(shelfData[sk].splice(src.idx, 1)[0]);
+    if (!shelfData[sk].length) delete shelfData[sk];
+    if (sk === key && src.idx < idx) idx--;
+  } else {
+    if (!src) return;
+    pushHistory();
+    ids = [src];
+  }
+  const layers = depthLayers(shelfData[key][idx]).map(stackIds);
+  layers[0] = layers[0].concat(ids);
+  shelfData[key][idx] = packCol(layers.map(packCol));
+  renderShelfFill();
+  closeMiniInspector();
+  updateSummary();
+  saveState();
+  if (window.Planogram3D && Planogram3D.isOpen()) Planogram3D.refresh();
+  showToast(`ซ้อน ${ids.map((i) => shortName((products.find((p) => p.id === i) || {}).name || '')).join(' + ')} ข้างบนแล้ว`);
+}
+
 /**
  * Calculate the total capacity and Days of Supply (DOS) for a product
  */
@@ -672,7 +712,7 @@ function renderShelfRow(el, seg, shelf) {
     const col_ = colMetrics(col, spec.depth || 48);
     const wPx = Math.max(MIN_ITEM_W, Math.round(col_.width * PX_PER_CM));
     const frontHcm = front.reduce((h, p) => h + getProductDimensions(p, spec.depth).height * Math.max(1, p.stack || 1), 0);
-    const hPx = Math.min(Math.round(frontHcm * PX_PER_CM), cellH - 4);
+    const hPx = Math.min(Math.round(frontHcm * V_PX_PER_CM), cellH - 4);
     const overHeight = frontHcm * V_PX_PER_CM > cellH; // cell height is in vertical px scale
 
     const item = document.createElement('div');
@@ -700,6 +740,24 @@ function renderShelfRow(el, seg, shelf) {
       draggedSource = null;
       item.classList.remove('dragging');
       item.style.visibility = 'visible';
+    });
+
+    // Drop on the upper half of an item = stack on top of it; lower half falls through to shelf insert.
+    const isSelf = () => draggedSource && draggedSource.seg === seg && draggedSource.shelf === shelf && draggedSource.idx === idx;
+    item.addEventListener('dragover', (e) => {
+      if (isSelf()) return;
+      const r = item.getBoundingClientRect();
+      item.classList.toggle('drop-stack', e.clientY < r.top + r.height * 0.5);
+    });
+    item.addEventListener('dragleave', (e) => { if (!item.contains(e.relatedTarget)) item.classList.remove('drop-stack'); });
+    item.addEventListener('drop', (e) => {
+      const stacking = item.classList.contains('drop-stack');
+      item.classList.remove('drop-stack');
+      if (!stacking) return;
+      e.preventDefault();
+      e.stopPropagation();
+      el.classList.remove('drag-over');
+      stackOntoColumn(seg, shelf, idx, draggedSource || e.dataTransfer.getData('text/plain'));
     });
 
     // Event listener สำหรับการคลิกเพื่อแก้ไข Facing / ลบสินค้า
@@ -943,12 +1001,26 @@ function openMiniInspector(seg, shelf, idx, event, el, layer = 0, level = 0) {
   const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
   popup.style.display = 'flex';
-  
-  const left = rect.left + rect.width / 2 + scrollLeft;
-  const top = rect.top + scrollTop;
+  placeInspector(popup, rect);
+}
 
-  popup.style.left = `${left}px`;
-  popup.style.top = `${top}px`;
+/**
+ * Anchor the popup above `rect` (viewport coords). Flips below when there is no
+ * room above, and clamps horizontally so it never leaves the viewport.
+ */
+function placeInspector(popup, rect) {
+  const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const pad = 8;
+  const h = popup.offsetHeight, w = popup.offsetWidth;
+  const flip = rect.top - h - 10 < pad && rect.bottom + h + 10 < window.innerHeight; // no room above, room below
+  popup.classList.toggle('below', flip);
+  let x = rect.left + rect.width / 2;
+  x = clamp(x, pad + w / 2, window.innerWidth - pad - w / 2);
+  let y = flip ? rect.bottom : rect.top;
+  if (!flip) y = Math.max(y, pad + h + 10); // still too tall for either side → pin under top edge (body scrolls)
+  popup.style.left = `${x + scrollLeft}px`;
+  popup.style.top = `${y + scrollTop}px`;
 }
 
 /** Column under the inspector as depth layers (each an array bottom→top), and the product at the active spot. */
@@ -998,16 +1070,21 @@ function renderInspectorLayers() {
   }).join('');
 
   const sel = products.find((p) => p.id === selectedProductId);
-  const selName = sel ? esc(shortName(sel.name)) : '';
+  const opts = (label) => `<option value="" selected>${label}</option>` + products.map((p) => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
+  const pick = (label, hint, fn) => `
+    <label style="flex:1; min-width:0; display:flex; flex-direction:column; gap:2px">
+      <span class="inspector-ctl-label">${label}</span>
+      <select class="btn-inspect-add-behind" onchange="${fn}(this.value); this.value=''" onmousedown="event.stopPropagation()" title="${hint}">${opts('＋ เลือกสินค้า…')}</select>
+    </label>`;
   const c = (v, lim) => `<b style="color:${v > lim ? '#ef4444' : '#fff'}">${Math.round(v)}/${lim} cm</b>`;
   box.innerHTML = `
     <div class="inspector-ctl-label" style="margin-bottom:4px">ช่องนี้ · ลึกรวม ${c(m.depth, shelfDepth)} · สูงรวม ${c(m.height, cellCm)}</div>
     ${groups}
     <div style="display:flex; gap:4px; flex-wrap:wrap">
-      <button type="button" class="btn-inspect-add-behind" onclick="addAboveInspected()" ${sel ? '' : 'disabled'} title="${sel ? `วาง ${esc(sel.name)} ซ้อนบนสุดของชั้นที่เลือก` : 'เลือกสินค้าใน Library ก่อน'}">＋ ซ้อนข้างบน${sel ? `: ${selName}` : ''}</button>
-      <button type="button" class="btn-inspect-add-behind" onclick="addBehindInspected()" ${sel ? '' : 'disabled'} title="${sel ? `วาง ${esc(sel.name)} ไว้ด้านหลังสุดของช่องนี้` : 'เลือกสินค้าใน Library ก่อน'}">＋ วางด้านหลัง${sel ? `: ${selName}` : ''}</button>
+      ${pick('⬆ แนวตั้ง · ซ้อนข้างบน', 'วางซ้อนบนสุดของชั้นที่เลือก (สูงขึ้น)', 'addAboveInspected')}
+      ${pick('⇊ แนวลึก · วางด้านหลัง', 'วางไว้ด้านหลังสุดของช่องนี้ (ลึกเข้าไป)', 'addBehindInspected')}
     </div>
-    ${sel ? '' : '<div style="font-size:0.65rem;color:rgba(255,255,255,.5)">เลือกสินค้าใน Library ก่อน แล้วกดปุ่มเพิ่ม</div>'}`;
+    <div style="font-size:0.65rem;color:rgba(255,255,255,.5)">หรือลากสินค้าจาก Library / ชั้นอื่น มาวางบน<b>ครึ่งบน</b>ของสินค้าเพื่อซ้อน</div>`;
 }
 
 /** Replace the inspected column's layers (array of arrays), then redraw. */
@@ -1062,18 +1139,18 @@ function removeInspectItem(li, vi) {
   setInspectedLayers(layers, li, Math.max(0, vi - 1));
 }
 /** Put the library-selected product behind everything in this column (new depth layer). */
-function addBehindInspected() {
-  if (!selectedProductId) { showToast('เลือกสินค้าใน Library ก่อน'); return; }
-  const layers = inspectedCol().concat([[selectedProductId]]);
+function addBehindInspected(pid = selectedProductId) {
+  if (!pid) { showToast('เลือกสินค้าก่อน'); return; }
+  const layers = inspectedCol().concat([[pid]]);
   setInspectedLayers(layers, layers.length - 1, 0);
   showToast('วางสินค้าไว้ด้านหลังแล้ว');
 }
 /** Put the library-selected product on top of the active depth layer's stack. */
-function addAboveInspected() {
-  if (!selectedProductId) { showToast('เลือกสินค้าใน Library ก่อน'); return; }
+function addAboveInspected(pid = selectedProductId) {
+  if (!pid) { showToast('เลือกสินค้าก่อน'); return; }
   const layers = inspectedCol();
   const li = activeInspectorTarget.layer;
-  layers[li].push(selectedProductId);
+  layers[li].push(pid);
   setInspectedLayers(layers, li, layers[li].length - 1);
   showToast('วางสินค้าซ้อนข้างบนแล้ว');
 }
@@ -1112,6 +1189,8 @@ function renderInspectorValues(product) {
 
   const orientationSelect = $('inspectorOrientation');
   if (orientationSelect) orientationSelect.value = product.orientation || 'front';
+  const alignSelect = $('inspectorDepthAlign');
+  if (alignSelect) alignSelect.value = product.depthAlign || 'front';
   const rotateValSpan = $('inspectorRotateVal');
   if (rotateValSpan) rotateValSpan.textContent = `${product.rotation || 0}°`;
 
@@ -1183,6 +1262,11 @@ function changeInspectOrientation(newVal) {
   updateInspectedProduct((p) => { p.orientation = newVal; });
 }
 
+/** Which shelf edge the product's depth rows hug: 'front' (default) or 'back'. */
+function changeInspectDepthAlign(newVal) {
+  updateInspectedProduct((p) => { p.depthAlign = newVal; });
+}
+
 /**
  * Rotate the inspected product by toggling between 0 and 90 degrees
  */
@@ -1204,14 +1288,7 @@ function repositionMiniInspector(seg, shelf, idx) {
     const rowEl = $(`shelf-${seg}-${shelf}`);
     if (rowEl) {
       const prodEls = rowEl.querySelectorAll('.shelf-product');
-      if (prodEls[idx]) {
-        const rect = prodEls[idx].getBoundingClientRect();
-        const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-        const popup = $('miniInspector');
-        popup.style.left = `${rect.left + rect.width / 2 + scrollLeft}px`;
-        popup.style.top = `${rect.top + scrollTop}px`;
-      }
+      if (prodEls[idx]) placeInspector($('miniInspector'), prodEls[idx].getBoundingClientRect());
     }
   }, 50);
 }

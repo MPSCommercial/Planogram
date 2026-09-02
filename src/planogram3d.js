@@ -27,7 +27,7 @@
   /** Lazily create renderer/scene/camera/lights once. */
   function ensureInit() {
     if (initialized) return true;
-    if (!window.THREE) {
+    if (!window.THREE || !THREE.OrbitControls) {
       showToast('กำลังโหลด 3D engine… ลองอีกครั้ง');
       return false;
     }
@@ -478,6 +478,10 @@
               // split them with whatever depth is left over — never more.
               const slack = Math.max(0, zFront + D / 2 - rows * d);
               const rowGap = rows > 1 ? Math.min(0.5, slack / (rows - 1)) : 0;
+              // ponytail: 'back' hugs the back panel regardless of layers behind it; overlap is the user's call.
+              const zStart = p.depthAlign === 'back'
+                ? Math.min(zFront, -D / 2 + 0.5 + rows * d + (rows - 1) * rowGap)
+                : zFront;
               const base = makeProduct(p, w, h, d);
               for (let k = 0; k < stack; k++) {
                 for (let r = 0; r < rows; r++) {
@@ -485,7 +489,7 @@
                   mesh.position.set(
                     cursorX + (colW - w) / 2 + w / 2, // centre narrower products in the column
                     yBottom + h / 2 + k * h,
-                    zFront - d / 2 - r * (d + rowGap)
+                    zStart - d / 2 - r * (d + rowGap)
                   );
                   contentGroup.add(mesh);
                 }

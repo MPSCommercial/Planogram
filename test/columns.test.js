@@ -17,6 +17,7 @@ eq(flatPlacements(['a', ['b', 'a']]), ['a', 'b', 'a']);
 assert.strictEqual(packCol([]), null);
 assert.strictEqual(packCol(['a']), 'a');
 eq(packCol(['a', 'b']), ['a', 'b']);
+eq(packCol([['a', 'b']]), [['a', 'b']]); // a lone stacked layer stays a stack, not two depth layers
 // deleting 'b' collapses the layered column back to a plain id; the b-only column disappears
 eq(pruneColumns(['a', ['a', 'b'], 'b'], (id) => id !== 'b'), ['a', 'a']);
 // width = widest layer (b: 30 > a: 10×2), depth = a rows(2×10) + b(20) = 40 → fits 48, overflows 30
