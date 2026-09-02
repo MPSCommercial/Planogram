@@ -6,16 +6,20 @@
 ---
 
 ## ⚡ NOW
-- **Status**: ปรับแก้การแสดงผลสีในมุมมอง 3D (Three.js) ให้สีอิ่มสวย ไม่ซีดขาว — โดยเพิ่มการแปลงสี sRGB to Linear (`to3Color`) ป้องกัน double-gamma washout เมื่อใช้ `outputEncoding = sRGBEncoding`, เปิดใช้ `ACESFilmicToneMapping` เพื่อความสมจริงของมิติแสงและสี, ปรับความสมดุลของแสง (Key light + Fill light + Hemisphere light) และปรับค่า Material roughness/metalness ให้ออกมาเป็นพื้นผิวที่ดูสดใส คมชัด ไม่สะท้อนแสงซีดฟุ้ง
+- **Status**: อัปเดต GitHub `main` ด้วยระบบวางสินค้าซ้อน 2 แกนใน Planogram — รองรับซ้อนแนวตั้งและแนวลึก, ลากเพื่อซ้อน, จัดลำดับ/ลบสินค้าใน inspector, depth alignment, shelf lock, popup clamp และสเกลจริง; test ผ่านใน commit `0e6934f`
 - **Live URL**: `https://mpscommercial.github.io/Planogram/` (deploy ผ่าน GitHub Pages auto-deploy จาก `main`)
 - **Branch**: main
-- **Blocker**: ไม่มี (ยืนยันสีและรุ่นสินค้า Curble Grand, LAPTOP PRO, FOOT REST เรียบร้อยแล้ว)
-- **Next**: ทดสอบมุมมอง 3D ร่วมกับผู้ใช้; ถามผู้ใช้ว่าจะตั้ง custom domain (เช่น `planogram.mpsynergy.co.th`) ชี้มาที่ GitHub Pages ไหม; ถ่ายรูปเพิ่มอีก 30 SKU หมวด Accessories ที่ยังไม่มีรูป แล้วรัน `python3 tools/packshot.py -o assets/products --map names.csv photos-raw/*.jpeg`
-- **Files**: `src/planogram3d.js`, `state.md`
+- **Blocker**: ไม่มี; `CNAME` ยังไม่ track เพราะชี้ไปโดเมน Surge เดิม `planogram-mpsynergy.surge.sh` และไม่ควรนำไปตั้งเป็น GitHub Pages custom domain โดยไม่ได้ยืนยัน
+- **Next**: ตรวจหน้า live หลัง GitHub Pages deploy และทดสอบการซ้อนสินค้าหลาย SKU ทั้งแนวตั้ง/แนวลึกบน browser
+- **Files**: `index.html`, `src/app.js`, `src/i18n.js`, `src/planogram.js`, `src/planogram3d.js`, `src/styles.css`, `src/utils.js`, `test/columns.test.js`, `state.md`
 
 ---
 
 ## 📜 LOG
+
+### 🗓️ 2026-09-02
+- ✅ Previous NOW: ปรับแก้การแสดงผลสีในมุมมอง 3D (Three.js) ให้สีอิ่มสวย ไม่ซีดขาว ด้วย sRGB-to-linear conversion, ACES tone mapping, แสง และ material ที่สมดุลขึ้น
+- Files: `src/planogram3d.js`, `state.md`
 
 ### 🗓️ 2026-08-22
 - ✅ Previous NOW: ปรับแก้ระบบ Color Management และแสงเงาใน Three.js 3D View แก้ปัญหาสีเชลฟ์และวัสดุซีดขาว
