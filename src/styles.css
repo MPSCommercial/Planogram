@@ -2774,3 +2774,87 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
 .tv-product-face {
   border-color: #cbd5e0 !important;
 }
+
+/* ─── Depth layers: several SKUs sharing one shelf column, front → back ─── */
+.depth-chip {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  z-index: 4;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  background: rgba(17, 24, 39, 0.85);
+  color: #fff;
+  pointer-events: none;
+}
+.shelf-product.over-depth { outline: 2px solid #ef4444; outline-offset: -2px; }
+.inspector-layers {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255,255,255,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.inspector-layer {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+.inspector-layer:hover { background: rgba(255,255,255,0.08); }
+.inspector-layer.active { border-color: var(--accent-lime, #a3e635); background: rgba(255,255,255,0.1); }
+.inspector-layer-tag {
+  font-size: 0.6rem;
+  font-weight: 700;
+  min-width: 26px;
+  text-align: center;
+  padding: 1px 3px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.15);
+}
+.inspector-layer-name {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.inspector-layer .btn-inspect-action { width: 20px; height: 20px; font-size: 0.65rem; }
+.inspector-layer .btn-inspect-action:disabled { opacity: 0.3; pointer-events: none; }
+.btn-inspect-add-behind {
+  margin-top: 2px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px dashed rgba(255,255,255,0.35);
+  background: transparent;
+  color: #fff;
+  font-size: 0.7rem;
+  text-align: left;
+  cursor: pointer;
+}
+.btn-inspect-add-behind:hover { background: rgba(255,255,255,0.12); }
+.btn-inspect-add-behind:disabled { opacity: 0.45; cursor: not-allowed; }
+.inspector-depth-group {
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 6px;
+  padding: 3px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.inspector-depth-head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 2px;
+}
+.inspector-depth-head .btn-inspect-action { width: 20px; height: 20px; font-size: 0.6rem; }
+.inspector-depth-head .btn-inspect-action:disabled { opacity: 0.3; pointer-events: none; }

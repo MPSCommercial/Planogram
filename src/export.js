@@ -325,18 +325,17 @@ function updateReportTable() {
     const [segIdx, shelfIdx] = key.split('-').map(Number);
     if (!Array.isArray(productIds)) return;
 
-    productIds.forEach((pid) => {
+    productIds.forEach((col) => { totalSpaceUsedCm += colMetrics(col, spec.depth || 48).width; });
+    flatPlacements(productIds).forEach((pid) => {
       const product = products.find(p => p.id === pid);
       if (!product) return;
 
       const pFacing = Math.max(1, parseInt(product.facing) || 1);
       const pStack = Math.max(1, parseInt(product.stack) || 1);
       const rows = depthRows(product, spec.depth || 48).used;
-      const itemWidth = getProductDimensions(product, spec.depth || 48).width;
       const itemQty = pFacing * pStack * rows;
       
       totalQty += itemQty;
-      totalSpaceUsedCm += (itemWidth * pFacing);
 
       placedProductsList.push({
         product,
@@ -510,7 +509,7 @@ function exportStockExcel() {
   const totalSKUsMap = new Map();
   Object.values(shelfData || {}).forEach((productIds) => {
     if (!Array.isArray(productIds)) return;
-    productIds.forEach((pid) => {
+    flatPlacements(productIds).forEach((pid) => {
       const product = products.find((p) => p.id === pid);
       if (!product) return;
       const facing = Math.max(1, parseInt(product.facing) || 1);
@@ -563,7 +562,7 @@ function exportReportCSV() {
     let totalSKUsMap = new Map();
     Object.entries(shelfData || {}).forEach(([key, productIds]) => {
       if (!Array.isArray(productIds)) return;
-      productIds.forEach((pid) => {
+      flatPlacements(productIds).forEach((pid) => {
         const product = products.find(p => p.id === pid);
         if (!product) return;
         const pFacing = Math.max(1, parseInt(product.facing) || 1);
@@ -601,7 +600,7 @@ function exportReportCSV() {
       const [segIdx, shelfIdx] = key.split('-').map(Number);
       if (!Array.isArray(productIds)) return;
 
-      productIds.forEach((pid) => {
+      flatPlacements(productIds).forEach((pid) => {
         const product = products.find(p => p.id === pid);
         if (!product) return;
 

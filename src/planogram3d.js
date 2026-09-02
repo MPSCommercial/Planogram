@@ -457,34 +457,45 @@
         const cellH = segHeights[i];
         const maxH = Math.max(2, cellH - thick); // Clamp to prevent vertical overflow
 
-        placed.forEach((pid) => {
-          const p = list.find((q) => q.id === pid);
-          if (!p) return;
-          const facing = p.facing || 1;
-          const dims = getProductDimensions(p, D);
-          const w = dims.width * facing;
-          const h = Math.min(dims.height, maxH); // Clamp product height to cell space
-          const d = dims.depth;
+        placed.forEach((col) => {
+          const colW = colMetrics(col, D).width;
+          let zFront = D / 2 - frontPad; // front face of the next layer, walks toward the back panel
+          depthLayers(col).forEach((layer) => {
+            let yBottom = surfaceY + thick; // products in one depth layer pile up, bottom→top
+            let layerDepth = 0;
+            stackIds(layer).forEach((pid) => {
+              const p = list.find((q) => q.id === pid);
+              if (!p) return;
+              const facing = p.facing || 1;
+              const dims = getProductDimensions(p, D);
+              const w = dims.width * facing;
+              const h = Math.min(dims.height, maxH); // Clamp product height to cell space
+              const d = dims.depth;
 
-          const stack = Math.max(1, p.stack || 1);
-          const rows = depthRows(p, D).used;
-          // Butted up against each other the rows read as one long block, so
-          // split them with whatever depth is left over — never more.
-          const slack = Math.max(0, D - frontPad - rows * d);
-          const rowGap = rows > 1 ? Math.min(0.5, slack / (rows - 1)) : 0;
-          const base = makeProduct(p, w, h, d);
-          for (let k = 0; k < stack; k++) {
-            for (let r = 0; r < rows; r++) {
-              const mesh = (k === 0 && r === 0) ? base : base.clone();
-              mesh.position.set(
-                cursorX + w / 2,
-                surfaceY + thick + h / 2 + k * h,
-                D / 2 - d / 2 - frontPad - r * (d + rowGap)
-              );
-              contentGroup.add(mesh);
-            }
-          }
-          cursorX += w + 0.6; // tiny gap between SKUs
+              const stack = Math.max(1, p.stack || 1);
+              const rows = depthRows(p, D).used;
+              // Butted up against each other the rows read as one long block, so
+              // split them with whatever depth is left over — never more.
+              const slack = Math.max(0, zFront + D / 2 - rows * d);
+              const rowGap = rows > 1 ? Math.min(0.5, slack / (rows - 1)) : 0;
+              const base = makeProduct(p, w, h, d);
+              for (let k = 0; k < stack; k++) {
+                for (let r = 0; r < rows; r++) {
+                  const mesh = (k === 0 && r === 0) ? base : base.clone();
+                  mesh.position.set(
+                    cursorX + (colW - w) / 2 + w / 2, // centre narrower products in the column
+                    yBottom + h / 2 + k * h,
+                    zFront - d / 2 - r * (d + rowGap)
+                  );
+                  contentGroup.add(mesh);
+                }
+              }
+              yBottom += stack * h;
+              layerDepth = Math.max(layerDepth, rows * d + (rows - 1) * rowGap);
+            });
+            zFront -= layerDepth + 0.5; // next depth layer sits behind this one
+          });
+          cursorX += colW + 0.6; // tiny gap between SKUs
         });
       }
     }

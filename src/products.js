@@ -61,7 +61,7 @@ function deleteProduct(id, event) {
   // Remove from shelf
   Object.keys(shelfData).forEach((key) => {
     if (Array.isArray(shelfData[key])) {
-      shelfData[key] = shelfData[key].filter((pid) => pid !== id);
+      shelfData[key] = pruneColumns(shelfData[key], (pid) => pid !== id);
       if (!shelfData[key].length) delete shelfData[key];
     }
   });

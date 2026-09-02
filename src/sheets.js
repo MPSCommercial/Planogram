@@ -392,7 +392,7 @@ function pruneMissingPlacements() {
   const validIds = new Set(products.map((product) => product.id));
   Object.keys(shelfData).forEach((key) => {
     if (Array.isArray(shelfData[key])) {
-      shelfData[key] = shelfData[key].filter((productId) => validIds.has(productId));
+      shelfData[key] = pruneColumns(shelfData[key], (productId) => validIds.has(productId));
       if (!shelfData[key].length) delete shelfData[key];
       return;
     }

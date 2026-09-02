@@ -3,12 +3,12 @@
    Free-placement: products sized by actual cm dimensions
    ═══════════════════════════════════════════════════════ */
 
-let shelfData = {}; // { "seg-shelf": [productId, ...] }
+let shelfData = {}; // { "seg-shelf": [col, ...] } — col = productId | [front, ..., back] | [[bottom, top], back] (see utils depthLayers)
 let spec = {};
 let undoStack = [];
 let redoStack = [];
 let draggedSource = null; // { seg, shelf, idx, productId }
-let activeInspectorTarget = null; // { seg, shelf, idx }
+let activeInspectorTarget = null; // { seg, shelf, idx, layer (depth), level (stack) }
 let pendingShelfHeights = null;   // heights to honour on the next buildShelf (from loadState)
 let pendingSegmentShelfHeights = null; // heights to honour per segment on the next buildShelf
 
@@ -535,10 +535,7 @@ function dropInsertIndex(el, seg, shelf, clientX) {
   const items = shelfData[key] || [];
   let cumX = 0;
   for (let i = 0; i < items.length; i++) {
-    const p = products.find((q) => q.id === items[i]);
-    if (!p) continue;
-    const dims = getProductDimensions(p, spec.depth);
-    const w = Math.max(MIN_ITEM_W, Math.round(dims.width * (p.facing || 1) * PX_PER_CM));
+    const w = Math.max(MIN_ITEM_W, Math.round(colMetrics(items[i], spec.depth).width * PX_PER_CM));
     if (dropX <= cumX + w / 2) return i;
     cumX += w;
   }
@@ -624,13 +621,9 @@ function calculateProductDOS(product) {
   if (!product) return { dos: null, capacity: 0 };
   
   let totalCapacity = 0;
-  Object.entries(shelfData || {}).forEach(([key, productIds]) => {
-    if (!Array.isArray(productIds)) return;
-    const [segIdx, shelfIdx] = key.split('-').map(Number);
-    // Find the shelf board element to read its height/depth if possible, or fallback to spec.depth
+  Object.values(shelfData || {}).forEach((cols) => {
     const shelfDepth = spec.depth || 48;
-    
-    productIds.forEach((pid) => {
+    flatPlacements(cols).forEach((pid) => {
       if (pid === product.id) {
         const stack = Math.max(1, product.stack || 1);
         const facing = product.facing || 1;
@@ -665,24 +658,34 @@ function renderShelfRow(el, seg, shelf) {
   const placements = shelfData[key] || [];
   const cellH = parseInt(el.style.getPropertyValue('--cell-h')) || 90;
 
-  placements.forEach((productId, idx) => {
-    const product = products.find((p) => p.id === productId);
+  placements.forEach((col, idx) => {
+    // The front layer is what the shopper sees; back layers only add a chip.
+    const layers = depthLayers(col);
+    // Front depth layer, bottom→top; the bottom product owns the badges/DOS.
+    const front = stackIds(layers[0]).map((pid) => products.find((p) => p.id === pid)).filter(Boolean);
+    const product = front[0];
     if (!product) return;
+    const productId = product.id;
 
     const dims = getProductDimensions(product, spec.depth);
     const stack = Math.max(1, product.stack || 1);
-    const wCm = dims.width * (product.facing || 1);
-    const hCm = dims.height;
-    const wPx = Math.max(MIN_ITEM_W, Math.round(wCm * PX_PER_CM));
-    const unitPx = Math.round(hCm * PX_PER_CM);
-    const hPx = Math.min(unitPx * stack, cellH - 4);
+    const col_ = colMetrics(col, spec.depth || 48);
+    const wPx = Math.max(MIN_ITEM_W, Math.round(col_.width * PX_PER_CM));
+    const frontHcm = front.reduce((h, p) => h + getProductDimensions(p, spec.depth).height * Math.max(1, p.stack || 1), 0);
+    const hPx = Math.min(Math.round(frontHcm * PX_PER_CM), cellH - 4);
+    const overHeight = frontHcm * V_PX_PER_CM > cellH; // cell height is in vertical px scale
 
     const item = document.createElement('div');
-    item.className = stack > 1 ? 'shelf-product stacked' : 'shelf-product';
+    item.className = 'shelf-product' + (stack > 1 || front.length > 1 ? ' stacked' : '') + (col_.over || overHeight ? ' over-depth' : '');
     item.style.width = `${wPx}px`;
     item.style.height = `${hPx}px`;
     const stackLabel = stack > 1 ? ` · ซ้อน ${stack}` : '';
-    item.title = `${product.name} (${Math.round(dims.width)}cm × ${Math.round(dims.height)}cm${stackLabel})`;
+    const name = (pid) => (products.find((p) => p.id === pid) || {}).name;
+    const aboveNames = front.slice(1).map((p) => p.name);
+    const backNames = layers.slice(1).map((l) => stackIds(l).map(name).filter(Boolean).join(' + '));
+    const aboveLabel = aboveNames.length ? `\nซ้อนข้างบน: ${aboveNames.join(' → ')}` : '';
+    const backLabel = backNames.length ? `\nด้านหลัง: ${backNames.join(' → ')}` : '';
+    item.title = `${product.name} (${Math.round(dims.width)}cm × ${Math.round(dims.height)}cm${stackLabel})${aboveLabel}${backLabel}`;
     item.draggable = true;
 
     // Event listeners สำหรับการลากย้ายสินค้าที่อยู่บน Shelf
@@ -702,15 +705,24 @@ function renderShelfRow(el, seg, shelf) {
     // Event listener สำหรับการคลิกเพื่อแก้ไข Facing / ลบสินค้า
     item.addEventListener('click', (e) => {
       e.stopPropagation();
-      openMiniInspector(seg, shelf, idx, e, item);
+      const unit = e.target.closest('.stack-unit');
+      openMiniInspector(seg, shelf, idx, e, item, 0, unit ? Number(unit.dataset.level) : 0);
     });
 
-    const faceImage = productImage(product);
-    const visual = faceImage
-      ? `<img src="${esc(faceImage)}" alt="${esc(product.name)}" draggable="false">`
-      : `<div class="pack-fallback" style="background:${product.color};color:${contrast(product.color)}">${esc(shortName(product.name))}</div>`;
-
-    const units = Array.from({ length: stack }, () => `<div class="stack-unit">${visual}</div>`).join('');
+    const visualOf = (p) => {
+      const faceImage = productImage(p);
+      return faceImage
+        ? `<img src="${esc(faceImage)}" alt="${esc(p.name)}" draggable="false">`
+        : `<div class="pack-fallback" style="background:${p.color};color:${contrast(p.color)}">${esc(shortName(p.name))}</div>`;
+    };
+    // DOM order is top→bottom, so walk the stack from the top product down.
+    // flex-grow = cm so mixed heights share the column proportionally.
+    const units = front.slice().reverse().map((p, ri) => {
+      const level = front.length - 1 - ri;
+      const h = getProductDimensions(p, spec.depth).height;
+      const v = visualOf(p);
+      return Array.from({ length: Math.max(1, p.stack || 1) }, () => `<div class="stack-unit" data-level="${level}" style="flex:${h} 1 0" title="${esc(p.name)}">${v}</div>`).join('');
+    }).join('');
 
     // Calculate DOS & Capacity Badges
     const dosInfo = calculateProductDOS(product);
@@ -728,8 +740,12 @@ function renderShelfRow(el, seg, shelf) {
       badgeHTML = `<span class="product-cap-badge" title="วางแนวลึกได้สูงสุด ${localCap} ชิ้น (ลึก ${maxRows} แถว) — ยังไม่ได้นับเป็นของที่วางจริง">cap:${localCap}</span>`;
     }
 
+    const depthChip = layers.length > 1
+      ? `<span class="depth-chip" title="ซ้อนแนวลึก ${layers.length} ชั้น (ลึกรวม ${Math.round(col_.depth)}/${spec.depth || 48} cm)">⇊${layers.length}</span>`
+      : '';
+
     item.innerHTML = `
-      ${badgeHTML}
+      ${badgeHTML}${depthChip}
       ${units}
       <button class="slot-remove" onclick="removeFromShelf(${seg},${shelf},${idx},event)" title="ลบ">×</button>
     `;
@@ -741,13 +757,7 @@ function renderShelfRow(el, seg, shelf) {
   if (spec.width && spec.segments) {
     const segWidthCm = (spec.segmentWidths && spec.segmentWidths[seg]) || (spec.width / spec.segments);
     let usedCm = 0;
-    placements.forEach((productId) => {
-      const product = products.find((p) => p.id === productId);
-      if (product) {
-        const dims = getProductDimensions(product, spec.depth);
-        usedCm += dims.width * (product.facing || 1);
-      }
-    });
+    placements.forEach((col) => { usedCm += colMetrics(col, spec.depth || 48).width; });
 
     if (usedCm > 0) {
       const badge = document.createElement('div');
@@ -850,11 +860,10 @@ function updateSummary() {
 
   Object.values(shelfData).forEach((arr) => {
     if (!Array.isArray(arr)) return;
-    arr.forEach((pid) => {
+    arr.forEach((col) => { usedCm += colMetrics(col, spec.depth || 48).width; });
+    flatPlacements(arr).forEach((pid) => {
       const p = products.find((q) => q.id === pid);
       if (!p) return;
-      const dims = getProductDimensions(p, spec.depth);
-      usedCm += dims.width * (p.facing || 1);
       skuSet.add(pid);
 
       const qty = (p.facing || 1) * Math.max(1, p.stack || 1) * depthRows(p, spec.depth || 48).used;
@@ -920,14 +929,10 @@ function loadDemo() {
 /**
  * Open the mini-inspector popup above the clicked product on shelf
  */
-function openMiniInspector(seg, shelf, idx, event, el) {
-  activeInspectorTarget = { seg, shelf, idx };
+function openMiniInspector(seg, shelf, idx, event, el, layer = 0, level = 0) {
+  activeInspectorTarget = { seg, shelf, idx, layer, level };
 
-  const key = `${seg}-${shelf}`;
-  const productId = shelfData[key] ? shelfData[key][idx] : null;
-  if (!productId) return;
-
-  const product = products.find((p) => p.id === productId);
+  const product = inspectedProduct();
   if (!product) return;
 
   const popup = $('miniInspector');
@@ -946,10 +951,138 @@ function openMiniInspector(seg, shelf, idx, event, el) {
   popup.style.top = `${top}px`;
 }
 
+/** Column under the inspector as depth layers (each an array bottom→top), and the product at the active spot. */
+function inspectedCol() {
+  if (!activeInspectorTarget) return [];
+  const { seg, shelf, idx } = activeInspectorTarget;
+  return depthLayers((shelfData[`${seg}-${shelf}`] || [])[idx]).map((l) => stackIds(l).slice());
+}
+function inspectedProduct() {
+  if (!activeInspectorTarget) return null;
+  const layer = inspectedCol()[activeInspectorTarget.layer] || [];
+  return products.find((p) => p.id === layer[activeInspectorTarget.level]) || null;
+}
+
+/**
+ * Two-axis list: one group per depth layer (หน้า→หลัง, ◀▶ moves the group),
+ * products inside listed top→bottom (▲▼ reorder, × remove). Click = edit that product.
+ */
+function renderInspectorLayers() {
+  const box = $('inspectorLayers');
+  if (!box || !activeInspectorTarget) return;
+  const layers = inspectedCol();
+  const { layer: aL, level: aV } = activeInspectorTarget;
+  const shelfDepth = spec.depth || 48;
+  const cellCm = Math.round(getCellHeights(activeInspectorTarget.seg)[activeInspectorTarget.shelf] || 0);
+  const m = colMetrics(layers, shelfDepth);
+  const nameOf = (pid) => { const p = products.find((q) => q.id === pid); return esc(p ? p.name : pid); };
+  const btn = (label, fn, title, off) => `<button type="button" class="btn-inspect-action${label === '×' ? ' btn-inspect-del' : ''}" ${off ? 'disabled' : ''} onclick="${fn};event.stopPropagation()" title="${title}">${label}</button>`;
+
+  const groups = layers.map((ids, li) => {
+    const tag = layers.length === 1 ? 'ช่องนี้' : li === 0 ? 'หน้า' : li === layers.length - 1 ? 'หลัง' : `ลึก ${li + 1}`;
+    const rows = ids.map((pid, vi) => `
+      <div class="inspector-layer${li === aL && vi === aV ? ' active' : ''}" onclick="selectInspectLayer(${li},${vi})">
+        <span class="inspector-layer-tag">${ids.length === 1 ? '·' : vi === 0 ? 'ล่าง' : vi === ids.length - 1 ? 'บน' : vi + 1}</span>
+        <span class="inspector-layer-name" title="${nameOf(pid)}">${nameOf(pid)}</span>
+        ${btn('▲', `moveInspectLevel(${li},${vi},1)`, 'เลื่อนขึ้นข้างบน', vi === ids.length - 1)}
+        ${btn('▼', `moveInspectLevel(${li},${vi},-1)`, 'เลื่อนลงข้างล่าง', vi === 0)}
+        ${btn('×', `removeInspectItem(${li},${vi})`, 'เอาสินค้านี้ออก', false)}
+      </div>`).reverse().join('');
+    return `<div class="inspector-depth-group">
+      <div class="inspector-depth-head">
+        <span class="inspector-layer-tag">${tag}</span>
+        <span style="flex:1"></span>
+        ${btn('◀', `moveInspectLayer(${li},-1)`, 'เลื่อนมาด้านหน้า', li === 0)}
+        ${btn('▶', `moveInspectLayer(${li},1)`, 'เลื่อนไปด้านหลัง', li === layers.length - 1)}
+      </div>${rows}</div>`;
+  }).join('');
+
+  const sel = products.find((p) => p.id === selectedProductId);
+  const selName = sel ? esc(shortName(sel.name)) : '';
+  const c = (v, lim) => `<b style="color:${v > lim ? '#ef4444' : '#fff'}">${Math.round(v)}/${lim} cm</b>`;
+  box.innerHTML = `
+    <div class="inspector-ctl-label" style="margin-bottom:4px">ช่องนี้ · ลึกรวม ${c(m.depth, shelfDepth)} · สูงรวม ${c(m.height, cellCm)}</div>
+    ${groups}
+    <div style="display:flex; gap:4px; flex-wrap:wrap">
+      <button type="button" class="btn-inspect-add-behind" onclick="addAboveInspected()" ${sel ? '' : 'disabled'} title="${sel ? `วาง ${esc(sel.name)} ซ้อนบนสุดของชั้นที่เลือก` : 'เลือกสินค้าใน Library ก่อน'}">＋ ซ้อนข้างบน${sel ? `: ${selName}` : ''}</button>
+      <button type="button" class="btn-inspect-add-behind" onclick="addBehindInspected()" ${sel ? '' : 'disabled'} title="${sel ? `วาง ${esc(sel.name)} ไว้ด้านหลังสุดของช่องนี้` : 'เลือกสินค้าใน Library ก่อน'}">＋ วางด้านหลัง${sel ? `: ${selName}` : ''}</button>
+    </div>
+    ${sel ? '' : '<div style="font-size:0.65rem;color:rgba(255,255,255,.5)">เลือกสินค้าใน Library ก่อน แล้วกดปุ่มเพิ่ม</div>'}`;
+}
+
+/** Replace the inspected column's layers (array of arrays), then redraw. */
+function setInspectedLayers(layers, layer, level) {
+  if (!activeInspectorTarget) return;
+  const { seg, shelf, idx } = activeInspectorTarget;
+  const key = `${seg}-${shelf}`;
+  pushHistory();
+  const packed = packCol(layers.map(packCol).filter(Boolean));
+  if (packed === null) shelfData[key].splice(idx, 1);
+  else shelfData[key][idx] = packed;
+  if (!shelfData[key].length) delete shelfData[key];
+  renderShelfRow($(`shelf-${seg}-${shelf}`), seg, shelf);
+  updateSummary();
+  saveState();
+  if (window.Planogram3D && Planogram3D.isOpen()) Planogram3D.refresh();
+  if (packed === null) { closeMiniInspector(); return; }
+  const kept = inspectedCol();
+  activeInspectorTarget.layer = clamp(layer, 0, kept.length - 1);
+  activeInspectorTarget.level = clamp(level, 0, kept[activeInspectorTarget.layer].length - 1);
+  renderInspectorValues(inspectedProduct());
+  repositionMiniInspector(seg, shelf, idx);
+}
+
+function selectInspectLayer(li, vi = 0) {
+  if (!activeInspectorTarget) return;
+  activeInspectorTarget.layer = li;
+  activeInspectorTarget.level = vi;
+  renderInspectorValues(inspectedProduct());
+}
+/** Move a whole depth layer toward the front (-1) or back (+1). */
+function moveInspectLayer(li, dir) {
+  const layers = inspectedCol();
+  const j = li + dir;
+  if (j < 0 || j >= layers.length) return;
+  [layers[li], layers[j]] = [layers[j], layers[li]];
+  setInspectedLayers(layers, j, activeInspectorTarget.level);
+}
+/** Move one product up (+1) or down (-1) within its vertical stack. */
+function moveInspectLevel(li, vi, dir) {
+  const layers = inspectedCol();
+  const ids = layers[li];
+  const j = vi + dir;
+  if (!ids || j < 0 || j >= ids.length) return;
+  [ids[vi], ids[j]] = [ids[j], ids[vi]];
+  setInspectedLayers(layers, li, j);
+}
+function removeInspectItem(li, vi) {
+  const layers = inspectedCol();
+  if (!layers[li]) return;
+  layers[li].splice(vi, 1);
+  setInspectedLayers(layers, li, Math.max(0, vi - 1));
+}
+/** Put the library-selected product behind everything in this column (new depth layer). */
+function addBehindInspected() {
+  if (!selectedProductId) { showToast('เลือกสินค้าใน Library ก่อน'); return; }
+  const layers = inspectedCol().concat([[selectedProductId]]);
+  setInspectedLayers(layers, layers.length - 1, 0);
+  showToast('วางสินค้าไว้ด้านหลังแล้ว');
+}
+/** Put the library-selected product on top of the active depth layer's stack. */
+function addAboveInspected() {
+  if (!selectedProductId) { showToast('เลือกสินค้าใน Library ก่อน'); return; }
+  const layers = inspectedCol();
+  const li = activeInspectorTarget.layer;
+  layers[li].push(selectedProductId);
+  setInspectedLayers(layers, li, layers[li].length - 1);
+  showToast('วางสินค้าซ้อนข้างบนแล้ว');
+}
+
 /**
  * Fill in every readout in the inspector for the given product.
  */
 function renderInspectorValues(product) {
+  renderInspectorLayers();
   const shelfDepth = spec.depth || 48;
   const { max, used, depth } = depthRows(product, shelfDepth);
   const facing = product.facing || 1;
@@ -1004,8 +1137,7 @@ function closeMiniInspector() {
 function updateInspectedProduct(mutate) {
   if (!activeInspectorTarget) return;
   const { seg, shelf, idx } = activeInspectorTarget;
-  const productId = (shelfData[`${seg}-${shelf}`] || [])[idx];
-  const product = products.find((p) => p.id === productId);
+  const product = inspectedProduct();
   if (!product) return;
 
   pushHistory();
@@ -1060,71 +1192,8 @@ function rotateInspect90() {
 
 function deleteInspectPlacement() {
   if (!activeInspectorTarget) return;
-  const { seg, shelf, idx } = activeInspectorTarget;
-
-  removeFromShelf(seg, shelf, idx);
-  closeMiniInspector();
+  removeInspectItem(activeInspectorTarget.layer, activeInspectorTarget.level);
   showToast('ลบสินค้าออกจากชั้นวางแล้ว');
-}
-
-/**
- * Change the orientation value of the inspected product
- */
-function changeInspectOrientation(newVal) {
-  if (!activeInspectorTarget) return;
-  const { seg, shelf, idx } = activeInspectorTarget;
-  const key = `${seg}-${shelf}`;
-  const productId = shelfData[key] ? shelfData[key][idx] : null;
-  if (!productId) return;
-
-  const product = products.find((p) => p.id === productId);
-  if (!product) return;
-
-  pushHistory();
-  product.orientation = newVal;
-
-  renderShelfFill();
-  renderProductList();
-  updateSummary();
-  saveState();
-
-  if (window.Planogram3D && Planogram3D.isOpen()) {
-    Planogram3D.refresh();
-  }
-
-  // Adjust mini inspector popup position to new center
-  repositionMiniInspector(seg, shelf, idx);
-}
-
-/**
- * Rotate the inspected product by toggling between 0 and 90 degrees
- */
-function rotateInspect90() {
-  if (!activeInspectorTarget) return;
-  const { seg, shelf, idx } = activeInspectorTarget;
-  const key = `${seg}-${shelf}`;
-  const productId = shelfData[key] ? shelfData[key][idx] : null;
-  if (!productId) return;
-
-  const product = products.find((p) => p.id === productId);
-  if (!product) return;
-
-  pushHistory();
-  product.rotation = (product.rotation === 90) ? 0 : 90;
-
-  $('inspectorRotateVal').textContent = `${product.rotation}°`;
-
-  renderShelfFill();
-  renderProductList();
-  updateSummary();
-  saveState();
-
-  if (window.Planogram3D && Planogram3D.isOpen()) {
-    Planogram3D.refresh();
-  }
-
-  // Adjust mini inspector popup position to new center
-  repositionMiniInspector(seg, shelf, idx);
 }
 
 /**

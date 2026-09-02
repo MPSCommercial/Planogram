@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="src/styles.css?v=summary-compact">
+  <link rel="stylesheet" href="src/styles.css?v=depth-stack">
 </head>
 <body class="left-panel-collapsed">
   <div class="app-shell">
@@ -652,6 +652,9 @@
         <span class="inspector-facing-val" id="inspectorRotateVal" style="font-size:0.75rem; min-width:30px;">0°</span>
       </div>
       
+      <!-- Depth layers: products sharing this column, front → back -->
+      <div id="inspectorLayers" class="inspector-layers"></div>
+
       <!-- Space & Capacity Analytics -->
       <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.15); font-size: 0.72rem; color: #ccc;">
         <div style="display:flex; justify-content:space-between; margin-bottom:3px;">
@@ -683,19 +686,19 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
   <!-- Application Scripts (modular) -->
-  <script src="src/utils.js?v=drop-storage-key-slot"></script>
+  <script src="src/utils.js?v=depth-stack"></script>
   <script src="src/i18n.js?v=shelf-row"></script>
-  <script src="src/sheets.js?v=per-sqm"></script>
-  <script src="src/products.js?v=shelf"></script>
-  <script src="src/planogram.js?v=summary-label-shorten"></script>
+  <script src="src/sheets.js?v=depth-layers"></script>
+  <script src="src/products.js?v=depth-layers"></script>
+  <script src="src/planogram.js?v=depth-stack"></script>
   <script src="src/templates.js?v=sync-segment-width"></script>
   <script src="src/branches.js?v=1.0"></script>
   <script src="src/salesData.js?v=1.0"></script>
   <script src="src/branchView.js?v=1.0"></script>
-  <script src="src/planogram3d.js?v=board-full-width"></script>
-  <script src="src/export.js?v=board-row-shared-catalog"></script>
+  <script src="src/planogram3d.js?v=depth-stack"></script>
+  <script src="src/export.js?v=depth-layers"></script>
   <script src="src/topview.js?v=drop-storage-key-slot"></script>
   <script src="src/app.js?v=drop-library-tab"></script>
-  <script src="src/multiBoard.js?v=1.2"></script>
+  <script src="src/multiBoard.js?v=depth-layers"></script>
 </body>
 </html>

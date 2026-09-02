@@ -35,7 +35,7 @@ function boardStats(entry, isActive) {
   const s = isActive ? spec : (entry.snapshot ? entry.snapshot.planogram : null);
   const placements = isActive ? shelfData : (entry.snapshot ? entry.snapshot.placements : {});
   if (!s) return { segShelf: '–', skuCount: 0 };
-  const skuCount = Object.values(placements || {}).reduce((n, arr) => n + (Array.isArray(arr) ? arr.length : 0), 0);
+  const skuCount = Object.values(placements || {}).reduce((n, arr) => n + flatPlacements(Array.isArray(arr) ? arr : []).length, 0);
   return { segShelf: `${s.segments}×${s.shelves}`, skuCount };
 }
 

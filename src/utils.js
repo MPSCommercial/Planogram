@@ -193,3 +193,46 @@ function getProductDimensions(p, shelfDepth = 48) {
   return { width: w, height: h, depth: d };
 }
 
+
+/**
+ * A shelf "column" is one horizontal slot. Stored as:
+ *   "p_a"                    one product
+ *   ["p_a", "p_b"]           depth layers front→back (index 0 = front)
+ *   [["p_a", "p_c"], "p_b"]  a depth layer may itself be a vertical stack, bottom→top
+ * Legacy data (plain ids) needs no migration.
+ */
+function depthLayers(col) { return Array.isArray(col) ? col : [col]; }
+function stackIds(layer) { return Array.isArray(layer) ? layer : [layer]; }
+/** Every product id in the column, front layer first, bottom→top within a layer. */
+function colIds(col) { return depthLayers(col).flatMap(stackIds); }
+function flatPlacements(arr) { return (arr || []).flatMap(colIds); }
+/** Collapse a list back to the stored form; null when empty. Works for both axes. */
+function packCol(items) { return items.length === 0 ? null : items.length === 1 ? items[0] : items; }
+/** Drop products that fail `keep`, collapsing stacks/columns that end up empty. */
+function pruneColumns(arr, keep) {
+  return (arr || [])
+    .map((col) => packCol(depthLayers(col).map((l) => packCol(stackIds(l).filter(keep))).filter(Boolean)))
+    .filter(Boolean);
+}
+/**
+ * Column footprint (cm): width = widest product incl. facing; depth = depth
+ * layers laid end to end (each as deep as its deepest stacked product);
+ * height = tallest depth layer (stacked products summed, incl. their own Stack).
+ */
+function colMetrics(col, shelfDepth = 48) {
+  let width = 0, depth = 0, height = 0;
+  depthLayers(col).forEach((layer) => {
+    let layerDepth = 0, layerHeight = 0;
+    stackIds(layer).forEach((pid) => {
+      const p = products.find((q) => q.id === pid);
+      if (!p) return;
+      const dims = getProductDimensions(p, shelfDepth);
+      width = Math.max(width, dims.width * (p.facing || 1));
+      layerDepth = Math.max(layerDepth, depthRows(p, shelfDepth).used * dims.depth);
+      layerHeight += dims.height * Math.max(1, p.stack || 1);
+    });
+    depth += layerDepth;
+    height = Math.max(height, layerHeight);
+  });
+  return { width, depth, height, over: depth > shelfDepth };
+}
