@@ -172,12 +172,8 @@ function renderProductList() {
         <div class="product-name" title="${esc(product.name)}">${esc(product.name)}</div>
         <div class="product-meta">${esc(meta)}</div>
       </div>
-      <div class="card-actions">
-        <button class="btn btn-edit">แก้ไข</button>
-      </div>
     `;
 
-    card.querySelector('.btn-edit').addEventListener('click', (e) => openEditModal(product.id, e));
     card.addEventListener('click', () => selectProduct(product.id));
     card.addEventListener('dragstart', (e) => {
       e.dataTransfer.setData('text/plain', product.id);
