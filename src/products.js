@@ -174,12 +174,10 @@ function renderProductList() {
       </div>
       <div class="card-actions">
         <button class="btn btn-edit">แก้ไข</button>
-        <button class="btn btn-danger">ลบ</button>
       </div>
     `;
 
     card.querySelector('.btn-edit').addEventListener('click', (e) => openEditModal(product.id, e));
-    card.querySelector('.btn-danger').addEventListener('click', (e) => deleteProduct(product.id, e));
     card.addEventListener('click', () => selectProduct(product.id));
     card.addEventListener('dragstart', (e) => {
       e.dataTransfer.setData('text/plain', product.id);

@@ -2794,15 +2794,27 @@ body.resizing-shelf .board-grip::after { background: var(--accent); }
   position: absolute;
   top: 2px;
   left: 2px;
-  z-index: 4;
-  font-size: 0.6rem;
-  font-weight: 700;
-  line-height: 1;
-  padding: 2px 4px;
+  right: 2px;
+  z-index: 5;
+  font-size: 0.62rem;
+  font-weight: 800;
+  line-height: 1.3;
+  padding: 2px 5px;
   border-radius: 4px;
-  background: rgba(17, 24, 39, 0.85);
+  background: #f97316;
   color: #fff;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-shadow: 0 1px 3px rgba(0,0,0,.45);
   pointer-events: none;
+}
+/* Peeking "cards behind" shadow so a depth-stacked column reads as stacked at a glance */
+.shelf-product.has-depth {
+  outline: 1.5px dashed rgba(249,115,22,.85);
+  outline-offset: 2px;
+  box-shadow: 4px 4px 0 -2px rgba(0,0,0,.22), 7px 7px 0 -4px rgba(0,0,0,.14);
 }
 .shelf-product.over-depth { outline: 2px solid #ef4444; outline-offset: -2px; }
 .inspector-layers {

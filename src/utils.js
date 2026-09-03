@@ -217,6 +217,17 @@ function pruneColumns(arr, keep) {
     .map((col) => packCol(depthLayers(col).map((l) => packCol(stackIds(l).filter(keep))).filter(Boolean)))
     .filter(Boolean);
 }
+/** Depth (cm) one depth layer eats into the shelf: its deepest stacked product's rows. */
+function layerDepthCm(layer, shelfDepth = 48) {
+  let layerDepth = 0;
+  stackIds(layer).forEach((pid) => {
+    const p = products.find((q) => q.id === pid);
+    if (!p) return;
+    layerDepth = Math.max(layerDepth, depthRows(p, shelfDepth).used * getProductDimensions(p, shelfDepth).depth);
+  });
+  return layerDepth;
+}
+
 /**
  * Column footprint (cm): width = widest product incl. facing; depth = depth
  * layers laid end to end (each as deep as its deepest stacked product);
@@ -225,16 +236,15 @@ function pruneColumns(arr, keep) {
 function colMetrics(col, shelfDepth = 48) {
   let width = 0, depth = 0, height = 0;
   depthLayers(col).forEach((layer) => {
-    let layerDepth = 0, layerHeight = 0;
+    let layerHeight = 0;
     stackIds(layer).forEach((pid) => {
       const p = products.find((q) => q.id === pid);
       if (!p) return;
       const dims = getProductDimensions(p, shelfDepth);
       width = Math.max(width, dims.width * (p.facing || 1));
-      layerDepth = Math.max(layerDepth, depthRows(p, shelfDepth).used * dims.depth);
       layerHeight += dims.height * Math.max(1, p.stack || 1);
     });
-    depth += layerDepth;
+    depth += layerDepthCm(layer, shelfDepth);
     height = Math.max(height, layerHeight);
   });
   return { width, depth, height, over: depth > shelfDepth };

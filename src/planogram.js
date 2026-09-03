@@ -716,7 +716,7 @@ function renderShelfRow(el, seg, shelf) {
     const overHeight = frontHcm * V_PX_PER_CM > cellH; // cell height is in vertical px scale
 
     const item = document.createElement('div');
-    item.className = 'shelf-product' + (stack > 1 || front.length > 1 ? ' stacked' : '') + (col_.over || overHeight ? ' over-depth' : '');
+    item.className = 'shelf-product' + (stack > 1 || front.length > 1 ? ' stacked' : '') + (col_.over || overHeight ? ' over-depth' : '') + (layers.length > 1 ? ' has-depth' : '');
     item.style.width = `${wPx}px`;
     item.style.height = `${hPx}px`;
     const stackLabel = stack > 1 ? ` · ซ้อน ${stack}` : '';
@@ -786,7 +786,12 @@ function renderShelfRow(el, seg, shelf) {
     const dosInfo = calculateProductDOS(product);
     let badgeHTML = '';
     const shelfDepth = spec.depth || 48;
-    const maxRows = depthRows(product, shelfDepth).max;
+    // Depth other layers in this same column already occupy shrinks how many
+    // rows of the front product can actually fit — a stacked-behind product
+    // eats into the same shelf depth, so cap: must not stay as if alone.
+    const behindDepth = layers.slice(1).reduce((sum, l) => sum + layerDepthCm(l, shelfDepth), 0);
+    const availDepth = Math.max(dims.depth, shelfDepth - behindDepth);
+    const maxRows = Math.max(1, Math.floor(availDepth / dims.depth));
     const localCap = (product.facing || 1) * stack * maxRows;
 
     if (dosInfo.dos !== null) {
@@ -799,7 +804,7 @@ function renderShelfRow(el, seg, shelf) {
     }
 
     const depthChip = layers.length > 1
-      ? `<span class="depth-chip" title="ซ้อนแนวลึก ${layers.length} ชั้น (ลึกรวม ${Math.round(col_.depth)}/${spec.depth || 48} cm)">⇊${layers.length}</span>`
+      ? `<span class="depth-chip" title="ซ้อนแนวลึก ${layers.length} ชั้น: ${layers.map((l) => stackIds(l).map(name).filter(Boolean).join('+')).join(' → ')} (ลึกรวม ${Math.round(col_.depth)}/${spec.depth || 48} cm)">⇊ ซ้อน ${layers.length} ชั้น</span>`
       : '';
 
     item.innerHTML = `
