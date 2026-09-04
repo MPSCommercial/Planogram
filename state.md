@@ -6,16 +6,20 @@
 ---
 
 ## ⚡ NOW
-- **Status**: อัปเดต GitHub `main` ด้วยระบบวางสินค้าซ้อน 2 แกนใน Planogram — รองรับซ้อนแนวตั้งและแนวลึก, ลากเพื่อซ้อน, จัดลำดับ/ลบสินค้าใน inspector, depth alignment, shelf lock, popup clamp และสเกลจริง; test ผ่านใน commit `0e6934f`
-- **Live URL**: `https://mpscommercial.github.io/Planogram/` (deploy ผ่าน GitHub Pages auto-deploy จาก `main`)
+- **Status**: Deploy โปรเจกต์เวอร์ชันล่าสุด (ลบปุ่มแก้ไข/ลบจากการ์ด product list, ปรับ UI แสดงสินค้าซ้อนแนวลึกให้เด่นชัด และคำนวณ cap ลึกตามจริง) ขึ้น Surge ที่ `planogram-mpsynergy.surge.sh` สำเร็จเรียบร้อย
+- **Live URL**: `https://planogram-mpsynergy.surge.sh` (และ `https://mpscommercial.github.io/Planogram/`)
 - **Branch**: main
-- **Blocker**: ไม่มี; `CNAME` ยังไม่ track เพราะชี้ไปโดเมน Surge เดิม `planogram-mpsynergy.surge.sh` และไม่ควรนำไปตั้งเป็น GitHub Pages custom domain โดยไม่ได้ยืนยัน
-- **Next**: ตรวจหน้า live หลัง GitHub Pages deploy และทดสอบการซ้อนสินค้าหลาย SKU ทั้งแนวตั้ง/แนวลึกบน browser
-- **Files**: `index.html`, `src/app.js`, `src/i18n.js`, `src/planogram.js`, `src/planogram3d.js`, `src/styles.css`, `src/utils.js`, `test/columns.test.js`, `state.md`
+- **Blocker**: ไม่มี
+- **Next**: ตรวจสอบการแสดงผลบน live site และทดสอบการซ้อนสินค้าบน browser
+- **Files**: `src/products.js`, `src/planogram.js`, `src/styles.css`, `src/utils.js`, `state.md`
 
 ---
 
 ## 📜 LOG
+
+### 🗓️ 2026-09-05
+- ✅ Previous NOW: อัปเดต GitHub `main` ด้วยระบบวางสินค้าซ้อน 2 แกนใน Planogram — รองรับซ้อนแนวตั้งและแนวลึก, ลากเพื่อซ้อน, จัดลำดับ/ลบสินค้าใน inspector, depth alignment, shelf lock, popup clamp และสเกลจริง; test ผ่านใน commit `0e6934f`
+- Files: `index.html`, `src/app.js`, `src/i18n.js`, `src/planogram.js`, `src/planogram3d.js`, `src/styles.css`, `src/utils.js`, `test/columns.test.js`, `state.md`
 
 ### 🗓️ 2026-09-02
 - ✅ Previous NOW: ปรับแก้การแสดงผลสีในมุมมอง 3D (Three.js) ให้สีอิ่มสวย ไม่ซีดขาว ด้วย sRGB-to-linear conversion, ACES tone mapping, แสง และ material ที่สมดุลขึ้น
