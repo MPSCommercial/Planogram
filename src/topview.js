@@ -4,6 +4,27 @@
    Chairs, Beds, and other furniture in Top-down view.
    ═══════════════════════════════════════════════════════ */
 
+// Arrange a batch in rows; fail atomically when the complete batch cannot fit.
+function layoutTopviewBatch(items, room, x, y) {
+  const step = Math.max(1, Number(room.gridSize) || 20);
+  let cx = 0, cy = 0, rowDepth = 0, width = 0;
+  const result = [];
+  for (const item of items) {
+    const w = Number(item.width), d = Number(item.depth);
+    if (![w, d].every(n => Number.isFinite(n) && n > 0) || w > room.width || d > room.depth) return null;
+    if (cx && cx + w > room.width) { cx = 0; cy += Math.ceil(rowDepth / step) * step + step; rowDepth = 0; }
+    if (cy + d > room.depth) return null;
+    result.push({ productId: item.id, x: cx, y: cy, rotation: 0 });
+    width = Math.max(width, cx + w);
+    rowDepth = Math.max(rowDepth, d);
+    cx += Math.ceil(w / step) * step + step;
+  }
+  const height = cy + rowDepth;
+  const left = Math.max(0, Math.min(Math.round((x - width / 2) / step) * step, room.width - width));
+  const top = Math.max(0, Math.min(Math.round((y - height / 2) / step) * step, room.depth - height));
+  return result.map(item => ({ ...item, x: item.x + left, y: item.y + top }));
+}
+
 (function () {
   let areaSpec = { width: 600, depth: 400, gridSize: 20 };
   let placedItems = []; // Array of { id, productId, x, y, rotation }
@@ -18,6 +39,7 @@
   let rotateMoved = false;
   let rotateStart = null;
   let activeTab = 'planogram'; // 'planogram' | 'topview' | 'library'
+  const selectedProducts = new Set();
   let selectedItemId = null;   // Currently selected placed item
   let undoStack = [];          // Snapshots of { areaSpec, placedItems }
   let redoStack = [];
@@ -45,6 +67,33 @@
     { name: 'Herman Miller Nevi Desk 1800', cat: 'Furniture', brand: 'Herman Miller', color: '#f8f8f4', w: 180, h: 75, d: 80, topviewAsset: 'nevi-desk' },
     { name: 'Herman Miller Sayl Chair', cat: 'Furniture', brand: 'Herman Miller', color: '#e8e3de', w: 60, h: 90, d: 60, topviewAsset: 'sayl-chair' }
   ];
+
+  function toggleProduct(id) {
+    if (selectedProducts.has(id)) selectedProducts.delete(id);
+    else selectedProducts.add(id);
+    selectedProductId = null;
+    deselectItem();
+    renderProductList();
+  }
+
+  function clearProductSelection() {
+    selectedProducts.clear();
+    selectedProductId = null;
+    renderProductList();
+  }
+
+  function placeProducts(ids, x, y) {
+    const batch = ids.map(id => products.find(p => p.id === id)).filter(Boolean);
+    if (!batch.length || batch.length !== ids.length) return;
+    const layout = layoutTopviewBatch(batch.map(p => ({id:p.id, width:parseCm(p.width,10), depth:parseCm(p.depth,10)})), areaSpec, x, y);
+    if (!layout) { showToast('พื้นที่ห้องไม่พอสำหรับสินค้าทั้งชุด กรุณาลดจำนวนหรือขยายห้อง'); return; }
+    pushHistory();
+    placedItems.push(...layout.map(item => ({ ...item, id: 'placed_' + crypto.randomUUID() })));
+    saveState();
+    drawRoom();
+    refresh3D();
+    showToast(`วางสินค้า ${layout.length} ชิ้นแล้ว · Undo ย้อนกลับได้ทั้งชุด`);
+  }
 
   /** Initialize Top View Layout module */
   function init() {
@@ -716,6 +765,7 @@
       return;
     }
 
+    if (e.key === 'Escape') { clearProductSelection(); deselectItem(); return; }
     if (!selectedItemId) return;
 
     if (mod && (e.key === 'd' || e.key === 'D')) {
@@ -1206,15 +1256,15 @@
     board.style.position = 'absolute';
     board.style.left = `${boardLeft}px`;
     board.style.top = `${boardTop}px`;
-    board.style.background = '#fcfcf9';
-    board.style.border = '2px solid #20242a';
-    board.style.boxShadow = '0 10px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1)';
+    board.style.background = '#f5f2ec';
+    board.style.border = '2px solid #6f6a61';
+    board.style.boxShadow = '0 0 0 5px #e2ddd4, 0 18px 40px -12px rgba(48,40,28,0.22)';
     
     // Draw Grid Lines (using CSS background)
     const gridSizePx = areaSpec.gridSize * pxPerCm;
     board.style.backgroundImage = `
-      linear-gradient(to right, rgba(0,0,0,0.06) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(0,0,0,0.06) 1px, transparent 1px)
+      linear-gradient(to right, rgba(84,76,62,0.055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(84,76,62,0.055) 1px, transparent 1px)
     `;
     board.style.backgroundSize = `${gridSizePx}px ${gridSizePx}px`;
 
@@ -1274,48 +1324,12 @@
         return;
       }
 
-      if (typeof selectedProductId !== 'undefined' && selectedProductId) {
-        const p = products.find((q) => q.id === selectedProductId);
-        if (!p) return;
-
+      const ids = [...selectedProducts];
+      if (!ids.length && selectedProductId) ids.push(selectedProductId);
+      if (ids.length) {
         const rect = board.getBoundingClientRect();
-        const clickX = e.clientX - rect.left;
-        const clickY = e.clientY - rect.top;
-
-        let xCm = clickX / pxPerCm;
-        let yCm = clickY / pxPerCm;
-
-        // Snap to grid
-        const snap = areaSpec.gridSize;
-        xCm = Math.round(xCm / snap) * snap;
-        yCm = Math.round(yCm / snap) * snap;
-
-        const origW = parseCm(p.width, 10);
-        const origD = parseCm(p.depth, 10);
-
-        // Center on clicked coordinate, offset by half width/depth rounded to grid
-        xCm = clamp(xCm - Math.round((origW / 2) / snap) * snap, 0, areaSpec.width - origW);
-        yCm = clamp(yCm - Math.round((origD / 2) / snap) * snap, 0, areaSpec.depth - origD);
-
-        pushHistory();
-        placedItems.push({
-          id: 'placed_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-          productId: p.id,
-          x: xCm,
-          y: yCm,
-          rotation: 0
-        });
-
-        saveState();
-        drawRoom();
-        showToast(`วาง ${p.name} บนแปลนแล้ว (คลิกเพื่อวาง)`);
-
-        if (window.Planogram3D && Planogram3D.isOpen()) {
-          Planogram3D.refresh();
-        }
-      } else {
-        showToast('กรุณาเลือกสินค้าจากคลังทางขวา เพื่อคลิกวางในแปลน');
-      }
+        placeProducts(ids, (e.clientX - rect.left) / pxPerCm, (e.clientY - rect.top) / pxPerCm);
+      } else showToast('เลือกสินค้าจากคลังได้หลายตัว แล้วคลิกบนแปลนเพื่อวางพร้อมกัน');
     });
 
     // Render placed furniture/fixtures
@@ -1871,50 +1885,12 @@
     const productId = e.dataTransfer.getData('text/plain') || e.dataTransfer.getData('text');
     if (!productId) return;
 
-    const p = products.find((q) => q.id === productId);
-    if (!p) return;
-
-    const wrap = $('topviewWrap');
-    const board = wrap.querySelector('.room-board');
+    const board = $('topviewWrap').querySelector('.room-board');
     if (!board) return;
-
     const rect = board.getBoundingClientRect();
-    const dropX = e.clientX - rect.left;
-    const dropY = e.clientY - rect.top;
-
-    let xCm = dropX / pxPerCm;
-    let yCm = dropY / pxPerCm;
-
-    // Snap to grid
-    const snap = areaSpec.gridSize;
-    xCm = Math.round(xCm / snap) * snap;
-    yCm = Math.round(yCm / snap) * snap;
-
-    // Get product dimensions
-    const origW = parseCm(p.width, 10);
-    const origD = parseCm(p.depth, 10);
-
-    // Clamp position inside room
-    xCm = clamp(xCm, 0, areaSpec.width - origW);
-    yCm = clamp(yCm, 0, areaSpec.depth - origD);
-
-    // Create placed item
-    pushHistory();
-    placedItems.push({
-      id: 'placed_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
-      productId: p.id,
-      x: xCm,
-      y: yCm,
-      rotation: 0
-    });
-
-    saveState();
-    drawRoom();
-    showToast(`วาง ${p.name} บนพื้นที่ห้องแล้ว`);
-
-    if (window.Planogram3D && Planogram3D.isOpen()) {
-      Planogram3D.refresh();
-    }
+    if (e.clientX < rect.left || e.clientX > rect.right || e.clientY < rect.top || e.clientY > rect.bottom) return;
+    const ids = selectedProducts.has(productId) ? [...selectedProducts] : [productId];
+    placeProducts(ids, (e.clientX - rect.left) / pxPerCm, (e.clientY - rect.top) / pxPerCm);
   }
 
   function exportTopviewPNG() {
@@ -1999,6 +1975,9 @@
 
   // Expose to window for 3D engine / export script access
   window.TopViewLayout = {
+    toggleProduct,
+    clearProductSelection,
+    selectedProducts,
     getSpec: () => areaSpec,
     getPlacedItems: () => placedItems,
     isActive: () => activeTab === 'topview',

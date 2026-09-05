@@ -12,8 +12,13 @@
   let resizeObs = null;
   let initialized = false;
   let textureLoader = null;
+  let renderStyle = 'studio';
+  let gridVisible = false;
+  let view = 'perspective';
+  let frame = { W: 360, H: 220, D: 48 };
 
   function container() { return $('stage3d'); }
+  function viewport() { return $('viewport3d'); }
 
   /** Converts a CSS hex or name color into a linear THREE.Color so sRGB output encoding doesn't wash it out. */
   function to3Color(color) {
@@ -40,10 +45,10 @@
     renderer.outputEncoding = THREE.sRGBEncoding;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.05;
-    host.appendChild(renderer.domElement);
+    viewport().appendChild(renderer.domElement);
 
     scene = new THREE.Scene();
-    scene.background = new THREE.Color('#eef1f5');
+    scene.background = new THREE.Color('#f1efeb');
 
     camera = new THREE.PerspectiveCamera(42, 1, 0.5, 8000);
 
@@ -55,39 +60,67 @@
     controls.maxDistance = 4000;
 
     // ── Lighting: balanced ambient + key directional with rich contrast ──
-    const hemi = new THREE.HemisphereLight(0xffffff, 0x64748b, 0.46);
+    const hemi = new THREE.HemisphereLight(0xffffff, 0x9b9184, 0.65);
     scene.add(hemi);
 
-    const key = new THREE.DirectionalLight(0xffffff, 0.85);
+    const key = new THREE.DirectionalLight(0xfff3df, 1.25);
     key.position.set(420, 620, 540);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
     key.shadow.bias = -0.0005;
-    key.shadow.normalBias = 0.05;
+    key.shadow.normalBias = 0.3;
+    key.shadow.radius = 3;
     scene.add(key);
+    scene.add(key.target);
     scene.userData.keyLight = key;
 
     const fill = new THREE.DirectionalLight(0xe2edfa, 0.28);
     fill.position.set(-380, 300, -260);
     scene.add(fill);
 
+    // A small procedural studio environment: softbox reflections, no external HDR asset.
+    const studio = new THREE.Scene();
+    studio.background = new THREE.Color(0x999999);
+    [[-150, 220, 100], [180, 100, -160], [0, 280, 0]].forEach(([x, y, z]) => {
+      const panel = new THREE.Mesh(new THREE.PlaneGeometry(180, 140),
+        new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide }));
+      panel.position.set(x, y, z);
+      panel.lookAt(0, 0, 0);
+      studio.add(panel);
+    });
+    const pmrem = new THREE.PMREMGenerator(renderer);
+    scene.environment = pmrem.fromScene(studio, 0.08).texture;
+    disposeGroup(studio);
+    pmrem.dispose();
+
+    host.querySelectorAll('[data-render-style]').forEach(button => {
+      button.addEventListener('click', () => { renderStyle = button.dataset.renderStyle; applyStyle(); });
+    });
+    host.querySelectorAll('[data-camera-view]').forEach(button => {
+      button.addEventListener('click', () => { view = button.dataset.cameraView; frameCamera(frame.W, frame.H, frame.D); });
+    });
+    $('grid3d').addEventListener('change', event => { gridVisible = event.target.checked; applyStyle(); });
     textureLoader = new THREE.TextureLoader();
     initialized = true;
 
     // Resize handling
     resizeObs = new ResizeObserver(() => resize());
-    resizeObs.observe(host);
+    resizeObs.observe(viewport());
     window.addEventListener('resize', resize);
     return true;
   }
 
   function resize() {
     if (!renderer) return;
-    const host = container();
+    const host = viewport();
     const w = host.clientWidth || 1;
     const h = host.clientHeight || 1;
     renderer.setSize(w, h, false);
-    camera.aspect = w / h;
+    if (camera.isOrthographicCamera) {
+      const half = camera.userData.halfHeight;
+      camera.left = -half * w / h; camera.right = half * w / h;
+      camera.top = half; camera.bottom = -half;
+    } else camera.aspect = w / h;
     camera.updateProjectionMatrix();
   }
 
@@ -98,6 +131,23 @@
         const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
         mats.forEach((m) => { if (m.map) m.map.dispose(); m.dispose(); });
       }
+    });
+  }
+
+  function applyStyle() {
+    if (!contentGroup) return;
+    const sketch = renderStyle === 'sketch';
+    contentGroup.traverse(obj => {
+      if (obj.type === 'GridHelper') obj.visible = gridVisible;
+      else if (obj.isLineSegments) obj.visible = sketch;
+      if (obj.isMesh) {
+        const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
+        materials.forEach(mat => { if (mat.isMeshStandardMaterial) mat.envMapIntensity = sketch ? 0.15 : 0.65; });
+      }
+    });
+    renderer.toneMappingExposure = sketch ? 1.15 : 1.05;
+    container().querySelectorAll('[data-render-style]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.renderStyle === renderStyle));
     });
   }
 
@@ -354,7 +404,7 @@
     // ── Floor: ground plane + SketchUp grid ──
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(W * 4, D * 8),
-      new THREE.MeshStandardMaterial({ color: to3Color('#e5e9f0'), roughness: 0.95 })
+      new THREE.MeshStandardMaterial({ color: to3Color('#e8e4dd'), roughness: 0.95 })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = -0.2;
@@ -504,38 +554,52 @@
       }
     }
 
-    return { W, H };
+    return { W, H, D };
   }
 
-  function frameCamera(W, H) {
-    if (window.TopViewLayout && TopViewLayout.isActive()) {
-      const spec = TopViewLayout.getSpec();
-      const span = Math.max(spec.width, spec.depth);
-      controls.target.set(0, 28, 0);
-      camera.position.set(span * 0.62, span * 0.76, span * 0.92);
-      camera.updateProjectionMatrix();
-
-      const key = scene.userData.keyLight;
-      const cam = key.shadow.camera;
-      const r = span * 0.72;
-      cam.left = -r; cam.right = r; cam.top = r; cam.bottom = -r;
-      cam.near = 1; cam.far = 3000;
-      cam.updateProjectionMatrix();
-      return;
+  function frameCamera(W, H, D = 48) {
+    const room = window.TopViewLayout && TopViewLayout.isActive();
+    if (room) { const s = TopViewLayout.getSpec(); W = s.width; D = s.depth; }
+    frame = { W, H, D };
+    const span = Math.max(W, H, D);
+    const targetY = room ? 0 : H * 0.46;
+    const target = new THREE.Vector3(0, targetY, 0);
+    if (view === 'perspective') {
+      camera = new THREE.PerspectiveCamera(38, 1, 0.5, Math.max(8000, span * 12));
+    } else {
+      camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0.5, Math.max(8000, span * 12));
+      const aspect = viewport().clientWidth / Math.max(1, viewport().clientHeight);
+      camera.userData.halfHeight = Math.max(view === 'top' ? D : H, W / aspect) * 0.62;
     }
-
-    const cx = 0, cy = H * 0.46, cz = 0;
-    controls.target.set(cx, cy, cz);
-    camera.position.set(W * 0.62, H * 0.95, (W * 0.5 + H * 0.9 + 200));
-    camera.updateProjectionMatrix();
-
-    // size shadow frustum to the gondola
+    controls.object = camera;
+    controls.target.copy(target);
+    controls.enableRotate = view === 'perspective';
+    controls.maxPolarAngle = view === 'perspective' ? Math.PI * 0.495 : Math.PI;
+    controls.maxDistance = Math.max(4000, span * 6);
+    if (view === 'top') {
+      camera.up.set(0, 0, -1);
+      camera.position.set(0, span * 2 + H, 0);
+    } else if (view === 'front') camera.position.set(0, targetY, span * 2);
+    else {
+      const aspect = viewport().clientWidth / Math.max(1, viewport().clientHeight);
+      const distance = span * Math.max(room ? 1.05 : 1.6, 1 / aspect);
+      camera.position.set(distance * 0.48, targetY + distance * 0.55, distance);
+    }
+    camera.lookAt(target);
+    resize();
+    controls.update();
     const key = scene.userData.keyLight;
+    key.target.position.copy(target);
+    key.position.set(span * 0.65, targetY + span * 1.4, span * 0.9);
     const cam = key.shadow.camera;
-    const r = Math.max(W, H) * 0.9;
+    const r = span * 0.85;
     cam.left = -r; cam.right = r; cam.top = r; cam.bottom = -r;
-    cam.near = 1; cam.far = 3000;
+    cam.near = 1; cam.far = span * 4;
     cam.updateProjectionMatrix();
+    container().querySelectorAll('[data-camera-view]').forEach(button => {
+      button.setAttribute('aria-pressed', String(button.dataset.cameraView === view));
+    });
+    applyStyle();
   }
 
   function animate() {
@@ -554,7 +618,7 @@
     // ── Floor: room plane ──
     const floor = new THREE.Mesh(
       new THREE.PlaneGeometry(W, D),
-      new THREE.MeshStandardMaterial({ color: to3Color('#dde3e8'), roughness: 0.92 })
+      new THREE.MeshStandardMaterial({ color: to3Color('#e8e4dd'), roughness: 0.92 })
     );
     floor.rotation.x = -Math.PI / 2;
     floor.position.y = 0;
@@ -563,6 +627,19 @@
 
     // ── Grid helper ──
     const grid = new THREE.GridHelper(Math.max(W, D), Math.round(Math.max(W, D) / spec.gridSize), 0x7f8790, 0xc6ced7);
+    // Clip grid lines to the room while preserving the specified spacing in cm.
+    const points = [];
+    const gridStep = Math.max(1, Number(spec.gridSize) || 20);
+    for (let x = 0; x <= W; x += gridStep) {
+      points.push(new THREE.Vector3(x - W / 2, 0, -D / 2), new THREE.Vector3(x - W / 2, 0, D / 2));
+    }
+    for (let z = 0; z <= D; z += gridStep) {
+      points.push(new THREE.Vector3(-W / 2, 0, z - D / 2), new THREE.Vector3(W / 2, 0, z - D / 2));
+    }
+    grid.geometry.dispose();
+    grid.geometry = new THREE.BufferGeometry().setFromPoints(points);
+    grid.material.vertexColors = false;
+    grid.material.color.set(0xbcb7ae);
     grid.position.y = 0.1;
     contentGroup.add(grid);
 
@@ -904,7 +981,7 @@
       contentGroup.add(itemGroup);
     });
 
-    return { W, H: Math.max(W, D) * 0.5 };
+    return { W, H: Math.max(W, D) * 0.5, D };
   }
 
   // ── Public API ──
@@ -918,7 +995,7 @@
     
     resize();
     const dims = buildScene();
-    frameCamera(dims.W, dims.H);
+    frameCamera(dims.W, dims.H, dims.D);
     if (!rafId) animate();
   }
 
@@ -936,7 +1013,7 @@
   function refresh() {
     if (!initialized || !rafId) return;
     const dims = buildScene();
-    frameCamera(dims.W, dims.H);
+    frameCamera(dims.W, dims.H, dims.D);
   }
 
   function isOpen() {

@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="src/styles.css?v=true-scale">
+  <link rel="stylesheet" href="src/styles.css?v=batch-placement">
 </head>
 <body class="left-panel-collapsed">
   <div class="app-shell">
@@ -336,7 +336,20 @@
           <!-- SketchUp-style 3D view (Three.js renders here) -->
           <div class="stage-3d" id="stage3d" style="display:none">
             <div class="stage-3d-hint" data-i18n="stage3d_hint">ลากเพื่อหมุน · scroll ซูม · คลิกขวาลากเพื่อเลื่อน</div>
-            <button class="btn btn-mini btn-ghost" id="btnReset3D" type="button" style="position:absolute; top:12px; right:12px; z-index:2;" data-i18n="reset_view">รีเซ็ตมุมมอง</button>
+            <div class="stage-3d-toolbar" role="toolbar" aria-label="3D view controls">
+              <div class="stage-3d-options" role="group" aria-label="Render style">
+                <button type="button" data-render-style="studio" aria-pressed="true">Studio</button>
+                <button type="button" data-render-style="sketch" aria-pressed="false">Sketch</button>
+              </div>
+              <div class="stage-3d-options" role="group" aria-label="Camera view">
+                <button type="button" data-camera-view="perspective" aria-pressed="true">Perspective</button>
+                <button type="button" data-camera-view="front" aria-pressed="false">Front</button>
+                <button type="button" data-camera-view="top" aria-pressed="false">Top</button>
+              </div>
+              <label><input type="checkbox" id="grid3d"> Grid</label>
+              <button type="button" id="btnReset3D" data-i18n="reset_view">รีเซ็ตมุมมอง</button>
+            </div>
+            <div id="viewport3d" class="viewport-3d"></div>
           </div>
         </div>
       </section>
@@ -468,6 +481,10 @@
               <select class="category-filter" id="categoryFilter">
                 <option value="">ทั้งหมด</option>
               </select>
+              <div id="tvProductSelection" class="tv-product-selection" hidden>
+                <span id="tvProductSelectionCount" role="status"></span>
+                <button type="button" id="tvClearProductSelection" class="btn btn-mini btn-ghost">ยกเลิก</button>
+              </div>
               <div class="product-list" id="productList"></div>
             </div>
           </section>
@@ -696,15 +713,15 @@
   <script src="src/utils.js?v=true-scale"></script>
   <script src="src/i18n.js?v=true-scale"></script>
   <script src="src/sheets.js?v=depth-layers"></script>
-  <script src="src/products.js?v=depth-layers"></script>
+  <script src="src/products.js?v=batch-placement"></script>
   <script src="src/planogram.js?v=true-scale"></script>
   <script src="src/templates.js?v=sync-segment-width"></script>
   <script src="src/branches.js?v=1.0"></script>
   <script src="src/salesData.js?v=1.0"></script>
   <script src="src/branchView.js?v=1.0"></script>
-  <script src="src/planogram3d.js?v=true-scale"></script>
+  <script src="src/planogram3d.js?v=batch-placement"></script>
   <script src="src/export.js?v=depth-layers"></script>
-  <script src="src/topview.js?v=drop-storage-key-slot"></script>
+  <script src="src/topview.js?v=batch-placement"></script>
   <script src="src/app.js?v=true-scale"></script>
   <script src="src/multiBoard.js?v=depth-layers"></script>
 </body>

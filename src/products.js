@@ -83,6 +83,7 @@ function deleteProduct(id, event) {
  * Select a product for placement
  */
 function selectProduct(id) {
+  if (window.TopViewLayout && TopViewLayout.isActive()) { TopViewLayout.toggleProduct(id); return; }
   selectedProductId = id;
   const product = products.find((p) => p.id === id);
   $('modeText').textContent = product
@@ -134,6 +135,13 @@ function renderProductList() {
     );
   }
 
+  const topview = window.TopViewLayout && TopViewLayout.isActive();
+  const selectionBar = $('tvProductSelection');
+  selectionBar.hidden = !topview;
+  if (topview) {
+    $('tvProductSelectionCount').textContent = `เลือก ${TopViewLayout.selectedProducts.size} ตัว · คลิกบนแปลนเพื่อวางทั้งชุด`;
+    $('tvClearProductSelection').onclick = () => TopViewLayout.clearProductSelection();
+  }
   if (!filtered.length) {
     list.innerHTML = `<div class="empty-list">${
       products.length
@@ -147,7 +155,7 @@ function renderProductList() {
   filtered.forEach((product) => {
     const card = document.createElement('div');
     card.className =
-      'product-card' + (product.id === selectedProductId ? ' selected' : '');
+      'product-card' + ((topview ? TopViewLayout.selectedProducts.has(product.id) : product.id === selectedProductId) ? ' selected' : '');
     card.draggable = true;
 
     const thumbImage = productImage(product);
@@ -174,12 +182,25 @@ function renderProductList() {
       </div>
     `;
 
+    if (topview) {
+      const check = document.createElement('input');
+      check.type = 'checkbox';
+      check.className = 'tv-product-check';
+      check.checked = TopViewLayout.selectedProducts.has(product.id);
+      check.setAttribute('aria-label', `เลือก ${product.name}`);
+      check.addEventListener('click', e => { e.stopPropagation(); selectProduct(product.id); });
+      card.appendChild(check);
+    }
     card.addEventListener('click', () => selectProduct(product.id));
     card.addEventListener('dragstart', (e) => {
       e.dataTransfer.setData('text/plain', product.id);
       e.dataTransfer.setData('text', product.id);
       e.dataTransfer.effectAllowed = 'move';
-      selectProduct(product.id);
+      if (!topview) selectProduct(product.id);
+      else if (!TopViewLayout.selectedProducts.has(product.id)) {
+        TopViewLayout.selectedProducts.clear();
+        TopViewLayout.selectedProducts.add(product.id);
+      }
 
       // Auto-close 3D view on drag start to reveal the 2D placement canvas
       if (window.Planogram3D && Planogram3D.isOpen()) {
@@ -189,6 +210,7 @@ function renderProductList() {
         showToast('สลับเข้าสู่โหมด 2D อัตโนมัติเพื่อจัดวางสินค้า');
       }
     });
+    if (topview) card.addEventListener('dragend', renderProductList);
     list.appendChild(card);
   });
 }

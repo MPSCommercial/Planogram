@@ -1,0 +1,66 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>3D rendering self-check</title>
+<link rel="stylesheet" href="../src/styles.css">
+<style>body{display:block;padding:24px;background:#f4f2ef}#result{padding:12px;font:16px monospace}.stage-3d{height:70vh}</style>
+<div id="result">Running…</div>
+<div id="exportArea"></div><div id="topviewArea"></div>
+<div class="stage-3d" id="stage3d">
+  <div class="stage-3d-toolbar">
+    <button data-render-style="studio">Studio</button><button data-render-style="sketch">Sketch</button>
+    <button data-camera-view="perspective">Perspective</button><button data-camera-view="front">Front</button><button data-camera-view="top">Top</button>
+    <label><input id="grid3d" type="checkbox">Grid</label>
+  </div>
+<div id="viewport3d" class="viewport-3d"></div>
+</div>
+<script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+<script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="../src/utils.js"></script>
+<script>
+// Run: python3 -m http.server 8765, then open /test/3d.html. No saved user data or Sheet sync.
+showToast = message => { throw Error(message); };
+const spec = {width:240,height:210,depth:48,segments:2,shelves:4,shelfThickness:3,hasBackPanel:true,hasSidePanel:true,hasDivider:true,shelfColor:'#e8e4de',backColor:'#555954'};
+const products = [{id:'desk',name:'Nevi desk',width:140,height:75,depth:80}, {id:'chair',name:'Sayl chair',width:60,height:90,depth:60}];
+const shelfData = {};
+let room = false;
+const roomSpec = {width:600,depth:400,gridSize:20};
+window.TopViewLayout = {isActive:()=>room,getSpec:()=>roomSpec,getPlacedItems:()=>[
+  {productId:'desk',x:100,y:90,rotation:0},{productId:'chair',x:140,y:190,rotation:0},
+  {productId:'desk',x:350,y:90,rotation:90},{productId:'chair',x:270,y:120,rotation:90}
+]};
+(async () => {
+  const assert = (condition, message) => { if (!condition) throw Error(message); };
+  const source = await (await fetch('../src/planogram3d.js')).text();
+  // Test-only access to actual scene/camera; production API stays unchanged.
+  new Function(source.replace('window.Planogram3D =', 'window.inspect3d = () => ({camera, contentGroup, renderer, controls}); window.Planogram3D ='))();
+  Planogram3D.open();
+  assert(Planogram3D.isOpen(), 'Viewer opens');
+  assert(document.querySelector('.stage-3d-toolbar').getBoundingClientRect().bottom <= $('viewport3d').getBoundingClientRect().top, 'Toolbar does not cover canvas');
+  const click = selector => document.querySelector(selector).click();
+  const lines = () => { const result=[]; inspect3d().contentGroup.traverse(o=>{if(o.isLineSegments&&o.type!=='GridHelper')result.push(o)});return result; };
+  assert(lines().every(o=>!o.visible), 'Studio hides edges');
+  click('[data-render-style="sketch"]');
+  assert(lines().every(o=>o.visible), 'Sketch shows edges');
+  for (const activeRoom of [false,true]) {
+    room = activeRoom;
+    Planogram3D.refresh();
+    for (const view of ['top','front','perspective']) {
+      click(`[data-camera-view="${view}"]`);
+      const {camera,controls}=inspect3d();
+      assert(view==='perspective' ? camera.isPerspectiveCamera : camera.isOrthographicCamera, 'Correct projection: '+view);
+      assert(Number.isFinite(camera.projectionMatrix.elements[0]), 'Finite camera projection');
+      if(view==='top') assert(camera.getWorldDirection(new THREE.Vector3()).dot(new THREE.Vector3(0,-1,0)) > .999999, 'Top is perpendicular');
+      assert(controls.enableRotate === (view==='perspective'), 'Orthographic rotation locked');
+    }
+  }
+  click('#grid3d');
+  let grid; inspect3d().contentGroup.traverse(o=>{if(o.type==='GridHelper')grid=o});
+  assert(grid.visible,'Grid toggles on');
+  grid.geometry.computeBoundingBox();
+  assert(grid.geometry.boundingBox.max.z===200 && grid.geometry.boundingBox.max.x===300,'Grid stays inside rectangular room');
+  assert(grid.geometry.attributes.position.getX(2)-grid.geometry.attributes.position.getX(0)===20,'Grid spacing in cm');
+  click('#grid3d');click('[data-render-style="studio"]');
+  Planogram3D.close();assert(!Planogram3D.isOpen(),'Viewer closes');Planogram3D.open();
+  $('result').textContent='PASS · Studio / Sketch · 3 cameras × 2 workspaces · grid · close / reopen';
+})().catch(error=>{$('result').textContent='FAIL · '+error.message;console.error(error)});
+</script>

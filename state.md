@@ -6,6 +6,29 @@
 ---
 
 ## ⚡ NOW
+- **Status**: Top View เลือกสินค้าจากคลังหลายตัวด้วย click/checkbox แล้วคลิกหรือลากวางทั้งชุด; เรียงแถวตาม grid, ไม่ล้นห้อง, ปฏิเสธทั้งชุดหากพื้นที่ไม่พอ, Undo/Redo เป็นชุด; Esc/ยกเลิกล้างการเลือก
+- **3D**: แยก toolbar ออกจาก canvas ด้วย `viewport3d`; ResizeObserver และ camera framing ใช้ขนาด viewport จริง
+- **Validation**: Browser เลือก 2 ตัว วางจาก 3 → 5 ชิ้น แล้ว Undo กลับ 3; วัด toolbarBottom <= canvasTop; `test/3d.html` PASS; `node test/topview-batch.test.js`, `node test/columns.test.js`, syntax และ diff checks ผ่าน
+- **Scope**: Multi-select รอบนี้ใช้กับคลังสินค้า; การเลือก/ย้ายหลายตัวที่อยู่บนแปลนยังเป็นงานถัดไปหากต้องการ; ไม่มี deploy
+- **Next**: ทดลองที่ `http://localhost:8765` ก่อน deploy
+- **Files**: `src/topview.js`, `src/products.js`, `src/planogram3d.js`, `src/styles.css`, `index.html`, `test/topview-batch.test.js`, `test/3d.html`, `state.md`
+
+---
+
+## 📜 LOG
+
+### Archived NOW — before batch placement / toolbar fix
+- **Status**: ปรับ 3D ร่วมของ Planogram / Top View เป็น architectural studio: procedural environment reflections, warm lighting, Studio/Sketch, Perspective/Front/Top orthographic และ Grid toggle; ปรับพื้น/เงา top view 2D
+- **Validation**: Browser self-check `http://localhost:8765/test/3d.html` PASS (2 workspaces × 3 cameras, perpendicular top, render styles, grid bounds/spacing, close/reopen); ตรวจภาพ shelf, furniture room และพื้นแปลน 2D; `node test/columns.test.js` + JS syntax checks ผ่าน
+- **Scope**: Real-time Three.js เดิม; ยังไม่ใช่ V-Ray ray tracing หรือ import SKP; ยังไม่ได้ deploy
+- **Branch**: main
+- **Next**: ทดลองกับ layout / product images จริงก่อน deploy; preview `http://localhost:8765`
+- **Files**: `index.html`, `src/planogram3d.js`, `src/topview.js`, `src/styles.css`, `test/3d.html`, `state.md`
+
+---
+
+
+### Archived NOW — before 2026-09-06 studio views
 - **Status**: Deploy โปรเจกต์เวอร์ชันล่าสุด (ลบปุ่มแก้ไข/ลบจากการ์ด product list, ปรับ UI แสดงสินค้าซ้อนแนวลึกให้เด่นชัด และคำนวณ cap ลึกตามจริง) ขึ้น Surge ที่ `planogram-mpsynergy.surge.sh` สำเร็จเรียบร้อย
 - **Live URL**: `https://planogram-mpsynergy.surge.sh` (และ `https://mpscommercial.github.io/Planogram/`)
 - **Branch**: main
@@ -15,7 +38,6 @@
 
 ---
 
-## 📜 LOG
 
 ### 🗓️ 2026-09-05
 - ✅ Previous NOW: อัปเดต GitHub `main` ด้วยระบบวางสินค้าซ้อน 2 แกนใน Planogram — รองรับซ้อนแนวตั้งและแนวลึก, ลากเพื่อซ้อน, จัดลำดับ/ลบสินค้าใน inspector, depth alignment, shelf lock, popup clamp และสเกลจริง; test ผ่านใน commit `0e6934f`
