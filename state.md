@@ -6,6 +6,19 @@
 ---
 
 ## ⚡ NOW
+- **Status**: Commit + push main และ deploy สำเร็จ: Studio/Sketch 3D, toolbar แยกเหนือ canvas และ Top View batch placement จากคลัง
+- **Feature commit**: `7c79564` — feat: add studio 3D views and top-view batch placement
+- **Live**: https://planogram-mpsynergy.surge.sh และ https://mpscommercial.github.io/Planogram/
+- **Validation**: Surge CLI Success; GitHub Pages build ของ `7c79564` = built; ตรวจ HTTP ไฟล์ `index.html`, `src/planogram3d.js`, `src/topview.js`, `src/products.js`, `src/styles.css` บนทั้งสอง host ตรงกับ local ทุกไฟล์; batch/columns tests + syntax/diff checks ผ่าน
+- **Scope**: Multi-select ใช้กับคลังสินค้า; การเลือก/ย้ายหลายตัวบนแปลนยังไม่ได้เพิ่ม
+- **Next**: ใช้งานเวอร์ชัน live และเก็บ feedback
+- **Working tree**: ไม่รวม `.DS_Store` ที่เปลี่ยนอยู่ก่อนแล้วใน commit
+
+---
+
+## 📜 LOG
+
+### Archived NOW — before deployment 2026-09-06
 - **Status**: Top View เลือกสินค้าจากคลังหลายตัวด้วย click/checkbox แล้วคลิกหรือลากวางทั้งชุด; เรียงแถวตาม grid, ไม่ล้นห้อง, ปฏิเสธทั้งชุดหากพื้นที่ไม่พอ, Undo/Redo เป็นชุด; Esc/ยกเลิกล้างการเลือก
 - **3D**: แยก toolbar ออกจาก canvas ด้วย `viewport3d`; ResizeObserver และ camera framing ใช้ขนาด viewport จริง
 - **Validation**: Browser เลือก 2 ตัว วางจาก 3 → 5 ชิ้น แล้ว Undo กลับ 3; วัด toolbarBottom <= canvasTop; `test/3d.html` PASS; `node test/topview-batch.test.js`, `node test/columns.test.js`, syntax และ diff checks ผ่าน
@@ -15,7 +28,6 @@
 
 ---
 
-## 📜 LOG
 
 ### Archived NOW — before batch placement / toolbar fix
 - **Status**: ปรับ 3D ร่วมของ Planogram / Top View เป็น architectural studio: procedural environment reflections, warm lighting, Studio/Sketch, Perspective/Front/Top orthographic และ Grid toggle; ปรับพื้น/เงา top view 2D
